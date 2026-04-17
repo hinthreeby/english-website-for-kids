@@ -1,26 +1,34 @@
-import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GameCard from "../components/GameCard";
 import Navbar from "../components/Navbar";
-import StarBadge from "../components/StarBadge";
-import StreakBanner from "../components/StreakBanner";
-import { useAuth } from "../context/AuthContext";
 import { games } from "../data/games";
-import useProgress from "../hooks/useProgress";
 import useSound from "../hooks/useSound";
+import earthPlanet from "../assets/earth.png";
+import jupiterPlanet from "../assets/jupiter.png";
+import marsPlanet from "../assets/mars.png";
+import starRock from "../assets/star.png";
 
 const NICKNAME_KEY = "funenglish_nickname";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { getGuestStars } = useProgress();
   const { playPop } = useSound();
   const [nickname, setNickname] = useState(localStorage.getItem(NICKNAME_KEY) || "");
   const [nicknameInput, setNicknameInput] = useState(localStorage.getItem(NICKNAME_KEY) || "");
 
-  const titleChars = useMemo(() => [..."Fun English!"], []);
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 100 }, (_, index) => ({
+        id: index,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() > 0.7 ? 2 : 1,
+        duration: (Math.random() * 3 + 2).toFixed(2),
+        delay: (Math.random() * 5).toFixed(2),
+      })),
+    [],
+  );
 
   const saveNickname = () => {
     if (!nicknameInput.trim()) {
@@ -33,8 +41,36 @@ const HomePage = () => {
   };
 
   return (
-    <div className="screen with-bg">
+    <div className="screen with-bg space-bg">
       <Navbar />
+
+      <div className="star-field" aria-hidden="true">
+        {stars.map((star) => (
+          <span
+            key={star.id}
+            className="space-star"
+            style={{
+              "--star-x": `${star.x}%`,
+              "--star-y": `${star.y}%`,
+              "--star-size": `${star.size}px`,
+              "--star-duration": `${star.duration}s`,
+              "--star-delay": `${star.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="nebula-glow" aria-hidden="true" />
+
+      <div className="floating-decorations" aria-hidden="true">
+        <span className="float-star f1">✦</span>
+        <span className="float-star f2">★</span>
+        <span className="float-star f3">✦</span>
+        <span className="float-star f4">★</span>
+        <span className="float-star f5">✦</span>
+        <span className="float-star f6">★</span>
+      </div>
+
       {!nickname && (
         <div className="modal-backdrop">
           <div className="nickname-card">
@@ -53,49 +89,44 @@ const HomePage = () => {
         </div>
       )}
 
-      <header className="home-header">
-        <motion.h1 className="title-bounce">
-          <span>🌟 </span>
-          {titleChars.map((ch, index) => (
-            <motion.span
-              key={`${ch}-${index}`}
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 1, repeat: Infinity, delay: index * 0.06 }}
-            >
-              {ch}
-            </motion.span>
-          ))}
-        </motion.h1>
+      <main className="home-main">
+        <section className="hero">
+          <div className="planets-layer" aria-hidden="true">
+            <img src={earthPlanet} alt="" className="planet planet-left" />
+            <img src={jupiterPlanet} alt="" className="planet planet-right" />
+            <img src={marsPlanet} alt="" className="planet planet-bottom" />
+            <img src={starRock} alt="" className="asteroid a1" />
+            <img src={starRock} alt="" className="asteroid a2" />
+            <img src={starRock} alt="" className="asteroid a3" />
+          </div>
 
-        <div className="top-right-status">
-          {user ? (
-            <>
-              <StarBadge stars={user.totalStars ?? 0} />
-              <StreakBanner streak={user.currentStreak ?? 0} />
-              <div className="badge-pill">🧒 {user.username}</div>
-            </>
-          ) : (
-            <>
-              <div className="badge-pill">👻 Playing as Guest</div>
-              <StarBadge stars={getGuestStars()} />
-              <div className="badge-pill">🧒 {nickname || "Friend"}</div>
-            </>
-          )}
-        </div>
-      </header>
+          <div className="title-layer">
+            <h1 className="space-title">
+              <span>FUN</span>
+              <span>ENGLISH</span>
+            </h1>
+            <p className="subtitle">WEBSITE LEARNING ENGLISH FOR KIDS</p>
+          </div>
+        </section>
 
-      <main className="game-grid">
-        {games.map((game, index) => (
-          <GameCard
-            key={game.id}
-            game={game}
-            index={index}
-            onClick={() => {
-              playPop();
-              navigate(`/game/${game.id}`);
-            }}
-          />
-        ))}
+        <section className="games-section">
+          <h2 className="section-title">✨ CHOOSE A GAME ✨</h2>
+          <div className="section-divider" />
+
+          <div className="game-grid home-game-grid">
+            {games.map((game, index) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                index={index}
+                onClick={() => {
+                  playPop();
+                  navigate(`/game/${game.id}`);
+                }}
+              />
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   );
