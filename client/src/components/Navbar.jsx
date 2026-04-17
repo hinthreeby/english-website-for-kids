@@ -14,19 +14,19 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <div className="navbar-main">
-        <Link className="nav-logo" to="/" onClick={playPop}>
-          ⭐ Fun English
+      <div className="navbar-row-1">
+        <Link className="navbar-logo" to="/" onClick={playPop}>
+          <span>⭐</span> Fun English
         </Link>
 
-        <div className="nav-center-links" aria-label="Primary navigation">
+        <div className="navbar-links" aria-label="Primary navigation">
           <button type="button" className="nav-link" onClick={playPop}>
             Help
           </button>
           <button type="button" className="nav-link" onClick={playPop}>
             Store
           </button>
-          <Link className="nav-link nav-pill" to={user ? "/dashboard" : "/login"} onClick={playPop}>
+          <Link className="nav-link join-now" to={user ? "/dashboard" : "/login"} onClick={playPop}>
             Join now
           </Link>
           <Link className="nav-link" to={user ? "/dashboard" : "/login"} onClick={playPop}>
@@ -34,21 +34,21 @@ const Navbar = () => {
           </Link>
         </div>
 
-        <div className="nav-actions">
+        <div className="navbar-auth">
           {user ? (
             <>
-              <span className="chip">👤 {userLabel}</span>
-              <Link className="nav-action-btn stars" to="/dashboard" onClick={playPop}>
+              <span className="nav-email-badge">{userLabel}</span>
+              <Link className="btn-stars" to="/dashboard" onClick={playPop}>
                 ⭐ Stars
               </Link>
-              <button className="nav-action-btn logout" type="button" onClick={handleLogout}>
+              <button className="btn-logout" type="button" onClick={handleLogout}>
                 Logout
               </button>
             </>
           ) : (
             <>
-              <span className="chip">👻 Guest</span>
-              <Link className="nav-action-btn" to="/login" onClick={playPop}>
+              <span className="nav-email-badge">👻 Guest</span>
+              <Link className="btn-logout" to="/login" onClick={playPop}>
                 Log in
               </Link>
             </>
@@ -57,10 +57,10 @@ const Navbar = () => {
       </div>
 
       {user ? (
-        <div className="navbar-status-row">
-          <span className="status-pill">⭐ {user.totalStars ?? 0}</span>
-          <span className="status-pill">🔥 {user.currentStreak ?? 0} Day Streak</span>
-          <span className="status-pill">👤 {userLabel}</span>
+        <div className="navbar-row-2">
+          <span className="badge-stars">⭐ {user.totalStars ?? 0}</span>
+          <span className="badge-streak">🔥 {user.currentStreak ?? 0} Day Streak</span>
+          <span className="badge-email">👤 {userLabel}</span>
         </div>
       ) : null}
     </nav>

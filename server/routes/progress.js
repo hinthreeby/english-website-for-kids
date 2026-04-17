@@ -20,9 +20,14 @@ const getDayGap = (fromDate, toDate) => {
 router.post("/save", authMiddleware, async (req, res) => {
   try {
     const { gameId, starsEarned } = req.body;
+    const normalizedStars = Number(starsEarned);
 
-    if (!gameId || ![1, 2, 3].includes(starsEarned)) {
+    if (!gameId || !Number.isFinite(normalizedStars)) {
       return res.status(400).json({ message: "Invalid game result payload." });
+    }
+
+    if (normalizedStars < 0 || normalizedStars > 3) {
+      return res.status(400).json({ message: "starsEarned must be between 0 and 3." });
     }
 
     const user = await User.findById(req.user.id);
@@ -32,34 +37,70 @@ router.post("/save", authMiddleware, async (req, res) => {
 
     const now = new Date();
 
-    if (!user.lastPlayedDate) {
-      user.currentStreak = 1;
-    } else {
-      const dayGap = getDayGap(user.lastPlayedDate, now);
-      if (dayGap === 1) {
-        user.currentStreak += 1;
-      } else if (dayGap > 1) {
-        user.currentStreak = 1;
+    if (gameId !== "guest-merge") {
+      const duplicateWindow = new Date(now.getTime() - 5000);
+      const recentDuplicate = await GameResult.findOne({
+        userId: user._id,
+        gameId,
+        starsEarned: normalizedStars,
+        completedAt: { $gte: duplicateWindow },
+      }).sort({ completedAt: -1 });
+
+      if (recentDuplicate) {
+        return res.status(200).json({
+          success: true,
+          starsEarned: normalizedStars,
+          totalStars: user.totalStars,
+          streak: user.currentStreak,
+          totals: {
+            totalStars: user.totalStars,
+            currentStreak: user.currentStreak,
+          },
+          duplicate: true,
+        });
       }
     }
 
-    user.lastPlayedDate = now;
-    user.totalStars += starsEarned;
+    let newStreak = user.currentStreak || 0;
+    if (!user.lastPlayedDate) {
+      newStreak = 1;
+    } else {
+      const dayGap = getDayGap(user.lastPlayedDate, now);
+      if (dayGap === 1) {
+        newStreak += 1;
+      } else if (dayGap > 1) {
+        newStreak = 1;
+      }
+    }
 
     await GameResult.create({
       userId: user._id,
       gameId,
-      starsEarned,
+      starsEarned: normalizedStars,
       completedAt: now,
     });
 
-    await user.save();
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      {
+        $inc: { totalStars: normalizedStars },
+        $set: {
+          currentStreak: newStreak,
+          lastPlayedDate: now,
+        },
+      },
+      { new: true }
+    );
 
     return res.status(201).json({
+      success: true,
       message: "Progress saved.",
+      starsEarned: normalizedStars,
+      totalStars: updatedUser.totalStars,
+      streak: updatedUser.currentStreak,
       totals: {
-        totalStars: user.totalStars,
-        currentStreak: user.currentStreak,
+        totalStars: updatedUser.totalStars,
+        currentStreak: updatedUser.currentStreak,
       },
     });
   } catch (error) {

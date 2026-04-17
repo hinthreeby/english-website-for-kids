@@ -92,20 +92,20 @@ const HomePage = () => {
       <main className="home-main">
         <section className="hero">
           <div className="planets-layer" aria-hidden="true">
-            <img src={earthPlanet} alt="" className="planet planet-left" />
-            <img src={jupiterPlanet} alt="" className="planet planet-right" />
-            <img src={marsPlanet} alt="" className="planet planet-bottom" />
+            <img src={earthPlanet} alt="" className="planet planet-orb" />
+            <img src={jupiterPlanet} alt="Jupiter" className="planet planet-jupiter" />
+            <img src={marsPlanet} alt="Mars" className="planet planet-mars" />
             <img src={starRock} alt="" className="asteroid a1" />
             <img src={starRock} alt="" className="asteroid a2" />
             <img src={starRock} alt="" className="asteroid a3" />
           </div>
 
-          <div className="title-layer">
+          <div className="hero-title-wrapper">
             <h1 className="space-title">
               <span>FUN</span>
               <span>ENGLISH</span>
             </h1>
-            <p className="subtitle">WEBSITE LEARNING ENGLISH FOR KIDS</p>
+            <p className="hero-subtitle">WEBSITE LEARNING ENGLISH FOR KIDS</p>
           </div>
         </section>
 

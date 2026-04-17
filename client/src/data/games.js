@@ -1,8 +1,16 @@
+import abcLettersThumb from "../assets/ABCLetters.png";
+import pictureWordsThumb from "../assets/PictureWords.png";
+import countLearnThumb from "../assets/CountLearn.png";
+import colorFunThumb from "../assets/ColorFun.png";
+import animalSoundsThumb from "../assets/AnimalSounds.png";
+import matchItThumb from "../assets/MatchIt.png";
+
 export const games = [
   {
     id: "abc-letters",
     name: "ABC Letters",
     emoji: "🔤",
+    thumbnail: abcLettersThumb,
     theme: "#B2EBF2",
     subtitle: "Find the starting sound",
   },
@@ -10,6 +18,7 @@ export const games = [
     id: "picture-words",
     name: "Picture Words",
     emoji: "🖼️",
+    thumbnail: pictureWordsThumb,
     theme: "#FFFDE7",
     subtitle: "Tap the right word",
   },
@@ -17,6 +26,7 @@ export const games = [
     id: "count-learn",
     name: "Count Learn",
     emoji: "🔢",
+    thumbnail: countLearnThumb,
     theme: "#A8D8A8",
     subtitle: "Count and choose",
   },
@@ -24,6 +34,7 @@ export const games = [
     id: "color-fun",
     name: "Color Fun",
     emoji: "🎨",
+    thumbnail: colorFunThumb,
     theme: "#FFD7A6",
     subtitle: "Name the color",
   },
@@ -31,6 +42,7 @@ export const games = [
     id: "animal-sounds",
     name: "Animal Sounds",
     emoji: "🐾",
+    thumbnail: animalSoundsThumb,
     theme: "#FFD9D9",
     subtitle: "Guess the animal",
   },
@@ -38,6 +50,7 @@ export const games = [
     id: "match-it",
     name: "Match It",
     emoji: "🧩",
+    thumbnail: matchItThumb,
     theme: "#D9F3FF",
     subtitle: "Pair emoji and words",
   },

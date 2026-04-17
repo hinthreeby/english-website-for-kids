@@ -21,11 +21,22 @@ const GameCard = ({ game, onClick, index }) => {
       onClick={onClick}
       type="button"
     >
-      <span className="game-emoji" aria-hidden="true">
-        {game.emoji}
-      </span>
-      <h3>{game.name}</h3>
-      <p>{game.subtitle}</p>
+      <div className="card-thumbnail">
+        {game.thumbnail ? (
+          <img src={game.thumbnail} alt={game.name} className="game-thumbnail-img" />
+        ) : (
+          <div className="card-icon-fallback" aria-hidden="true">
+            <span className="game-emoji">{game.emoji}</span>
+          </div>
+        )}
+
+        <div className="card-overlay" />
+
+        <div className="card-text">
+          <h3 className="card-title">{game.name}</h3>
+          <p className="card-subtitle">{game.subtitle}</p>
+        </div>
+      </div>
     </motion.button>
   );
 };

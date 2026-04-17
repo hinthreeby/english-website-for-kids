@@ -16,7 +16,7 @@ const gameResultSchema = new mongoose.Schema(
     starsEarned: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
       max: 3,
     },
     completedAt: {
