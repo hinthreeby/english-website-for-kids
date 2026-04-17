@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { useLocation, useNavigate } from "react-router-dom";
-import LoginModal from "../components/LoginModal";
+import astronautImg from "../assets/astronaut_3.png";
+import jupiterImg from "../assets/jupiter.png";
+import starImg from "../assets/star.png";
 import { useAuth } from "../context/AuthContext";
 import { celebrationMessages } from "../data/games";
 import useProgress from "../hooks/useProgress";
@@ -12,13 +14,12 @@ const CompletionPage = () => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const { addGuestStars, getGuestStars, saveProgress } = useProgress();
-  const { playPop, playChime } = useSound();
+  const { playPop } = useSound();
   const [isSaving, setIsSaving] = useState(false);
   const [savedData, setSavedData] = useState(null);
   const [error, setError] = useState(null);
-  const [showLogin, setShowLogin] = useState(false);
-  const [mergeMessage, setMergeMessage] = useState("");
   const hasSaved = useRef(false);
+  const hasPlayedCelebration = useRef(false);
 
   const starsEarned = Math.max(0, Math.min(3, Number(state?.stars || 0)));
 
@@ -27,6 +28,20 @@ const CompletionPage = () => {
     return celebrationMessages[pick];
   }, []);
 
+  const decorativeStars = useMemo(
+    () =>
+      Array.from({ length: 20 }, (_, index) => ({
+        id: index,
+        top: `${(Math.random() * 96 + 2).toFixed(2)}%`,
+        left: `${(Math.random() * 96 + 2).toFixed(2)}%`,
+        delay: `${(Math.random() * 3).toFixed(2)}s`,
+        duration: `${(2 + Math.random() * 1.8).toFixed(2)}s`,
+        size: `${(16 + Math.random() * 12).toFixed(2)}px`,
+        offset: `${(Math.random() * 20).toFixed(2)}px`,
+      })),
+    [],
+  );
+
   useEffect(() => {
     if (state?.stars == null || !state?.gameId) {
       navigate("/", { replace: true });
@@ -34,16 +49,28 @@ const CompletionPage = () => {
   }, [navigate, state]);
 
   useEffect(() => {
+    if (state?.stars == null || hasPlayedCelebration.current) {
+      return;
+    }
+
+    hasPlayedCelebration.current = true;
+    const audio = new Audio("/sounds/success.mp3");
+    audio.volume = 0.6;
+    audio.play().catch(() => {
+      console.log("Autoplay blocked");
+    });
+  }, [state?.stars]);
+
+  useEffect(() => {
     if (state?.stars == null) {
       return;
     }
-    playChime();
     confetti({
       particleCount: 220,
       spread: 90,
       origin: { y: 0.6 },
     });
-  }, [playChime, state?.stars]);
+  }, [state?.stars]);
 
   useEffect(() => {
     if (state?.stars == null || !state?.gameId || hasSaved.current) {
@@ -86,7 +113,29 @@ const CompletionPage = () => {
 
   return (
     <div className="completion-page">
+      <div className="space-stars" aria-hidden="true" />
       <div className="completion-stars-bg" aria-hidden="true" />
+
+      <img src={astronautImg} alt="" className="completion-astronaut" aria-hidden="true" />
+      <img src={jupiterImg} alt="" className="completion-planet" aria-hidden="true" />
+
+      {decorativeStars.map((star) => (
+        <img
+          key={star.id}
+          src={starImg}
+          alt=""
+          className="completion-star"
+          style={{
+            top: star.top,
+            left: star.left,
+            width: star.size,
+            animationDelay: star.delay,
+            animationDuration: star.duration,
+            "--star-offset": star.offset,
+          }}
+          aria-hidden="true"
+        />
+      ))}
 
       <div className="completion-card">
         <div className="completion-stars-earned">
@@ -111,8 +160,6 @@ const CompletionPage = () => {
         )}
 
         {error && <p className="error-text">{error}</p>}
-        {mergeMessage && <p className="success-text">{mergeMessage}</p>}
-
         {savedData && !isSaving && (
           <div className="completion-stats">
             <div className="stat-item">
@@ -190,7 +237,7 @@ const CompletionPage = () => {
                 type="button"
                 onClick={() => {
                   playPop();
-                  setShowLogin(true);
+                  navigate("/login");
                 }}
               >
                 🔐 Login to Save
@@ -199,18 +246,6 @@ const CompletionPage = () => {
           )}
         </div>
       </div>
-
-      {showLogin && (
-        <LoginModal
-          onClose={() => setShowLogin(false)}
-          onSuccess={(merged) => {
-            setShowLogin(false);
-            if (merged > 0) {
-              setMergeMessage(`You had ${merged} stars! They're saved now 🌟`);
-            }
-          }}
-        />
-      )}
     </div>
   );
 };

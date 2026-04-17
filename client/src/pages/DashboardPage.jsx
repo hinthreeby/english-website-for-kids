@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingDots from "../components/LoadingDots";
 import Navbar from "../components/Navbar";
+import starImg from "../assets/star.png";
 import { useAuth } from "../context/AuthContext";
 import { gameById } from "../data/games";
 import useProgress from "../hooks/useProgress";
@@ -24,6 +25,7 @@ const toLabel = (id) =>
 
 const getGameName = (id) => GAME_META[id]?.name || gameById[id]?.name || toLabel(id);
 const getGameEmoji = (id) => GAME_META[id]?.emoji || gameById[id]?.emoji || "🎮";
+const STAR_COUNT = 20;
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
@@ -60,6 +62,12 @@ const DashboardPage = () => {
 
   return (
     <div className="screen with-bg stars-page">
+      <div className="space-stars star-field" aria-hidden="true">
+        {Array.from({ length: STAR_COUNT }).map((_, i) => (
+          <img key={i} src={starImg} className={`space-star space-star-${i}`} alt="" />
+        ))}
+      </div>
+
       <Navbar />
       <main className="dashboard-wrap">
         {!user ? (
@@ -81,8 +89,13 @@ const DashboardPage = () => {
             <h1 className="stars-page-title">Stars & History</h1>
 
             <div className="stars-summary">
-              <div className="stars-summary-card">
-                <div className="value">{user.totalStars || 0}</div>
+              <div className="stars-summary-card total-stars-card">
+                <div className="value">
+                  <span className="value-star" aria-hidden="true">
+                    ⭐
+                  </span>{" "}
+                  {user.totalStars || 0}
+                </div>
                 <div className="label">TOTAL STARS</div>
               </div>
               <div className="stars-summary-card">

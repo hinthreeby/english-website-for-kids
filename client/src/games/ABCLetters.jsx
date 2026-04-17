@@ -106,7 +106,7 @@ const ABCLetters = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel" style={{ borderColor: "#6ab8f7" }}>
+    <section className="game-panel">
       <p className="round">Round {roundIndex + 1} / 3</p>
       <h2 className="hero-letter">{current.letter}</h2>
       <div className="options-grid three">

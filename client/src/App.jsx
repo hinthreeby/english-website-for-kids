@@ -4,7 +4,9 @@ import HomePage from "./pages/HomePage";
 import GamePage from "./pages/GamePage";
 import CompletionPage from "./pages/CompletionPage";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
   return (
@@ -15,7 +17,15 @@ const App = () => {
           <Route path="/game/:gameId" element={<GamePage />} />
           <Route path="/completion" element={<CompletionPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

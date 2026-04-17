@@ -10,28 +10,43 @@ import useSound from "../hooks/useSound";
 
 const STAR_COUNT = 20;
 
-const LoginPage = () => {
-  const { login } = useAuth();
+const RegisterPage = () => {
+  const { register } = useAuth();
   const { mergeGuestStars } = useProgress();
   const { playPop, playChime } = useSound();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     playPop();
     setError("");
-    setLoading(true);
 
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      await login({ identifier: form.identifier.trim(), password: form.password });
+      await register({
+        username: form.username.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      });
       await mergeGuestStars();
       playChime();
       navigate("/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || "Login failed. Please try again.");
+      setError(err?.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -53,14 +68,21 @@ const LoginPage = () => {
       <div className="shooting shooting-2" aria-hidden="true" />
 
       <form className="auth-card" onSubmit={handleSubmit}>
-        <h2>🔐 Log In</h2>
-        <p className="subtitle">Welcome back, little explorer!</p>
+        <h2>✨ Sign Up</h2>
+        <p className="subtitle">Create your space learning account.</p>
 
         <input
-          placeholder="Email or Username"
-          value={form.identifier}
+          placeholder="Username"
+          value={form.username}
           minLength={2}
-          onChange={(e) => setForm((prev) => ({ ...prev, identifier: e.target.value }))}
+          onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))}
+          required
+        />
+        <input
+          placeholder="Email"
+          type="email"
+          value={form.email}
+          onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
           required
         />
         <input
@@ -71,11 +93,19 @@ const LoginPage = () => {
           onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
           required
         />
+        <input
+          placeholder="Confirm Password"
+          type="password"
+          value={form.confirmPassword}
+          minLength={4}
+          onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+          required
+        />
 
         {error ? <p className="error-text auth-error">{error}</p> : null}
 
         <button className="btn-primary" type="submit" disabled={loading}>
-          {loading ? "Loading..." : "🔐 Log in"}
+          {loading ? "Loading..." : "✨ Register"}
         </button>
 
         <button
@@ -83,10 +113,10 @@ const LoginPage = () => {
           type="button"
           onClick={() => {
             playPop();
-            navigate("/register");
+            navigate("/login");
           }}
         >
-          ✨ Need an account?
+          🔐 Already have an account?
         </button>
 
         <Link className="auth-back-link" to="/" onClick={playPop}>
@@ -97,4 +127,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

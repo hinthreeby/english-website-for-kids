@@ -73,7 +73,7 @@ const AnimalSounds = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel" style={{ borderColor: "#f09fa7" }}>
+    <section className="game-panel">
       <p className="round">Round {roundIndex + 1} / 3</p>
       <h2 className="sound-bubble">{current.answer.sound}</h2>
       <div className="options-grid four">

@@ -35,8 +35,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = useCallback(async () => {
-    await api.post("/auth/logout");
-    setUser(null);
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // Client-side logout should still succeed even if server logout fails.
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("authToken");
+      setUser(null);
+    }
   }, []);
 
   const value = useMemo(

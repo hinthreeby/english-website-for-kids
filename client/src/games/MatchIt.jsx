@@ -88,7 +88,7 @@ const MatchIt = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel" style={{ borderColor: "#7bc7e6" }}>
+    <section className="game-panel">
       <p className="round">Find all 4 pairs</p>
       <div className="match-grid">
         {cards.map((card) => {

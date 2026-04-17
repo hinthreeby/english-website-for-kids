@@ -76,7 +76,7 @@ const CountLearn = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel" style={{ borderColor: "#8ecf8e" }}>
+    <section className="game-panel">
       <p className="round">Round {roundIndex + 1} / 3</p>
       <div className="count-items" aria-label="counting items">
         {Array.from({ length: current.answer }).map((_, idx) => (

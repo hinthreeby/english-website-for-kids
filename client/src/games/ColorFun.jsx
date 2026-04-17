@@ -75,7 +75,7 @@ const ColorFun = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel" style={{ borderColor: "#efb580" }}>
+    <section className="game-panel">
       <p className="round">Round {roundIndex + 1} / 3</p>
       <div className="shape-wrap">
         <div
@@ -98,7 +98,6 @@ const ColorFun = ({ onComplete }) => {
             ]
               .filter(Boolean)
               .join(" ")}
-            style={{ backgroundColor: option.value }}
           >
             {option.name}
           </button>

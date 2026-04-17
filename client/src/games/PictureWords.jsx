@@ -73,7 +73,7 @@ const PictureWords = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel" style={{ borderColor: "#f1cb6f" }}>
+    <section className="game-panel">
       <p className="round">Round {roundIndex + 1} / 3</p>
       <div className="picture-target">{current.answer.emoji}</div>
       <div className="options-stack">
