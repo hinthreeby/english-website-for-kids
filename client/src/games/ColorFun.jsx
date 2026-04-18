@@ -75,16 +75,18 @@ const ColorFun = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel">
-      <p className="round">Round {roundIndex + 1} / 3</p>
-      <div className="shape-wrap">
+    <div className="game-page-wrapper">
+      <div className="game-frame">
+        <section className="game-panel">
+          <p className="round">Round {roundIndex + 1} / 3</p>
+          <div className="shape-wrap">
         <div
           className={`shape ${current.shape}`}
           style={{ backgroundColor: current.color.value }}
           aria-label={`${current.color.name} ${current.shape}`}
         />
-      </div>
-      <div className="options-grid four">
+          </div>
+          <div className="options-grid four">
         {current.options.map((option) => (
           <button
             key={option.name}
@@ -102,8 +104,14 @@ const ColorFun = ({ onComplete }) => {
             {option.name}
           </button>
         ))}
+          </div>
+        </section>
       </div>
-    </section>
+
+      <div className="game-title-bar">
+        <h2 className="game-title">🎨 Color Fun</h2>
+      </div>
+    </div>
   );
 };
 

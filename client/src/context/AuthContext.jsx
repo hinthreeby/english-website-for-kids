@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import api from "../lib/api";
 
 const AuthContext = createContext(null);
+const LOGIN_KEY = "mascot_just_logged_in";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -31,6 +32,7 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (payload) => {
     const response = await api.post("/auth/login", payload);
     setUser(response.data.user);
+    sessionStorage.setItem(LOGIN_KEY, "true");
     return response.data.user;
   }, []);
 

@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import GameCard from "../components/GameCard";
+import MascotGreeting from "../components/MascotGreeting";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
 import { games } from "../data/games";
 import useSound from "../hooks/useSound";
 import earthPlanet from "../assets/earth.png";
@@ -9,13 +11,10 @@ import jupiterPlanet from "../assets/jupiter.png";
 import marsPlanet from "../assets/mars.png";
 import starRock from "../assets/star.png";
 
-const NICKNAME_KEY = "funenglish_nickname";
-
 const HomePage = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const { playPop } = useSound();
-  const [nickname, setNickname] = useState(localStorage.getItem(NICKNAME_KEY) || "");
-  const [nicknameInput, setNicknameInput] = useState(localStorage.getItem(NICKNAME_KEY) || "");
 
   const stars = useMemo(
     () =>
@@ -29,16 +28,6 @@ const HomePage = () => {
       })),
     [],
   );
-
-  const saveNickname = () => {
-    if (!nicknameInput.trim()) {
-      return;
-    }
-    const cleaned = nicknameInput.trim().slice(0, 20);
-    localStorage.setItem(NICKNAME_KEY, cleaned);
-    setNickname(cleaned);
-    playPop();
-  };
 
   return (
     <div className="screen with-bg space-bg">
@@ -70,24 +59,6 @@ const HomePage = () => {
         <span className="float-star f5">✦</span>
         <span className="float-star f6">★</span>
       </div>
-
-      {!nickname && (
-        <div className="modal-backdrop">
-          <div className="nickname-card">
-            <h2>Hi! What&apos;s your name? 👋</h2>
-            <input
-              className="kid-input"
-              value={nicknameInput}
-              onChange={(e) => setNicknameInput(e.target.value)}
-              maxLength={20}
-              placeholder="Your name"
-            />
-            <button className="kid-btn" type="button" onClick={saveNickname}>
-              Let&apos;s Play!
-            </button>
-          </div>
-        </div>
-      )}
 
       <main className="home-main">
         <section className="hero">
@@ -128,6 +99,8 @@ const HomePage = () => {
           </div>
         </section>
       </main>
+
+      <MascotGreeting user={user} isAuthLoading={loading} />
     </div>
   );
 };

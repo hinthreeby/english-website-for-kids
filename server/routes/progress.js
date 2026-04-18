@@ -5,6 +5,17 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+const VALID_GAME_IDS = [
+  "abc-letters",
+  "picture-words",
+  "count-learn",
+  "color-fun",
+  "animal-sounds",
+  "match-it",
+  "space-pronounce",
+  "guest-merge",
+];
+
 const normalizeDate = (date) => {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -24,6 +35,10 @@ router.post("/save", authMiddleware, async (req, res) => {
 
     if (!gameId || !Number.isFinite(normalizedStars)) {
       return res.status(400).json({ message: "Invalid game result payload." });
+    }
+
+    if (!VALID_GAME_IDS.includes(gameId)) {
+      return res.status(400).json({ message: "Invalid gameId." });
     }
 
     if (normalizedStars < 0 || normalizedStars > 3) {

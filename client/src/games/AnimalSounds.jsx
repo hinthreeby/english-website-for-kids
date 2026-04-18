@@ -73,10 +73,12 @@ const AnimalSounds = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel">
-      <p className="round">Round {roundIndex + 1} / 3</p>
-      <h2 className="sound-bubble">{current.answer.sound}</h2>
-      <div className="options-grid four">
+    <div className="game-page-wrapper">
+      <div className="game-frame">
+        <section className="game-panel">
+          <p className="round">Round {roundIndex + 1} / 3</p>
+          <h2 className="sound-bubble">{current.answer.sound}</h2>
+          <div className="options-grid four">
         {current.options.map((option) => (
           <button
             key={option.id}
@@ -95,8 +97,14 @@ const AnimalSounds = ({ onComplete }) => {
             <span>{option.name}</span>
           </button>
         ))}
+          </div>
+        </section>
       </div>
-    </section>
+
+      <div className="game-title-bar">
+        <h2 className="game-title">🐾 Animal Sounds</h2>
+      </div>
+    </div>
   );
 };
 

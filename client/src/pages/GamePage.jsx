@@ -9,6 +9,7 @@ import ColorFun from "../games/ColorFun";
 import CountLearn from "../games/CountLearn";
 import MatchIt from "../games/MatchIt";
 import PictureWords from "../games/PictureWords";
+import SpacePronounce from "../games/SpacePronounce";
 
 const componentMap = {
   "abc-letters": ABCLetters,
@@ -17,6 +18,7 @@ const componentMap = {
   "color-fun": ColorFun,
   "animal-sounds": AnimalSounds,
   "match-it": MatchIt,
+  "space-pronounce": SpacePronounce,
 };
 
 const GamePage = () => {
@@ -38,9 +40,8 @@ const GamePage = () => {
     <div className="screen with-bg">
       <Navbar />
       <div className="game-page-wrap">
-        <h1>{game.emoji} {game.name}</h1>
         <GameComponent
-          onComplete={({ stars, mistakes }) => {
+          onComplete={({ stars, mistakes, ...extra }) => {
             navigate("/completion", {
               state: {
                 stars,
@@ -48,6 +49,7 @@ const GamePage = () => {
                 gameId,
                 gameName: game.name,
                 theme: game.theme,
+                ...extra,
               },
             });
           }}

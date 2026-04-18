@@ -7,6 +7,7 @@ const accentByGame = {
   "color-fun": "#ffb06a",
   "animal-sounds": "#ff8dc1",
   "match-it": "#d2ff67",
+  "space-pronounce": "#7b2ff7",
 };
 
 const GameCard = ({ game, onClick, index }) => {

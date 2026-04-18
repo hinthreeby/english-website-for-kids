@@ -73,10 +73,12 @@ const PictureWords = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel">
-      <p className="round">Round {roundIndex + 1} / 3</p>
-      <div className="picture-target">{current.answer.emoji}</div>
-      <div className="options-stack">
+    <div className="game-page-wrapper">
+      <div className="game-frame">
+        <section className="game-panel">
+          <p className="round">Round {roundIndex + 1} / 3</p>
+          <div className="picture-target">{current.answer.emoji}</div>
+          <div className="options-stack">
         {current.options.map((option) => (
           <button
             key={option.id}
@@ -94,8 +96,14 @@ const PictureWords = ({ onComplete }) => {
             {option.word}
           </button>
         ))}
+          </div>
+        </section>
       </div>
-    </section>
+
+      <div className="game-title-bar">
+        <h2 className="game-title">🖼️ Picture Words</h2>
+      </div>
+    </div>
   );
 };
 

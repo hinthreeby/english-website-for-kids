@@ -4,6 +4,7 @@ import countLearnThumb from "../assets/CountLearn.png";
 import colorFunThumb from "../assets/ColorFun.png";
 import animalSoundsThumb from "../assets/AnimalSounds.png";
 import matchItThumb from "../assets/MatchIt.png";
+import spaceSpeakThumb from "../assets/space_speak.png";
 
 export const games = [
   {
@@ -53,6 +54,15 @@ export const games = [
     thumbnail: matchItThumb,
     theme: "#D9F3FF",
     subtitle: "Pair emoji and words",
+  },
+  {
+    id: "space-pronounce",
+    name: "Space Pronounce",
+    emoji: "🚀",
+    thumbnail: spaceSpeakThumb,
+    theme: "#7b2ff7",
+    subtitle: "Say the word!",
+    route: "/game/space-pronounce",
   },
 ];
 

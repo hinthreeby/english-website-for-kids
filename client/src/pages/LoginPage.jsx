@@ -29,7 +29,7 @@ const LoginPage = () => {
       await login({ identifier: form.identifier.trim(), password: form.password });
       await mergeGuestStars();
       playChime();
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setError(err?.response?.data?.message || "Login failed. Please try again.");
     } finally {

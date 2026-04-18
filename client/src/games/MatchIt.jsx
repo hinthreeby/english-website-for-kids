@@ -88,9 +88,11 @@ const MatchIt = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel">
-      <p className="round">Find all 4 pairs</p>
-      <div className="match-grid">
+    <div className="game-page-wrapper">
+      <div className="game-frame">
+        <section className="game-panel">
+          <p className="round">Find all 4 pairs</p>
+          <div className="match-grid">
         {cards.map((card) => {
           const isOpen = flipped.some((item) => item.id === card.id) || matched.has(card.pairId);
           const isHinted = hintPair === card.pairId && !matched.has(card.pairId);
@@ -112,8 +114,14 @@ const MatchIt = ({ onComplete }) => {
             </button>
           );
         })}
+          </div>
+        </section>
       </div>
-    </section>
+
+      <div className="game-title-bar">
+        <h2 className="game-title">🧩 Match It</h2>
+      </div>
+    </div>
   );
 };
 

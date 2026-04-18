@@ -106,10 +106,12 @@ const ABCLetters = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel">
-      <p className="round">Round {roundIndex + 1} / 3</p>
-      <h2 className="hero-letter">{current.letter}</h2>
-      <div className="options-grid three">
+    <div className="game-page-wrapper">
+      <div className="game-frame">
+        <section className="game-panel">
+          <p className="round">Round {roundIndex + 1} / 3</p>
+          <h2 className="hero-letter">{current.letter}</h2>
+          <div className="options-grid three">
         {current.options.map((option) => {
           const isCorrect = option.letter === current.letter;
           const className = [
@@ -133,8 +135,14 @@ const ABCLetters = ({ onComplete }) => {
             </button>
           );
         })}
+          </div>
+        </section>
       </div>
-    </section>
+
+      <div className="game-title-bar">
+        <h2 className="game-title">🔤 ABC Letters</h2>
+      </div>
+    </div>
   );
 };
 

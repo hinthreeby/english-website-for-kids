@@ -76,16 +76,18 @@ const CountLearn = ({ onComplete }) => {
   };
 
   return (
-    <section className="game-panel">
-      <p className="round">Round {roundIndex + 1} / 3</p>
-      <div className="count-items" aria-label="counting items">
+    <div className="game-page-wrapper">
+      <div className="game-frame">
+        <section className="game-panel">
+          <p className="round">Round {roundIndex + 1} / 3</p>
+          <div className="count-items" aria-label="counting items">
         {Array.from({ length: current.answer }).map((_, idx) => (
           <span key={idx} className="count-emoji floaty" style={{ animationDelay: `${idx * 0.08}s` }}>
             {current.item}
           </span>
         ))}
-      </div>
-      <div className="options-grid four">
+          </div>
+          <div className="options-grid four">
         {current.options.map((option) => (
           <button
             key={option}
@@ -103,8 +105,14 @@ const CountLearn = ({ onComplete }) => {
             {option}
           </button>
         ))}
+          </div>
+        </section>
       </div>
-    </section>
+
+      <div className="game-title-bar">
+        <h2 className="game-title">🔢 Count Learn</h2>
+      </div>
+    </div>
   );
 };
 
