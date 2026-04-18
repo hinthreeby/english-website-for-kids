@@ -25,7 +25,7 @@
 
 .space-sun {
   position: absolute;
-  z-index: 12;
+  z-index: 10;
   top: 28px;
   right: 28px;
   width: 112px;
@@ -35,7 +35,7 @@
 .star-layer {
   position: absolute;
   inset: 0;
-  z-index: 20;
+  z-index: 9;
   pointer-events: none;
 }
 
@@ -53,7 +53,7 @@
   height: 200px;
   display: flex;
   align-items: flex-end;
-  z-index: 10;
+  z-index: 12;
   animation: mountainScroll 10s linear infinite;
 }
 
@@ -65,7 +65,7 @@
 }
 
 .mountain-image {
-  width: 82%;
+  width: 100%;
   height: auto;
   display: block;
   object-fit: fill;
