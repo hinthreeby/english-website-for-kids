@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import useSound from "../hooks/useSound";
 
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
+const TOTAL_QUESTIONS = 10;
 
 const buildOptions = (answer) => {
   const set = new Set([answer]);
@@ -20,7 +21,7 @@ const CountLearn = ({ onComplete }) => {
   const [hint, setHint] = useState(0);
 
   const rounds = useMemo(() => {
-    return Array.from({ length: 3 }).map(() => {
+    return Array.from({ length: TOTAL_QUESTIONS }).map(() => {
       const answer = Math.floor(Math.random() * 10) + 1;
       return {
         answer,
@@ -79,7 +80,7 @@ const CountLearn = ({ onComplete }) => {
     <div className="game-page-wrapper">
       <div className="game-frame">
         <section className="game-panel">
-          <p className="round">Round {roundIndex + 1} / 3</p>
+          <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
           <div className="count-items" aria-label="counting items">
         {Array.from({ length: current.answer }).map((_, idx) => (
           <span key={idx} className="count-emoji floaty" style={{ animationDelay: `${idx * 0.08}s` }}>

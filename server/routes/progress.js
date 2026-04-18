@@ -13,6 +13,8 @@ const VALID_GAME_IDS = [
   "animal-sounds",
   "match-it",
   "space-pronounce",
+  "funny-animals",
+  "clean-ocean-hero",
   "guest-merge",
 ];
 

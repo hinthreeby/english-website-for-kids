@@ -11,6 +11,7 @@ const animals = [
 ];
 
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
+const TOTAL_QUESTIONS = 10;
 
 const AnimalSounds = ({ onComplete }) => {
   const { playPop, playChime, playWhoosh, speakText } = useSound();
@@ -21,10 +22,13 @@ const AnimalSounds = ({ onComplete }) => {
   const [interactionTick, setInteractionTick] = useState(0);
 
   const rounds = useMemo(() => {
-    return shuffled(animals).slice(0, 3).map((answer) => ({
-      answer,
-      options: shuffled([answer, ...shuffled(animals.filter((a) => a.id !== answer.id)).slice(0, 3)]),
-    }));
+    return Array.from({ length: TOTAL_QUESTIONS }).map(() => {
+      const answer = shuffled(animals)[0];
+      return {
+        answer,
+        options: shuffled([answer, ...shuffled(animals.filter((a) => a.id !== answer.id)).slice(0, 3)]),
+      };
+    });
   }, []);
 
   const current = rounds[roundIndex];
@@ -76,7 +80,7 @@ const AnimalSounds = ({ onComplete }) => {
     <div className="game-page-wrapper">
       <div className="game-frame">
         <section className="game-panel">
-          <p className="round">Round {roundIndex + 1} / 3</p>
+          <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
           <h2 className="sound-bubble">{current.answer.sound}</h2>
           <div className="options-grid four">
         {current.options.map((option) => (

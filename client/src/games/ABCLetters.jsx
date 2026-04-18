@@ -31,6 +31,7 @@ const letterBank = {
 };
 
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
+const TOTAL_QUESTIONS = 10;
 
 const ABCLetters = ({ onComplete }) => {
   const { playPop, playChime, playWhoosh, speakText } = useSound();
@@ -41,8 +42,8 @@ const ABCLetters = ({ onComplete }) => {
   const [hint, setHint] = useState("");
 
   const rounds = useMemo(() => {
-    const letters = shuffled(Object.keys(letterBank)).slice(0, 3);
-    return letters.map((letter) => {
+    return Array.from({ length: TOTAL_QUESTIONS }).map(() => {
+      const letter = shuffled(Object.keys(letterBank))[0];
       const correct = { ...letterBank[letter], letter, id: letter };
       const wrongPool = shuffled(
         Object.keys(letterBank)
@@ -109,7 +110,7 @@ const ABCLetters = ({ onComplete }) => {
     <div className="game-page-wrapper">
       <div className="game-frame">
         <section className="game-panel">
-          <p className="round">Round {roundIndex + 1} / 3</p>
+          <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
           <h2 className="hero-letter">{current.letter}</h2>
           <div className="options-grid three">
         {current.options.map((option) => {

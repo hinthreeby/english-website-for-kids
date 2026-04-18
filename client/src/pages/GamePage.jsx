@@ -6,7 +6,9 @@ import { gameById } from "../data/games";
 import ABCLetters from "../games/ABCLetters";
 import AnimalSounds from "../games/AnimalSounds";
 import ColorFun from "../games/ColorFun";
+import CleanOceanHero from "../games/CleanOceanHero";
 import CountLearn from "../games/CountLearn";
+import FunnyAnimals from "../games/FunnyAnimals";
 import MatchIt from "../games/MatchIt";
 import PictureWords from "../games/PictureWords";
 import SpacePronounce from "../games/SpacePronounce";
@@ -19,6 +21,8 @@ const componentMap = {
   "animal-sounds": AnimalSounds,
   "match-it": MatchIt,
   "space-pronounce": SpacePronounce,
+  "funny-animals": FunnyAnimals,
+  "clean-ocean-hero": CleanOceanHero,
 };
 
 const GamePage = () => {

@@ -678,6 +678,19 @@ button {
   min-height: 62vh;
 }
 
+.color-fun-panel {
+  min-height: 72vh;
+  padding: 1.25rem;
+}
+
+.color-fun-panel .shape-wrap {
+  min-height: 240px;
+}
+
+.color-fun-panel .options-grid {
+  margin-top: 2.5rem;
+}
+
 .round {
   margin: 0;
   font-size: 1.22rem;

@@ -12,6 +12,7 @@ const colors = [
 
 const shapes = ["circle", "square", "triangle"];
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
+const TOTAL_QUESTIONS = 10;
 
 const ColorFun = ({ onComplete }) => {
   const { playPop, playChime, playWhoosh, speakText } = useSound();
@@ -22,11 +23,14 @@ const ColorFun = ({ onComplete }) => {
   const [interactionTick, setInteractionTick] = useState(0);
 
   const rounds = useMemo(() => {
-    return shuffled(colors).slice(0, 3).map((color) => ({
-      color,
-      shape: shapes[Math.floor(Math.random() * shapes.length)],
-      options: shuffled([color, ...shuffled(colors.filter((c) => c.name !== color.name)).slice(0, 3)]),
-    }));
+    return Array.from({ length: TOTAL_QUESTIONS }).map(() => {
+      const color = shuffled(colors)[0];
+      return {
+        color,
+        shape: shapes[Math.floor(Math.random() * shapes.length)],
+        options: shuffled([color, ...shuffled(colors.filter((c) => c.name !== color.name)).slice(0, 3)]),
+      };
+    });
   }, []);
 
   const current = rounds[roundIndex];
@@ -77,8 +81,8 @@ const ColorFun = ({ onComplete }) => {
   return (
     <div className="game-page-wrapper">
       <div className="game-frame">
-        <section className="game-panel">
-          <p className="round">Round {roundIndex + 1} / 3</p>
+        <section className="game-panel color-fun-panel">
+          <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
           <div className="shape-wrap">
         <div
           className={`shape ${current.shape}`}

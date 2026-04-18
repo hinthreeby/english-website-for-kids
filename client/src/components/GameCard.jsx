@@ -8,6 +8,8 @@ const accentByGame = {
   "animal-sounds": "#ff8dc1",
   "match-it": "#d2ff67",
   "space-pronounce": "#7b2ff7",
+  "funny-animals": "#4fffb0",
+  "clean-ocean-hero": "#42b8ff",
 };
 
 const GameCard = ({ game, onClick, index }) => {

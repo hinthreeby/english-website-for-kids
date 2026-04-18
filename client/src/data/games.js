@@ -5,6 +5,8 @@ import colorFunThumb from "../assets/ColorFun.png";
 import animalSoundsThumb from "../assets/AnimalSounds.png";
 import matchItThumb from "../assets/MatchIt.png";
 import spaceSpeakThumb from "../assets/space_speak.png";
+import funnyAnimalAvatarThumb from "../assets/funny_animal_game/funny_animal_game_avatar.png";
+import oceanGameAvatarThumb from "../assets/ocean_game/ocean_game_avatar.png";
 
 export const games = [
   {
@@ -63,6 +65,24 @@ export const games = [
     theme: "#7b2ff7",
     subtitle: "Say the word!",
     route: "/game/space-pronounce",
+  },
+  {
+    id: "funny-animals",
+    name: "Funny Animals",
+    emoji: "🐾",
+    thumbnail: funnyAnimalAvatarThumb,
+    theme: "#4fffb0",
+    subtitle: "Touch the animal!",
+    route: "/game/funny-animals",
+  },
+  {
+    id: "clean-ocean-hero",
+    name: "Clean Ocean Hero",
+    emoji: "🌊",
+    thumbnail: oceanGameAvatarThumb,
+    theme: "#42b8ff",
+    subtitle: "Clean the sea and build sentences",
+    route: "/game/clean-ocean-hero",
   },
 ];
 

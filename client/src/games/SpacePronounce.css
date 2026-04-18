@@ -65,10 +65,11 @@
 }
 
 .mountain-image {
-  width: 100%;
+  width: 82%;
   height: auto;
   display: block;
   object-fit: fill;
+  margin: 0 auto;
 }
 
 .astronaut {
@@ -482,6 +483,10 @@
 
   .mountain-track {
     height: 120px;
+  }
+
+  .mountain-image {
+    width: 90%;
   }
 
   .vocab-card {

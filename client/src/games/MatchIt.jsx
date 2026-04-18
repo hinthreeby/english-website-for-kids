@@ -8,9 +8,16 @@ const pairPool = [
   { id: "car", emoji: "🚗", word: "Car" },
   { id: "fish", emoji: "🐟", word: "Fish" },
   { id: "ball", emoji: "⚽", word: "Ball" },
+  { id: "book", emoji: "📘", word: "Book" },
+  { id: "moon", emoji: "🌙", word: "Moon" },
+  { id: "tree", emoji: "🌳", word: "Tree" },
+  { id: "cake", emoji: "🎂", word: "Cake" },
+  { id: "star", emoji: "⭐", word: "Star" },
+  { id: "duck", emoji: "🦆", word: "Duck" },
 ];
 
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
+const TOTAL_QUESTIONS = 10;
 
 const MatchIt = ({ onComplete }) => {
   const { playPop, playChime, playWhoosh, speakText } = useSound();
@@ -22,7 +29,7 @@ const MatchIt = ({ onComplete }) => {
   const [interactionTick, setInteractionTick] = useState(0);
 
   const cards = useMemo(() => {
-    const chosen = shuffled(pairPool).slice(0, 4);
+    const chosen = shuffled(pairPool).slice(0, TOTAL_QUESTIONS);
     const mapped = chosen.flatMap((pair) => [
       { id: `${pair.id}-emoji`, pairId: pair.id, text: pair.emoji, type: "emoji" },
       { id: `${pair.id}-word`, pairId: pair.id, text: pair.word, type: "word" },
@@ -35,7 +42,7 @@ const MatchIt = ({ onComplete }) => {
   }, [speakText]);
 
   useEffect(() => {
-    if (matched.size === 4) {
+    if (matched.size === TOTAL_QUESTIONS) {
       const stars = mistakes === 0 ? 3 : mistakes === 1 ? 2 : 1;
       onComplete({ stars, mistakes });
     }
@@ -91,7 +98,7 @@ const MatchIt = ({ onComplete }) => {
     <div className="game-page-wrapper">
       <div className="game-frame">
         <section className="game-panel">
-          <p className="round">Find all 4 pairs</p>
+          <p className="round">Find all {TOTAL_QUESTIONS} pairs</p>
           <div className="match-grid">
         {cards.map((card) => {
           const isOpen = flipped.some((item) => item.id === card.id) || matched.has(card.pairId);
