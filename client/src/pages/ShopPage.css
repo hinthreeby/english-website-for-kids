@@ -1,0 +1,332 @@
+.shop-page {
+  min-height: 100vh;
+  padding-top: 70px;
+  background: radial-gradient(ellipse at top, #3d1278 0%, #1a0533 50%, #0a0020 100%);
+  padding-bottom: 40px;
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.shop-title {
+  font-family: "Fredoka One", sans-serif;
+  font-size: clamp(24px, 4vw, 36px);
+  color: #ffd700;
+  margin: 0;
+}
+
+.shop-star-balance {
+  background: rgba(255, 215, 0, 0.15);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  border-radius: 20px;
+  padding: 8px 20px;
+  color: #ffd700;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.btn-my-home {
+  background: linear-gradient(135deg, #7b2ff7, #ff6b9d);
+  border: none;
+  border-radius: 20px;
+  padding: 10px 22px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-my-home:hover {
+  transform: translateY(-2px);
+}
+
+.shop-categories {
+  display: flex;
+  gap: 12px;
+  padding: 0 32px;
+  flex-wrap: wrap;
+}
+
+.cat-tab {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 10px 24px;
+  color: #c9b8ff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cat-tab:hover {
+  border-color: #7b2ff7;
+  color: #fff;
+}
+
+.cat-active {
+  background: linear-gradient(135deg, #7b2ff7, #9b4fff);
+  border-color: #7b2ff7;
+  color: white;
+}
+
+.shop-room-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 12px 32px 0;
+  flex-wrap: wrap;
+}
+
+.room-tab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 7px 18px;
+  color: #9b8bb4;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.room-tab:hover {
+  border-color: #ff6b9d;
+  color: #fff;
+}
+
+.room-tab-active {
+  background: rgba(255, 107, 157, 0.2);
+  border-color: #ff6b9d;
+  color: #ff6b9d;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 24px 32px;
+}
+
+.shop-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shop-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(123, 47, 247, 0.3);
+}
+
+.card-owned {
+  border-color: rgba(79, 255, 176, 0.4);
+  background: rgba(79, 255, 176, 0.05);
+}
+
+.card-img-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(10, 0, 32, 0.12));
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 14px;
+}
+
+.owned-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(79, 255, 176, 0.9);
+  color: #0a0020;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.card-info {
+  padding: 10px 14px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.card-price {
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.btn-buy {
+  width: calc(100% - 28px);
+  margin: 8px 14px 14px;
+  padding: 9px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7b2ff7, #9b4fff);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-buy:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-buy.btn-owned {
+  background: rgba(79, 255, 176, 0.3);
+  color: #4fffb0;
+  cursor: default;
+}
+
+.btn-buy.btn-poor {
+  background: rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(10, 0, 32, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background: rgba(30, 10, 60, 0.98);
+  border: 2px solid rgba(123, 47, 247, 0.5);
+  border-radius: 28px;
+  padding: 32px 36px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-card h3 {
+  font-family: "Fredoka One", sans-serif;
+  font-size: 24px;
+  color: #ffd700;
+  margin: 0 0 16px;
+}
+
+.modal-card p {
+  color: #c9b8ff;
+  margin: 6px 0;
+}
+
+.modal-emoji {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.modal-item-img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.modal-hint {
+  color: #9b8bb4;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-confirm-buy,
+.btn-play-games {
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #7b2ff7, #ff6b9d);
+  border: none;
+  border-radius: 16px;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-confirm-buy:hover,
+.btn-play-games:hover {
+  transform: translateY(-2px);
+}
+
+.btn-cancel,
+.btn-close-modal {
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  color: #c9b8ff;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 16px;
+  }
+
+  .shop-header,
+  .shop-categories,
+  .shop-room-tabs {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

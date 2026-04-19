@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 
 const authRoutes = require("./routes/auth");
 const progressRoutes = require("./routes/progress");
+const shopRoutes = require("./routes/shop");
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.get("/api/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/progress", progressRoutes);
+app.use("/api/shop", shopRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/funEnglish";

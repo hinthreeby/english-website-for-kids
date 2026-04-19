@@ -6,6 +6,9 @@ import CompletionPage from "./pages/CompletionPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import ShopPage from "./pages/ShopPage";
+import MyHomePage from "./pages/MyHomePage";
+import RoomPage from "./pages/RoomPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
@@ -16,6 +19,9 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/game/:gameId" element={<GamePage />} />
           <Route path="/completion" element={<CompletionPage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/my-home" element={<MyHomePage />} />
+          <Route path="/room/:roomId" element={<RoomPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route

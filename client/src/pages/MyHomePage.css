@@ -1,0 +1,446 @@
+.myhome-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding-top: 70px;
+  padding-bottom: 14px;
+  background: radial-gradient(ellipse at top, #3d1278 0%, #1a0533 50%, #0a0020 100%);
+}
+
+.myhome-frame {
+  position: relative;
+  width: min(1200px, calc(100% - 24px));
+  margin: 0 auto;
+  min-height: calc(100vh - 84px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+.myhome-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  z-index: 0;
+}
+
+.myhome-scene {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  min-height: calc(100vh - 84px);
+  align-items: flex-end;
+  padding: 0 24px 0;
+  gap: 16px;
+}
+
+.scene-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.scene-tree {
+  display: none;
+  width: 90px;
+  height: 180px;
+  border-radius: 40px 40px 28px 28px;
+  background: radial-gradient(circle at 50% 18%, #6ff59f, #237a45 70%);
+  position: relative;
+  opacity: 0.85;
+}
+
+.scene-tree::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -24px;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 40px;
+  border-radius: 6px;
+  background: #7a4b25;
+}
+
+.house-wrapper,
+.car-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.item-action-slot {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.house-wrapper:hover {
+  transform: scale(1.04) translateY(-6px);
+}
+
+.car-wrapper:hover {
+  transform: scale(1.06) translateY(-4px);
+}
+
+.house-img {
+  width: clamp(160px, 28vw, 320px);
+  height: auto;
+  object-fit: contain;
+  display: block;
+  transform: translateY(10px);
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.4));
+}
+
+.car-img {
+  width: clamp(120px, 22vw, 260px);
+  height: auto;
+  object-fit: contain;
+  display: block;
+  transform: translateY(10px);
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4));
+}
+
+.item-label {
+  background: rgba(20, 5, 50, 0.8);
+  border: 1.5px solid rgba(255, 215, 0, 0.4);
+  border-radius: 20px;
+  padding: 5px 16px;
+  color: #ffd700;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(10, 0, 32, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background: rgba(30, 10, 60, 0.98);
+  border: 2px solid rgba(123, 47, 247, 0.5);
+  border-radius: 28px;
+  padding: 32px 36px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-large {
+  max-width: 700px;
+}
+
+.modal-card h3 {
+  font-family: "Fredoka One", sans-serif;
+  font-size: 24px;
+  color: #ffd700;
+  margin: 0 0 16px;
+}
+
+.modal-card p {
+  color: #c9b8ff;
+}
+
+.house-menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.menu-option-btn {
+  padding: 14px 24px;
+  background: rgba(123, 47, 247, 0.2);
+  border: 2px solid rgba(123, 47, 247, 0.4);
+  border-radius: 16px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.menu-option-btn:hover {
+  background: rgba(123, 47, 247, 0.4);
+  transform: translateX(4px);
+}
+
+.room-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.room-pick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.room-pick-btn:hover {
+  border-color: #7b2ff7;
+  background: rgba(123, 47, 247, 0.2);
+  transform: translateY(-3px);
+}
+
+.room-emoji {
+  font-size: 32px;
+}
+
+.room-label {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.item-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+  max-height: 360px;
+  overflow-y: auto;
+  align-items: start;
+}
+
+.picker-item {
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  padding: 8px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  aspect-ratio: 1 / 1;
+  align-items: stretch;
+}
+
+.picker-item:hover {
+  border-color: #7b2ff7;
+}
+
+.picker-selected {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+}
+
+.picker-image-box {
+  width: 100%;
+  min-height: 0;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.picker-item img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  border-radius: 10px;
+}
+
+.picker-item span {
+  display: block;
+  padding: 6px 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+
+.room-pick-btn img {
+  border-radius: 10px;
+}
+
+.car-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 14px 0;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.car-shop-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  padding: 0;
+}
+
+.car-shop-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(123, 47, 247, 0.3);
+}
+
+.car-shop-selected {
+  border-color: rgba(79, 255, 176, 0.6);
+  box-shadow: 0 0 0 2px rgba(79, 255, 176, 0.25);
+}
+
+.car-shop-image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(10, 0, 32, 0.12));
+}
+
+.car-shop-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 14px;
+}
+
+.car-selected-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(79, 255, 176, 0.9);
+  color: #0a0020;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.car-shop-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 12px 12px;
+  text-align: center;
+}
+
+.btn-change-item {
+  background: rgba(123, 47, 247, 0.25);
+  border: 2px solid rgba(123, 47, 247, 0.5);
+  border-radius: 14px;
+  color: #c9b8ff;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.2s;
+}
+
+.btn-change-item:hover {
+  background: rgba(123, 47, 247, 0.45);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.empty-note {
+  margin: 16px 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-save,
+.btn-cancel {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 16px;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #7b2ff7, #ff6b9d);
+}
+
+.btn-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: #c9b8ff;
+}
+
+@media (max-width: 700px) {
+  .myhome-page {
+    padding-top: 66px;
+    padding-bottom: 10px;
+  }
+
+  .myhome-frame {
+    width: calc(100% - 12px);
+    min-height: calc(100vh - 76px);
+    border-radius: 14px;
+  }
+
+  .room-picker-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .car-shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .myhome-scene {
+    grid-template-columns: 0 1fr 1fr;
+    min-height: calc(100vh - 76px);
+    padding: 0.5 12px 0.5;
+  }
+
+  .scene-left {
+    display: none;
+  }
+}

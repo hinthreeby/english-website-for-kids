@@ -25,9 +25,9 @@ const Navbar = () => {
           <button type="button" className="nav-link" onClick={playPop}>
             Help
           </button>
-          <button type="button" className="nav-link" onClick={playPop}>
+          <Link className="nav-link" to="/shop" onClick={playPop}>
             Store
-          </button>
+          </Link>
           {!user ? (
             <>
               <Link className="nav-link join-now" to="/register" onClick={playPop}>
@@ -54,13 +54,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {user ? (
-        <div className="navbar-row-2">
-          <span className="badge-stars">⭐ {user.totalStars ?? 0}</span>
-          <span className="badge-streak">🔥 {user.currentStreak ?? 0} Day Streak</span>
-          <span className="badge-email">👤 {userName}</span>
-        </div>
-      ) : null}
     </nav>
   );
 };
