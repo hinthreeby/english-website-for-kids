@@ -18,6 +18,7 @@ const GAME_META = {
   "space-pronounce": { name: "Space Pronounce", emoji: "🚀" },
   "funny-animals": { name: "Funny Animals", emoji: "🐾" },
   "clean-ocean-hero": { name: "Clean Ocean Hero", emoji: "🌊" },
+  "story-puppy-adventure": { name: "Story Puppy Adventure", emoji: "📖" },
 };
 
 const toLabel = (id) =>

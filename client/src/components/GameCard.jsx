@@ -10,6 +10,7 @@ const accentByGame = {
   "space-pronounce": "#7b2ff7",
   "funny-animals": "#4fffb0",
   "clean-ocean-hero": "#42b8ff",
+  "story-puppy-adventure": "#ff9f6e",
 };
 
 const GameCard = ({ game, onClick, index }) => {
