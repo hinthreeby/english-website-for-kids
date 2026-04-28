@@ -7,6 +7,7 @@ import starImg from "../assets/star.png";
 import { useAuth } from "../context/AuthContext";
 import useProgress from "../hooks/useProgress";
 import useSound from "../hooks/useSound";
+import { getRoleHome } from "../lib/roleHome";
 
 const STAR_COUNT = 20;
 
@@ -26,12 +27,20 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      await login({ identifier: form.identifier.trim(), password: form.password });
-      await mergeGuestStars();
+      const loggedInUser = await login({
+        identifier: form.identifier.trim(),
+        username: form.identifier.trim(),
+        password: form.password,
+      });
+      if (loggedInUser?.role === "child") {
+        await mergeGuestStars();
+      }
       playChime();
-      navigate("/");
+      navigate(getRoleHome(loggedInUser?.role), { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message || "Login failed. Please try again.");
+      setError(
+        err?.response?.data?.message || err?.response?.data?.error || "Login failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }

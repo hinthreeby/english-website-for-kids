@@ -514,6 +514,93 @@ button {
   line-height: 1;
 }
 
+/* Story Section Styles */
+.stories-section {
+  margin-top: 1.2rem;
+  padding-bottom: 2rem;
+}
+
+.story-grid {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  padding-bottom: 2rem;
+}
+
+.home-story-grid {
+  align-items: stretch;
+}
+
+.story-card {
+  display: block;
+  aspect-ratio: 16 / 10;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 0;
+  text-align: left;
+  color: var(--color-text-light);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.story-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--story-accent, #42B8FF);
+}
+
+.story-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(66, 184, 255, 0.4), 0 0 20px rgba(66, 184, 255, 0.2);
+  border-color: rgba(66, 184, 255, 0.6);
+}
+
+.story-thumbnail {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.story-thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.4s ease;
+  display: block;
+}
+
+.story-card:hover .story-thumbnail-img {
+  transform: scale(1.06);
+}
+
+.story-card-text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 16px 16px;
+  z-index: 2;
+}
+
+.story-emoji {
+  font-size: 72px;
+  line-height: 1;
+}
+
+
 .star-field {
   position: fixed;
   inset: 0;
@@ -620,10 +707,6 @@ button {
   max-width: 1080px;
   margin: 0 auto;
   padding-top: 0.8rem;
-}
-
-.story-page-wrap {
-  max-width: min(1320px, 96vw);
 }
 
 .game-page-wrapper {
@@ -1929,6 +2012,10 @@ button {
     grid-template-columns: repeat(2, minmax(200px, 1fr));
   }
 
+  .story-grid {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  }
+
   .planet-orb {
     top: 12%;
     right: 2%;
@@ -2011,6 +2098,7 @@ button {
   }
 
   .game-grid,
+  .story-grid,
   .stars-summary {
     grid-template-columns: 1fr;
   }
@@ -2150,6 +2238,22 @@ body,
 .celebration-box {
   border-radius: 24px;
   animation: popIn 0.45s ease-out;
+}
+
+.auth-card-register {
+  width: 460px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  top: 50%;
+}
+
+.auth-card-register::-webkit-scrollbar {
+  width: 8px;
+}
+
+.auth-card-register::-webkit-scrollbar-thumb {
+  background: rgba(155, 79, 255, 0.6);
+  border-radius: 999px;
 }
 
 .game-panel {
@@ -2528,6 +2632,61 @@ body,
   font-size: 16px;
 }
 
+.register-role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.register-role-pill {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.09);
+  color: #e8dcff;
+  padding: 10px 8px;
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.register-role-pill.active {
+  border-color: rgba(255, 215, 0, 0.8);
+  background: rgba(255, 215, 0, 0.16);
+  color: #ffe98b;
+}
+
+.register-role-pill:hover {
+  border-color: rgba(123, 47, 247, 0.8);
+}
+
+.register-question-group {
+  text-align: left;
+}
+
+.register-question-group label {
+  display: block;
+  font-size: 0.78rem;
+  color: #d2c3ff;
+  margin: 2px 0 6px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.register-question-group input {
+  margin-bottom: 8px;
+}
+
+.auth-card .notice-box {
+  margin-bottom: 12px;
+}
+
 .auth-card input::placeholder {
   color: rgba(201, 184, 255, 0.9);
 }
@@ -2634,6 +2793,16 @@ body,
     width: 100%;
     max-width: 390px;
     padding: 24px 18px;
+  }
+
+  .auth-card-register {
+    max-width: 420px;
+    max-height: calc(100vh - 24px);
+    padding: 20px 14px;
+  }
+
+  .register-role-grid {
+    grid-template-columns: 1fr;
   }
 
   .auth-page .earth {

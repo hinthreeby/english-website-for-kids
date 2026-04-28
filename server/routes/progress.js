@@ -1,7 +1,7 @@
 const express = require("express");
 const GameResult = require("../models/GameResult");
 const User = require("../models/User");
-const authMiddleware = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -15,7 +15,6 @@ const VALID_GAME_IDS = [
   "space-pronounce",
   "funny-animals",
   "clean-ocean-hero",
-  "story-puppy-adventure",
   "guest-merge",
 ];
 
@@ -31,7 +30,7 @@ const getDayGap = (fromDate, toDate) => {
   return Math.round((end - start) / (1000 * 60 * 60 * 24));
 };
 
-router.post("/save", authMiddleware, async (req, res) => {
+router.post("/save", protect, async (req, res) => {
   try {
     const { gameId, starsEarned } = req.body;
     const normalizedStars = Number(starsEarned);
@@ -48,7 +47,7 @@ router.post("/save", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "starsEarned must be between 0 and 3." });
     }
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -126,11 +125,11 @@ router.post("/save", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/me", authMiddleware, async (req, res) => {
+router.get("/me", protect, async (req, res) => {
   try {
     const [results, user] = await Promise.all([
-      GameResult.find({ userId: req.user.id }).sort({ completedAt: -1 }),
-      User.findById(req.user.id).select("username totalStars currentStreak"),
+      GameResult.find({ userId: req.user._id }).sort({ completedAt: -1 }),
+      User.findById(req.user._id).select("username totalStars currentStreak"),
     ]);
 
     if (!user) {

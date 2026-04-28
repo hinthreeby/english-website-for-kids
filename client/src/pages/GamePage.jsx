@@ -12,7 +12,6 @@ import FunnyAnimals from "../games/FunnyAnimals";
 import MatchIt from "../games/MatchIt";
 import PictureWords from "../games/PictureWords";
 import SpacePronounce from "../games/SpacePronounce";
-import StoryPuppyAdventure from "../games/StoryPuppyAdventure";
 
 const componentMap = {
   "abc-letters": ABCLetters,
@@ -24,7 +23,6 @@ const componentMap = {
   "space-pronounce": SpacePronounce,
   "funny-animals": FunnyAnimals,
   "clean-ocean-hero": CleanOceanHero,
-  "story-puppy-adventure": StoryPuppyAdventure,
 };
 
 const GamePage = () => {
@@ -42,13 +40,10 @@ const GamePage = () => {
     );
   }
 
-  const wrapperClassName =
-    gameId === "story-puppy-adventure" ? "game-page-wrap story-page-wrap" : "game-page-wrap";
-
   return (
     <div className="screen with-bg">
       <Navbar />
-      <div className={wrapperClassName}>
+      <div className="game-page-wrap">
         <GameComponent
           onComplete={({ stars, mistakes, ...extra }) => {
             navigate("/completion", {

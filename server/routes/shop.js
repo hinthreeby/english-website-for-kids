@@ -1,5 +1,5 @@
 const express = require("express");
-const authMiddleware = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const Inventory = require("../models/UserInventory");
 
@@ -7,16 +7,16 @@ const router = express.Router();
 
 const ROOM_TYPES = ["living_room", "kitchen", "bedroom", "bathroom", "dining_room"];
 
-router.get("/inventory", authMiddleware, async (req, res) => {
+router.get("/inventory", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("totalStars username");
+    const user = await User.findById(req.user._id).select("totalStars username");
     if (!user) {
       return res.status(404).json({ error: "USER_NOT_FOUND" });
     }
 
-    let inventory = await Inventory.findOne({ userId: req.user.id });
+    let inventory = await Inventory.findOne({ userId: req.user._id });
     if (!inventory) {
-      inventory = await Inventory.create({ userId: req.user.id });
+      inventory = await Inventory.create({ userId: req.user._id });
     }
 
     return res.json({ totalStars: user.totalStars, inventory });
@@ -25,7 +25,7 @@ router.get("/inventory", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/buy", authMiddleware, async (req, res) => {
+router.post("/buy", protect, async (req, res) => {
   const { itemId, itemType, price } = req.body;
 
   try {
@@ -38,7 +38,7 @@ router.post("/buy", authMiddleware, async (req, res) => {
       return res.status(400).json({ error: "INVALID_ITEM_TYPE" });
     }
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ error: "USER_NOT_FOUND" });
     }
@@ -52,9 +52,9 @@ router.post("/buy", authMiddleware, async (req, res) => {
       });
     }
 
-    let inventory = await Inventory.findOne({ userId: req.user.id });
+    let inventory = await Inventory.findOne({ userId: req.user._id });
     if (!inventory) {
-      inventory = await Inventory.create({ userId: req.user.id });
+      inventory = await Inventory.create({ userId: req.user._id });
     }
 
     const owned = [...inventory.ownedHouses, ...inventory.ownedCars, ...inventory.ownedRooms];
@@ -62,7 +62,7 @@ router.post("/buy", authMiddleware, async (req, res) => {
       return res.status(400).json({ error: "ALREADY_OWNED" });
     }
 
-    await User.findByIdAndUpdate(req.user.id, {
+    await User.findByIdAndUpdate(req.user._id, {
       $inc: { totalStars: -normalizedPrice },
     });
 
@@ -75,14 +75,14 @@ router.post("/buy", authMiddleware, async (req, res) => {
       { new: true }
     );
 
-    const updatedUser = await User.findById(req.user.id).select("totalStars");
+    const updatedUser = await User.findById(req.user._id).select("totalStars");
     return res.json({ success: true, newStarBalance: updatedUser?.totalStars ?? 0 });
   } catch (_err) {
     return res.status(500).json({ error: "Server error" });
   }
 });
 
-router.post("/equip", authMiddleware, async (req, res) => {
+router.post("/equip", protect, async (req, res) => {
   const { itemId, itemType, roomType } = req.body;
 
   try {
@@ -104,9 +104,9 @@ router.post("/equip", authMiddleware, async (req, res) => {
       return res.status(400).json({ error: "INVALID_ITEM_TYPE" });
     }
 
-    let inventory = await Inventory.findOne({ userId: req.user.id });
+    let inventory = await Inventory.findOne({ userId: req.user._id });
     if (!inventory) {
-      inventory = await Inventory.create({ userId: req.user.id });
+      inventory = await Inventory.create({ userId: req.user._id });
     }
 
     const isOwned =
@@ -121,7 +121,7 @@ router.post("/equip", authMiddleware, async (req, res) => {
     }
 
     await Inventory.findOneAndUpdate(
-      { userId: req.user.id },
+      { userId: req.user._id },
       { $set: { [updateField]: itemId } },
       { new: true }
     );

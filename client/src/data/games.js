@@ -7,7 +7,6 @@ import matchItThumb from "../assets/MatchIt.png";
 import spaceSpeakThumb from "../assets/space_speak.png";
 import funnyAnimalAvatarThumb from "../assets/funny_animal_game/funny_animal_game_avatar.png";
 import oceanGameAvatarThumb from "../assets/ocean_game/ocean_game_avatar.png";
-import storyPuppyAvatarThumb from "../assets/story_puppy_adventure/story_banner.png";
 
 export const games = [
   {
@@ -84,15 +83,6 @@ export const games = [
     theme: "#42b8ff",
     subtitle: "Clean the sea and build sentences",
     route: "/game/clean-ocean-hero",
-  },
-  {
-    id: "story-puppy-adventure",
-    name: "Story Puppy Adventure",
-    emoji: "📖",
-    thumbnail: storyPuppyAvatarThumb,
-    theme: "#ff9f6e",
-    subtitle: "Choose options and discover endings",
-    route: "/game/story-puppy-adventure",
   },
 ];
 

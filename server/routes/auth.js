@@ -1,10 +1,11 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const authMiddleware = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
+
+const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 const buildCookieOptions = () => ({
   httpOnly: true,
@@ -13,116 +14,165 @@ const buildCookieOptions = () => ({
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
-const signToken = (userId) =>
-  jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+const sendToken = (user, res) => {
+  const token = signToken(user._id);
+  res.cookie("token", token, buildCookieOptions());
+  return token;
+};
 
 router.post("/register", async (req, res) => {
+  const { username, password, role, email, displayName, parentCode, confirmPassword } = req.body;
+  const requestedRole = role || "child";
+  const allowedRoles = ["child", "parent", "teacher"];
+
+  if (!allowedRoles.includes(requestedRole)) {
+    return res.status(400).json({ error: "Invalid role" });
+  }
+
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
+
+  if (confirmPassword !== undefined && password !== confirmPassword) {
+    return res.status(400).json({ error: "Passwords do not match" });
+  }
+
   try {
-    const { username, email, password, confirmPassword } = req.body;
-
-    if (!username || !email || !password || !confirmPassword) {
-      return res.status(400).json({
-        message: "Username, email, password, and confirm password are required.",
-      });
-    }
-
-    if (password.length < 4) {
-      return res.status(400).json({ message: "Password must be at least 4 characters." });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match." });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const existing = await User.findOne({
-      $or: [{ username: username.trim() }, { email: normalizedEmail }],
+    const usernameTrimmed = username.trim();
+    const emailTrimmed = email?.trim().toLowerCase();
+    const exists = await User.findOne({
+      $or: [{ username: usernameTrimmed }, ...(emailTrimmed ? [{ email: emailTrimmed }] : [])],
     });
-    if (existing) {
-      return res.status(409).json({ message: "Username or email already exists." });
+    if (exists) {
+      return res.status(400).json({ error: "Username already taken" });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      username: username.trim(),
-      email: normalizedEmail,
-      password: hashed,
-    });
+    const userData = {
+      username: usernameTrimmed,
+      password,
+      role: requestedRole,
+      email: emailTrimmed,
+      displayName: displayName || "",
+      isApproved: requestedRole === "teacher" ? false : true,
+    };
 
-    const token = signToken(user._id.toString());
-    res.cookie("token", token, buildCookieOptions());
+    if (requestedRole === "child" && parentCode) {
+      const parent = await User.findOne({ _id: parentCode, role: "parent" });
+      if (parent) {
+        userData.parentId = parent._id;
+      }
+    }
 
+    const user = await User.create(userData);
+
+    if (userData.parentId) {
+      await User.findByIdAndUpdate(userData.parentId, { $push: { children: user._id } });
+    }
+
+    sendToken(user, res);
     return res.status(201).json({
       user: {
         id: user._id,
         username: user.username,
-        email: user.email,
+        role: user.role,
+        displayName: user.displayName,
         totalStars: user.totalStars,
-        currentStreak: user.currentStreak,
+        isApproved: user.isApproved,
       },
     });
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to register user." });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 });
 
 router.post("/login", async (req, res) => {
+  const { username, password, identifier } = req.body;
+  const loginIdentifier = (username || identifier || "").trim();
+
+  if (!loginIdentifier || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
+
   try {
-    const { identifier, password } = req.body;
-
-    if (!identifier || !password) {
-      return res.status(400).json({ message: "Identifier and password are required." });
-    }
-
-    const normalizedIdentifier = identifier.trim();
-    const normalizedEmail = normalizedIdentifier.toLowerCase();
-
+    const normalizedEmail = loginIdentifier.toLowerCase();
     const user = await User.findOne({
-      $or: [{ username: normalizedIdentifier }, { email: normalizedEmail }],
+      $or: [{ username: loginIdentifier }, { email: normalizedEmail }],
     });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid username or password." });
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+    const ok = await user.comparePassword(password);
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+
+    if (!user.isActive) {
+      return res.status(403).json({ error: "Account disabled" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid username or password." });
+    if (user.role === "teacher" && !user.isApproved) {
+      return res.status(403).json({
+        error: "PENDING_APPROVAL",
+        message: "Your teacher account is pending admin approval.",
+      });
     }
 
-    const token = signToken(user._id.toString());
-    res.cookie("token", token, buildCookieOptions());
+    await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
 
+    sendToken(user, res);
     return res.json({
       user: {
         id: user._id,
         username: user.username,
-        email: user.email,
+        role: user.role,
+        displayName: user.displayName,
         totalStars: user.totalStars,
         currentStreak: user.currentStreak,
+        isApproved: user.isApproved,
+        children: user.children,
       },
     });
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to login user." });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
+});
+
+router.post("/switch-child", protect, async (req, res) => {
+  try {
+    const { childId, pin } = req.body;
+
+    if (req.user.role !== "parent") {
+      return res.status(403).json({ error: "Only parents can switch to child profile" });
+    }
+
+    const child = await User.findById(childId);
+    if (!child || child.parentId?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not your child account" });
+    }
+
+    if (child.pin && child.pin !== pin) {
+      return res.status(401).json({ error: "Wrong PIN" });
+    }
+
+    sendToken(child, res);
+    return res.json({
+      user: {
+        id: child._id,
+        username: child.username,
+        role: child.role,
+        displayName: child.displayName,
+        totalStars: child.totalStars,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/me", protect, async (req, res) => {
+  return res.json({ user: req.user });
 });
 
 router.post("/logout", (_req, res) => {
   res.clearCookie("token", buildCookieOptions());
-  return res.json({ message: "Logged out." });
-});
-
-router.get("/me", authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    return res.json({ user });
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to fetch user." });
-  }
+  return res.json({ success: true });
 });
 
 module.exports = router;

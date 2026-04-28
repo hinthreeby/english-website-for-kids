@@ -1,0 +1,131 @@
+.story-player-container {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.story-back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.story-back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateX(-4px);
+}
+
+.story-player {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.video-wrapper {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(66, 184, 255, 0.3);
+  border: 3px solid var(--story-accent, #42B8FF);
+  background: #000;
+}
+
+.story-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.story-info {
+  background: rgba(66, 184, 255, 0.1);
+  border: 2px solid rgba(66, 184, 255, 0.3);
+  border-radius: 16px;
+  padding: 30px;
+  backdrop-filter: blur(10px);
+}
+
+.story-player-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 12px 0;
+  background: linear-gradient(135deg, #42B8FF, #7b2ff7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.story-player-description {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.story-player-duration {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.error-message {
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 20px;
+  padding: 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .story-player-container {
+    padding: 20px 16px;
+  }
+
+  .video-wrapper {
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+  }
+
+  .story-player-title {
+    font-size: 24px;
+  }
+
+  .story-player-description {
+    font-size: 16px;
+  }
+
+  .story-info {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .story-player-container {
+    padding: 16px 12px;
+  }
+
+  .story-back-button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .story-player-title {
+    font-size: 20px;
+  }
+
+  .story-player-description {
+    font-size: 14px;
+  }
+}

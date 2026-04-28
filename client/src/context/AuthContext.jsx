@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import api from "../lib/api";
 
@@ -6,7 +8,7 @@ const LOGIN_KEY = "mascot_just_logged_in";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -15,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     } catch {
       setUser(null);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -29,7 +31,11 @@ export const AuthProvider = ({ children }) => {
     return response.data.user;
   }, []);
 
-  const login = useCallback(async (payload) => {
+  const login = useCallback(async (arg1, arg2) => {
+    const payload =
+      typeof arg1 === "object" && arg1 !== null
+        ? arg1
+        : { username: arg1, password: arg2, identifier: arg1 };
     const response = await api.post("/auth/login", payload);
     setUser(response.data.user);
     sessionStorage.setItem(LOGIN_KEY, "true");
@@ -44,13 +50,34 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem("token");
       localStorage.removeItem("authToken");
+      sessionStorage.clear();
       setUser(null);
     }
   }, []);
 
+  const isChild = user?.role === "child";
+  const isParent = user?.role === "parent";
+  const isTeacher = user?.role === "teacher";
+  const isAdmin = user?.role === "admin";
+  const hasRole = useCallback((...roles) => roles.includes(user?.role), [user?.role]);
+
   const value = useMemo(
-    () => ({ user, loading, refreshUser, register, login, logout }),
-    [loading, login, logout, refreshUser, register, user]
+    () => ({
+      user,
+      setUser,
+      isLoading,
+      loading: isLoading,
+      refreshUser,
+      register,
+      login,
+      logout,
+      isChild,
+      isParent,
+      isTeacher,
+      isAdmin,
+      hasRole,
+    }),
+    [hasRole, isAdmin, isChild, isLoading, isParent, isTeacher, login, logout, refreshUser, register, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import GameCard from "../components/GameCard";
+import StoryCard from "../components/StoryCard";
 import MascotGreeting from "../components/MascotGreeting";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { games } from "../data/games";
+import { stories } from "../data/stories";
 import useSound from "../hooks/useSound";
 import earthPlanet from "../assets/earth.png";
 import jupiterPlanet from "../assets/jupiter.png";
@@ -93,6 +95,25 @@ const HomePage = () => {
                 onClick={() => {
                   playPop();
                   navigate(`/game/${game.id}`);
+                }}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="stories-section">
+          <h2 className="section-title">🎬 LEARN BY VIDEOS 🎬</h2>
+          <div className="section-divider" />
+
+          <div className="story-grid home-story-grid">
+            {stories.map((story, index) => (
+              <StoryCard
+                key={story.id}
+                story={story}
+                index={index}
+                onClick={() => {
+                  playPop();
+                  navigate(`/story/${story.id}`);
                 }}
               />
             ))}
