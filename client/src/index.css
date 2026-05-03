@@ -2827,3 +2827,433 @@ body,
     width: 80px;
   }
 }
+
+/* ─── Dashboard / Role pages ─────────────────────────────── */
+
+.role-page {
+  min-height: 100vh;
+  padding-bottom: 48px;
+}
+
+.role-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.glass-card {
+  background: rgba(15, 5, 40, 0.7);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(123, 47, 247, 0.25);
+  border-radius: 20px;
+  padding: 28px 24px;
+}
+
+.glass-card h2 {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #d8b4fe;
+  margin: 0 0 16px;
+}
+
+.role-hero {
+  text-align: center;
+}
+
+.role-hero h1 {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 8px;
+}
+
+.role-hero p {
+  color: #a78bca;
+  margin: 0;
+}
+
+/* Stats grid */
+.role-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.role-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.role-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.role-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+.metric-card {
+  background: rgba(123, 47, 247, 0.12);
+  border: 1px solid rgba(123, 47, 247, 0.2);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: transform 0.18s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-3px);
+}
+
+.metric-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.metric-card h3 {
+  font-family: "Nunito", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9d7dcf;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metric-card p {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* Role section header (title + link side by side) */
+.role-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.role-section-header h2 {
+  margin: 0;
+}
+
+/* Lists */
+.role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.role-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(123, 47, 247, 0.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.role-item strong {
+  display: block;
+  color: #e2d9f3;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.role-item p {
+  color: #8b7aaa;
+  font-size: 0.82rem;
+  margin: 2px 0 0;
+}
+
+/* Column-layout child card */
+.role-item-col {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.role-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.role-item-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.83rem;
+  color: #a78bca;
+  margin: 4px 0 8px;
+  flex-wrap: wrap;
+}
+
+.role-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Badges */
+.badge-ok {
+  display: inline-block;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-pending {
+  display: inline-block;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Forms inside role pages */
+.role-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.role-form input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(123, 47, 247, 0.3);
+  border-radius: 10px;
+  color: #ffffff;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.role-form input:focus {
+  border-color: rgba(123, 47, 247, 0.7);
+}
+
+.role-inline-form {
+  flex-direction: row;
+  align-items: center;
+}
+
+.role-inline-form input {
+  flex: 1;
+}
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.role-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.88rem;
+}
+
+.role-table th {
+  text-align: left;
+  color: #9d7dcf;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(123, 47, 247, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.role-table td {
+  color: #d8c8f0;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.role-table select {
+  background: rgba(123, 47, 247, 0.15);
+  border: 1px solid rgba(123, 47, 247, 0.3);
+  border-radius: 8px;
+  color: #e2d9f3;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.role-table tr:hover td {
+  background: rgba(123, 47, 247, 0.06);
+}
+
+/* Buttons in role pages */
+.btn-register {
+  background: linear-gradient(135deg, #7b2ff7, #ff6b9d);
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: "Baloo 2", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(123, 47, 247, 0.4);
+}
+
+.btn-secondary-glass {
+  background: rgba(123, 47, 247, 0.15);
+  border: 1px solid rgba(123, 47, 247, 0.35);
+  border-radius: 10px;
+  color: #c4b5fd;
+  cursor: pointer;
+  font-family: "Baloo 2", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-secondary-glass:hover {
+  background: rgba(123, 47, 247, 0.28);
+}
+
+.error-msg {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 10px;
+  color: #f87171;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+}
+
+/* Responsive dashboard */
+@media (max-width: 900px) {
+  .role-grid-3,
+  .role-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .role-grid-2,
+  .role-grid-3,
+  .role-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .role-inline-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .role-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* ─── Word List Editor ───────────────────────────────────── */
+
+.word-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.word-add-input {
+  flex: 1;
+}
+
+.word-img-label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 38px;
+  border: 1px dashed rgba(123, 47, 247, 0.4);
+  border-radius: 10px;
+  color: #a78bca;
+  font-size: 0.82rem;
+  padding: 0 10px;
+  background: rgba(123, 47, 247, 0.08);
+  transition: background 0.18s;
+  white-space: nowrap;
+}
+
+.word-img-label:hover {
+  background: rgba(123, 47, 247, 0.18);
+}
+
+.word-img-input {
+  display: none;
+}
+
+.word-img-preview {
+  height: 28px;
+  width: 28px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.word-chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.word-chip-empty {
+  color: #6b5f8a;
+  font-size: 0.83rem;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.word-chip-img {
+  height: 22px;
+  width: 22px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.word-chip-remove {
+  background: none;
+  border: none;
+  color: #9b7bc0;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color 0.15s;
+}
+
+.word-chip-remove:hover {
+  color: #f87171;
+}

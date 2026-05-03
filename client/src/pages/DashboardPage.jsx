@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingDots from "../components/LoadingDots";
 import Navbar from "../components/Navbar";
-import starImg from "../assets/star.png";
+import starImg from "../assets/general/star/star.png";
 import { useAuth } from "../context/AuthContext";
 import { gameById } from "../data/games";
 import useProgress from "../hooks/useProgress";

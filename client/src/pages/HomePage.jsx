@@ -8,10 +8,10 @@ import { useAuth } from "../context/AuthContext";
 import { games } from "../data/games";
 import { stories } from "../data/stories";
 import useSound from "../hooks/useSound";
-import earthPlanet from "../assets/earth.png";
-import jupiterPlanet from "../assets/jupiter.png";
-import marsPlanet from "../assets/mars.png";
-import starRock from "../assets/star.png";
+import earthPlanet from "../assets/general/planet/earth.png";
+import jupiterPlanet from "../assets/general/planet/jupiter.png";
+import marsPlanet from "../assets/general/planet/mars.png";
+import starRock from "../assets/general/star/star.png";
 
 const HomePage = () => {
   const navigate = useNavigate();

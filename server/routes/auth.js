@@ -21,9 +21,9 @@ const sendToken = (user, res) => {
 };
 
 router.post("/register", async (req, res) => {
-  const { username, password, role, email, displayName, parentCode, confirmPassword } = req.body;
-  const requestedRole = role || "child";
-  const allowedRoles = ["child", "parent", "teacher"];
+  const { username, password, role, email, displayName, confirmPassword } = req.body;
+  const requestedRole = role || "parent";
+  const allowedRoles = ["parent", "teacher"];
 
   if (!allowedRoles.includes(requestedRole)) {
     return res.status(400).json({ error: "Invalid role" });
@@ -56,18 +56,7 @@ router.post("/register", async (req, res) => {
       isApproved: requestedRole === "teacher" ? false : true,
     };
 
-    if (requestedRole === "child" && parentCode) {
-      const parent = await User.findOne({ _id: parentCode, role: "parent" });
-      if (parent) {
-        userData.parentId = parent._id;
-      }
-    }
-
     const user = await User.create(userData);
-
-    if (userData.parentId) {
-      await User.findByIdAndUpdate(userData.parentId, { $push: { children: user._id } });
-    }
 
     sendToken(user, res);
     return res.status(201).json({

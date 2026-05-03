@@ -4,6 +4,33 @@ const { protect, isTeacher } = require("../middleware/authMiddleware");
 const Classroom = require("../models/Classroom");
 const WordList = require("../models/WordList");
 const User = require("../models/User");
+const GameResult = require("../models/GameResult");
+
+router.get("/stats", protect, isTeacher, async (req, res) => {
+  try {
+    const classrooms = await Classroom.find({ teacherId: req.user._id }).lean();
+    const studentIds = [...new Set(classrooms.flatMap((c) => c.students.map((id) => id.toString())))];
+
+    const [students, totalGamesPlayed] = await Promise.all([
+      User.find({ _id: { $in: studentIds } }).select("totalStars currentStreak").lean(),
+      GameResult.countDocuments({ userId: { $in: studentIds } }),
+    ]);
+
+    const avgStars =
+      students.length > 0
+        ? Math.round(students.reduce((sum, s) => sum + (s.totalStars || 0), 0) / students.length)
+        : 0;
+
+    return res.json({
+      totalClassrooms: classrooms.length,
+      totalStudents: studentIds.length,
+      avgStarsPerStudent: avgStars,
+      totalGamesPlayed,
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 router.get("/classrooms", protect, isTeacher, async (req, res) => {
   try {

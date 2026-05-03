@@ -5,6 +5,7 @@ import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 
 const TeacherDashboard = () => {
+  const [stats, setStats] = useState(null);
   const [classrooms, setClassrooms] = useState([]);
   const [wordLists, setWordLists] = useState([]);
   const [newClassroomName, setNewClassroomName] = useState("");
@@ -12,10 +13,12 @@ const TeacherDashboard = () => {
 
   const loadData = async () => {
     try {
-      const [classroomsRes, listsRes] = await Promise.all([
+      const [statsRes, classroomsRes, listsRes] = await Promise.all([
+        api.get("/teacher/stats"),
         api.get("/teacher/classrooms"),
         api.get("/teacher/wordlists"),
       ]);
+      setStats(statsRes.data);
       setClassrooms(classroomsRes.data.classrooms || []);
       setWordLists(listsRes.data.lists || []);
     } catch (err) {
@@ -30,7 +33,6 @@ const TeacherDashboard = () => {
   const createClassroom = async (event) => {
     event.preventDefault();
     if (!newClassroomName.trim()) return;
-
     try {
       await api.post("/teacher/classroom", { name: newClassroomName.trim() });
       setNewClassroomName("");
@@ -40,13 +42,44 @@ const TeacherDashboard = () => {
     }
   };
 
+  const avgStarsForClassroom = (students) => {
+    if (!students || students.length === 0) return 0;
+    const total = students.reduce((sum, s) => sum + (s.totalStars || 0), 0);
+    return Math.round(total / students.length);
+  };
+
   return (
     <div className="screen with-bg role-page">
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
           <h1>Teacher Control Deck</h1>
-          <p>Manage classrooms and submit custom word lists for approval.</p>
+          <p>Manage classrooms, track student progress, and submit word lists.</p>
+        </section>
+
+        {error ? <p className="error-msg">{error}</p> : null}
+
+        <section className="glass-card role-grid role-grid-4">
+          <article className="metric-card">
+            <span className="metric-icon">🏫</span>
+            <h3>Classrooms</h3>
+            <p>{stats?.totalClassrooms ?? "—"}</p>
+          </article>
+          <article className="metric-card">
+            <span className="metric-icon">👦</span>
+            <h3>Students</h3>
+            <p>{stats?.totalStudents ?? "—"}</p>
+          </article>
+          <article className="metric-card">
+            <span className="metric-icon">⭐</span>
+            <h3>Avg Stars</h3>
+            <p>{stats?.avgStarsPerStudent ?? "—"}</p>
+          </article>
+          <article className="metric-card">
+            <span className="metric-icon">🎮</span>
+            <h3>Games Played</h3>
+            <p>{stats?.totalGamesPlayed ?? "—"}</p>
+          </article>
         </section>
 
         <section className="glass-card role-grid role-grid-2">
@@ -59,7 +92,7 @@ const TeacherDashboard = () => {
                 placeholder="New classroom name"
               />
               <button className="btn-register" type="submit">
-                Create Classroom
+                Create
               </button>
             </form>
 
@@ -68,10 +101,13 @@ const TeacherDashboard = () => {
                 <article key={room._id} className="role-item">
                   <div>
                     <strong>{room.name}</strong>
-                    <p>Join code: {room.joinCode} • Students: {room.students?.length || 0}</p>
+                    <p>
+                      👦 {room.students?.length || 0} students &nbsp;|&nbsp;
+                      ⭐ Avg {avgStarsForClassroom(room.students)}
+                    </p>
                   </div>
                   <Link className="btn-secondary-glass" to={`/teacher/classroom/${room._id}`}>
-                    View Students
+                    View
                   </Link>
                 </article>
               ))}
@@ -82,7 +118,7 @@ const TeacherDashboard = () => {
           <div>
             <h2>Word Lists</h2>
             <Link to="/teacher/wordlist" className="btn-register">
-              Create Word List
+              + New Word List
             </Link>
             <div className="role-list">
               {wordLists.map((list) => (
@@ -102,8 +138,6 @@ const TeacherDashboard = () => {
             </div>
           </div>
         </section>
-
-        {error ? <p className="error-msg">{error}</p> : null}
       </main>
     </div>
   );

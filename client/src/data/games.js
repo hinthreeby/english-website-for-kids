@@ -1,10 +1,10 @@
-import abcLettersThumb from "../assets/ABCLetters.png";
-import pictureWordsThumb from "../assets/PictureWords.png";
-import countLearnThumb from "../assets/CountLearn.png";
-import colorFunThumb from "../assets/ColorFun.png";
-import animalSoundsThumb from "../assets/AnimalSounds.png";
-import matchItThumb from "../assets/MatchIt.png";
-import spaceSpeakThumb from "../assets/space_speak.png";
+import abcLettersThumb from "../assets/ABCLetters/ABCLetters.png";
+import pictureWordsThumb from "../assets/PictureWords/PictureWords.png";
+import countLearnThumb from "../assets/CountLearn/CountLearn.png";
+import colorFunThumb from "../assets/ColorFun/ColorFun.png";
+import animalSoundsThumb from "../assets/AnimalSounds/AnimalSounds.png";
+import matchItThumb from "../assets/MatchIt/MatchIt.png";
+import spaceSpeakThumb from "../assets/SpacePronounce/space_speak.png";
 import funnyAnimalAvatarThumb from "../assets/funny_animal_game/funny_animal_game_avatar.png";
 import oceanGameAvatarThumb from "../assets/ocean_game/ocean_game_avatar.png";
 

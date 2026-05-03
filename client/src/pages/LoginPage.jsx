@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import earthImg from "../assets/earth.png";
-import jupiterImg from "../assets/jupiter.png";
-import planetImg from "../assets/planet.png";
-import starImg from "../assets/star.png";
+import earthImg from "../assets/general/planet/earth.png";
+import jupiterImg from "../assets/general/planet/jupiter.png";
+import planetImg from "../assets/general/planet/planet.png";
+import starImg from "../assets/general/star/star.png";
 import { useAuth } from "../context/AuthContext";
 import useProgress from "../hooks/useProgress";
 import useSound from "../hooks/useSound";

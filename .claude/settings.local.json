@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"d:\\\\HK2\\\\Lap-trinh-web\\\\project\\\\client\\\\src\\\\assets\\\\\" -Recurse -Force | ForEach-Object { $_.FullName } | Sort-Object)",
+      "Bash(npm run *)",
+      "Bash(Get-ChildItem \"d:\\\\HK2\\\\Lap-trinh-web\\\\project\\\\client\\\\src\\\\assets\" -File)",
+      "Bash(Select-Object Name)"
+    ]
+  }
+}

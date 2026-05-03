@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 
@@ -7,10 +7,11 @@ const WordListEditor = () => {
   const [title, setTitle] = useState("");
   const [gameType, setGameType] = useState("all");
   const [word, setWord] = useState("");
-  const [emoji, setEmoji] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
   const [words, setWords] = useState([]);
   const [lists, setLists] = useState([]);
   const [error, setError] = useState("");
+  const fileInputRef = useRef(null);
 
   const loadLists = async () => {
     try {
@@ -25,23 +26,29 @@ const WordListEditor = () => {
     loadLists();
   }, []);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
   const addWord = () => {
     if (!word.trim()) return;
-    setWords((prev) => [...prev, { word: word.trim(), emoji }]);
+    setWords((prev) => [...prev, { word: word.trim(), imageUrl: imagePreview }]);
     setWord("");
-    setEmoji("");
+    setImagePreview("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const removeWord = (idx) => setWords((prev) => prev.filter((_, i) => i !== idx));
 
   const saveList = async (event) => {
     event.preventDefault();
     setError("");
-
     try {
-      await api.post("/teacher/wordlist", {
-        title,
-        gameType,
-        words,
-      });
+      await api.post("/teacher/wordlist", { title, gameType, words });
       setTitle("");
       setGameType("all");
       setWords([]);
@@ -72,9 +79,25 @@ const WordListEditor = () => {
               <option value="funny-animals">Funny Animals</option>
             </select>
 
-            <div className="role-inline-form">
-              <input value={word} onChange={(e) => setWord(e.target.value)} placeholder="Word" />
-              <input value={emoji} onChange={(e) => setEmoji(e.target.value)} placeholder="Emoji" />
+            <div className="word-add-row">
+              <input
+                value={word}
+                onChange={(e) => setWord(e.target.value)}
+                placeholder="Word (e.g. apple)"
+                className="word-add-input"
+              />
+              <label className="word-img-label" title="Upload image (optional)">
+                {imagePreview
+                  ? <img src={imagePreview} alt="preview" className="word-img-preview" />
+                  : <span>📷 Image</span>}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="word-img-input"
+                />
+              </label>
               <button type="button" className="btn-secondary-glass" onClick={addWord}>
                 Add
               </button>
@@ -83,9 +106,21 @@ const WordListEditor = () => {
             <div className="word-chip-wrap">
               {words.map((item, idx) => (
                 <span key={`${item.word}-${idx}`} className="badge-pill">
-                  {item.emoji} {item.word}
+                  {item.imageUrl
+                    ? <img src={item.imageUrl} alt="" className="word-chip-img" />
+                    : null}
+                  {item.word}
+                  <button
+                    type="button"
+                    className="word-chip-remove"
+                    onClick={() => removeWord(idx)}
+                    aria-label="Remove"
+                  >
+                    ×
+                  </button>
                 </span>
               ))}
+              {words.length === 0 ? <p className="word-chip-empty">No words added yet.</p> : null}
             </div>
 
             <button type="submit" className="btn-register" disabled={!words.length}>
@@ -100,9 +135,7 @@ const WordListEditor = () => {
                 <article key={list._id} className="role-item">
                   <div>
                     <strong>{list.title}</strong>
-                    <p>
-                      {list.words?.length || 0} words • {list.gameType}
-                    </p>
+                    <p>{list.words?.length || 0} words • {list.gameType}</p>
                   </div>
                   <span className={list.isApproved ? "badge-ok" : "badge-pending"}>
                     {list.isApproved ? "Approved" : "Pending"}

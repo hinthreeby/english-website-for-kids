@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import astronautImg from "../assets/astronaut_game.png";
-import meteoriteImg from "../assets/meteorite.png";
-import mountainImg from "../assets/mountain.png";
-import starImg from "../assets/star.png";
-import sunImg from "../assets/sun.png";
+import astronautImg from "../assets/SpacePronounce/astronaut_game.png";
+import meteoriteImg from "../assets/SpacePronounce/meteorite.png";
+import mountainImg from "../assets/SpacePronounce/mountain.png";
+import starImg from "../assets/general/star/star.png";
+import sunImg from "../assets/SpacePronounce/sun.png";
 import "./SpacePronounce.css";
 
 const TOTAL_QUESTIONS = 10;

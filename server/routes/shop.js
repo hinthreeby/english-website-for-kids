@@ -1,5 +1,5 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, isChild } = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const Inventory = require("../models/UserInventory");
 
@@ -7,7 +7,7 @@ const router = express.Router();
 
 const ROOM_TYPES = ["living_room", "kitchen", "bedroom", "bathroom", "dining_room"];
 
-router.get("/inventory", protect, async (req, res) => {
+router.get("/inventory", protect, isChild, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("totalStars username");
     if (!user) {
@@ -25,7 +25,7 @@ router.get("/inventory", protect, async (req, res) => {
   }
 });
 
-router.post("/buy", protect, async (req, res) => {
+router.post("/buy", protect, isChild, async (req, res) => {
   const { itemId, itemType, price } = req.body;
 
   try {
@@ -82,7 +82,7 @@ router.post("/buy", protect, async (req, res) => {
   }
 });
 
-router.post("/equip", protect, async (req, res) => {
+router.post("/equip", protect, isChild, async (req, res) => {
   const { itemId, itemType, roomType } = req.body;
 
   try {

@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
+import { useAuth } from "../../context/AuthContext";
 
 const ParentDashboard = () => {
+  const { refreshUser } = useAuth();
   const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -51,10 +53,23 @@ const ParentDashboard = () => {
     const pin = window.prompt("Enter child PIN (leave empty if no PIN):", "") || "";
     try {
       await api.post("/auth/switch-child", { childId, pin });
+      await refreshUser();
       navigate("/", { replace: true });
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to switch profile");
     }
+  };
+
+  const totalStars = children.reduce((sum, c) => sum + (c.totalStars || 0), 0);
+  const bestStreak = children.reduce((max, c) => Math.max(max, c.currentStreak || 0), 0);
+
+  const formatLastPlayed = (date) => {
+    if (!date) return "Never";
+    const d = new Date(date);
+    const diff = Math.floor((Date.now() - d) / 86400000);
+    if (diff === 0) return "Today";
+    if (diff === 1) return "Yesterday";
+    return `${diff} days ago`;
   };
 
   return (
@@ -63,20 +78,45 @@ const ParentDashboard = () => {
       <main className="role-wrap">
         <section className="role-hero glass-card">
           <h1>Parent Mission Control</h1>
-          <p>Track progress, create child profiles, and switch into child mode.</p>
+          <p>Track your children's progress and manage their profiles.</p>
+        </section>
+
+        {error ? <p className="error-msg">{error}</p> : null}
+
+        <section className="glass-card role-grid role-grid-3">
+          <article className="metric-card">
+            <span className="metric-icon">👦</span>
+            <h3>Children</h3>
+            <p>{children.length}</p>
+          </article>
+          <article className="metric-card">
+            <span className="metric-icon">⭐</span>
+            <h3>Total Stars</h3>
+            <p>{totalStars}</p>
+          </article>
+          <article className="metric-card">
+            <span className="metric-icon">🔥</span>
+            <h3>Best Streak</h3>
+            <p>{bestStreak} days</p>
+          </article>
         </section>
 
         <section className="glass-card role-grid role-grid-2">
           <div>
             <h2>My Children</h2>
             {loading ? <p>Loading...</p> : null}
-            {!loading && children.length === 0 ? <p>No child accounts yet.</p> : null}
+            {!loading && children.length === 0 ? <p>No child accounts yet. Create one below.</p> : null}
             <div className="role-list">
               {children.map((child) => (
-                <article key={child._id} className="role-item">
-                  <div>
+                <article key={child._id} className="role-item role-item-col">
+                  <div className="role-item-top">
                     <strong>{child.displayName || child.username}</strong>
-                    <p>⭐ {child.totalStars || 0} • Streak {child.currentStreak || 0}</p>
+                    <span className="badge-ok">@{child.username}</span>
+                  </div>
+                  <div className="role-item-stats">
+                    <span>⭐ {child.totalStars || 0} stars</span>
+                    <span>🔥 {child.currentStreak || 0} day streak</span>
+                    <span>🕐 {formatLastPlayed(child.lastPlayedDate)}</span>
                   </div>
                   <div className="role-actions">
                     <Link to={`/parent/child/${child._id}`} className="btn-register">
@@ -92,7 +132,7 @@ const ParentDashboard = () => {
           </div>
 
           <div>
-            <h2>Add Child</h2>
+            <h2>Add Child Account</h2>
             <form className="role-form" onSubmit={handleCreateChild}>
               <input
                 placeholder="Username"
@@ -113,7 +153,7 @@ const ParentDashboard = () => {
                 required
               />
               <input
-                placeholder="Age"
+                placeholder="Age (optional)"
                 type="number"
                 min="3"
                 max="18"
@@ -121,7 +161,7 @@ const ParentDashboard = () => {
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, age: e.target.value }))}
               />
               <input
-                placeholder="PIN (4 digits)"
+                placeholder="PIN — 4 digits (optional)"
                 maxLength={4}
                 value={createForm.pin}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, pin: e.target.value }))}
@@ -132,8 +172,6 @@ const ParentDashboard = () => {
             </form>
           </div>
         </section>
-
-        {error ? <p className="error-msg">{error}</p> : null}
       </main>
     </div>
   );

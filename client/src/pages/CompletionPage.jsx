@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { useLocation, useNavigate } from "react-router-dom";
-import astronautImg from "../assets/astronaut_3.png";
-import jupiterImg from "../assets/jupiter.png";
-import starImg from "../assets/star.png";
+import astronautImg from "../assets/general/astronaut/astronaut_3.png";
+import jupiterImg from "../assets/general/planet/jupiter.png";
+import starImg from "../assets/general/star/star.png";
 import { useAuth } from "../context/AuthContext";
 import { celebrationMessages } from "../data/games";
 import useProgress from "../hooks/useProgress";

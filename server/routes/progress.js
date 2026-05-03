@@ -1,7 +1,7 @@
 const express = require("express");
 const GameResult = require("../models/GameResult");
 const User = require("../models/User");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, isChild } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ const getDayGap = (fromDate, toDate) => {
   return Math.round((end - start) / (1000 * 60 * 60 * 24));
 };
 
-router.post("/save", protect, async (req, res) => {
+router.post("/save", protect, isChild, async (req, res) => {
   try {
     const { gameId, starsEarned } = req.body;
     const normalizedStars = Number(starsEarned);
@@ -125,7 +125,7 @@ router.post("/save", protect, async (req, res) => {
   }
 });
 
-router.get("/me", protect, async (req, res) => {
+router.get("/me", protect, isChild, async (req, res) => {
   try {
     const [results, user] = await Promise.all([
       GameResult.find({ userId: req.user._id }).sort({ completedAt: -1 }),

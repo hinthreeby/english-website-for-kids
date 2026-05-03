@@ -25,11 +25,10 @@ const classroomSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-classroomSchema.pre("save", function (next) {
+classroomSchema.pre("save", function () {
   if (!this.joinCode) {
     this.joinCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   }
-  next();
 });
 
 module.exports = mongoose.model("Classroom", classroomSchema);

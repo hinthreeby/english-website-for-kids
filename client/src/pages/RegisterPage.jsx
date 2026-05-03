@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import earthImg from "../assets/earth.png";
-import jupiterImg from "../assets/jupiter.png";
-import planetImg from "../assets/planet.png";
-import starImg from "../assets/star.png";
+import earthImg from "../assets/general/planet/earth.png";
+import jupiterImg from "../assets/general/planet/jupiter.png";
+import planetImg from "../assets/general/planet/planet.png";
+import starImg from "../assets/general/star/star.png";
 import { useAuth } from "../context/AuthContext";
-import useProgress from "../hooks/useProgress";
 import useSound from "../hooks/useSound";
 import { getRoleHome } from "../lib/roleHome";
 
@@ -13,19 +12,16 @@ const STAR_COUNT = 20;
 
 const RegisterPage = () => {
   const { register } = useAuth();
-  const { mergeGuestStars } = useProgress();
   const { playPop, playChime } = useSound();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    role: "child",
+    role: "parent",
     username: "",
     displayName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    parentCode: "",
-    childNickname: "",
     teacherGrade: "",
     learningGoal: "",
   });
@@ -52,11 +48,7 @@ const RegisterPage = () => {
         role: form.role,
         email: form.email.trim(),
         displayName: form.displayName.trim(),
-        parentCode: form.role === "child" ? form.parentCode.trim() : "",
       });
-      if (createdUser?.role === "child") {
-        await mergeGuestStars();
-      }
       playChime();
       navigate(getRoleHome(createdUser?.role || form.role), { replace: true });
     } catch (err) {
@@ -66,7 +58,6 @@ const RegisterPage = () => {
     }
   };
 
-  const isChild = form.role === "child";
   const isParent = form.role === "parent";
   const isTeacher = form.role === "teacher";
 
@@ -91,7 +82,6 @@ const RegisterPage = () => {
 
         <div className="register-role-grid" role="radiogroup" aria-label="Choose role">
           {[
-            { id: "child", emoji: "👶", label: "Child" },
             { id: "parent", emoji: "👨‍👩‍👧", label: "Parent" },
             { id: "teacher", emoji: "👩‍🏫", label: "Teacher" },
           ].map((option) => (
@@ -164,27 +154,6 @@ const RegisterPage = () => {
             required
           />
         </div>
-
-        {isChild ? (
-          <>
-            <div className="register-question-group">
-              <label>Child Nickname</label>
-              <input
-                placeholder="Ex: Moon Explorer"
-                value={form.childNickname}
-                onChange={(e) => setForm((prev) => ({ ...prev, childNickname: e.target.value }))}
-              />
-            </div>
-            <div className="register-question-group">
-              <label>Parent Code (optional)</label>
-              <input
-                placeholder="Paste parent account ID"
-                value={form.parentCode}
-                onChange={(e) => setForm((prev) => ({ ...prev, parentCode: e.target.value }))}
-              />
-            </div>
-          </>
-        ) : null}
 
         {isParent ? (
           <div className="register-question-group">
