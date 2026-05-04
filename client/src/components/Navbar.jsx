@@ -70,6 +70,9 @@ const Navbar = () => {
               <Link className="nav-link" to="/admin/approvals" onClick={playPop}>
                 Approvals
               </Link>
+              <Link className="nav-link" to="/admin/profile" onClick={playPop}>
+                Profile
+              </Link>
             </>
           ) : null}
 

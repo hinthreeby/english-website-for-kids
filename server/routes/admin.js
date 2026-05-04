@@ -116,6 +116,47 @@ router.patch("/reject-wordlist/:id", protect, isAdmin, async (req, res) => {
   }
 });
 
+router.patch("/profile", protect, isAdmin, async (req, res) => {
+  try {
+    const { email, displayName } = req.body;
+    const update = {};
+    if (email !== undefined) update.email = email.trim().toLowerCase();
+    if (displayName !== undefined) update.displayName = displayName.trim();
+
+    if (update.email) {
+      const conflict = await User.findOne({ email: update.email, _id: { $ne: req.user._id } });
+      if (conflict) return res.status(400).json({ error: "Email already in use" });
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select("-password");
+    return res.json({ user });
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
+router.patch("/change-password", protect, isAdmin, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current and new password are required" });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "New password must be at least 8 characters" });
+    }
+
+    const user = await User.findById(req.user._id);
+    const ok = await user.comparePassword(currentPassword);
+    if (!ok) return res.status(401).json({ error: "Current password is incorrect" });
+
+    user.password = newPassword;
+    await user.save();
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
 router.get("/stats", protect, isAdmin, async (_req, res) => {
   try {
     const [totalUsers, totalChildren, totalParents, totalTeachers, totalGames, totalStarsGiven] =

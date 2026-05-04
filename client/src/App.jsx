@@ -18,6 +18,7 @@ import WordListEditor from "./pages/teacher/WordListEditor";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminApprovals from "./pages/admin/AdminApprovals";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 const App = () => {
   return (
@@ -155,6 +156,14 @@ const App = () => {
             element={
               <AdminOnly>
                 <AdminApprovals />
+              </AdminOnly>
+            }
+          />
+          <Route
+            path="/admin/profile"
+            element={
+              <AdminOnly>
+                <AdminProfile />
               </AdminOnly>
             }
           />
