@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { protect } = require("../middleware/authMiddleware");
+const { getDayGap } = require("../services/streakService");
 
 const router = express.Router();
 
@@ -31,6 +32,10 @@ router.post("/register", async (req, res) => {
 
   if (!username || !password) {
     return res.status(400).json({ error: "Username and password are required" });
+  }
+
+  if (!email || !email.trim()) {
+    return res.status(400).json({ error: "Email is required" });
   }
 
   if (confirmPassword !== undefined && password !== confirmPassword) {
@@ -103,20 +108,32 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    await User.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+    // For child accounts: reset streak to 0 if they missed a day
+    const loginUpdate = { lastLogin: new Date() };
+    let streakReset = false;
+    if (user.role === "child" && user.lastPlayedDate) {
+      const dayGap = getDayGap(user.lastPlayedDate, new Date());
+      if (dayGap >= 2) {
+        loginUpdate.currentStreak = 0;
+        streakReset = true;
+      }
+    }
+    const updatedUser = await User.findByIdAndUpdate(user._id, loginUpdate, { new: true });
 
     sendToken(user, res);
     return res.json({
       user: {
-        id: user._id,
-        username: user.username,
-        role: user.role,
-        displayName: user.displayName,
-        totalStars: user.totalStars,
-        currentStreak: user.currentStreak,
-        isApproved: user.isApproved,
-        children: user.children,
+        id: updatedUser._id,
+        username: updatedUser.username,
+        role: updatedUser.role,
+        displayName: updatedUser.displayName,
+        totalStars: updatedUser.totalStars,
+        currentStreak: updatedUser.currentStreak,
+        isApproved: updatedUser.isApproved,
+        children: updatedUser.children,
+        planetsUnlocked: updatedUser.planetsUnlocked,
       },
+      streakReset,
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });

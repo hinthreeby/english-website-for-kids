@@ -122,12 +122,13 @@ const RegisterPage = () => {
         </div>
 
         <div className="register-question-group">
-          <label>Email (optional)</label>
+          <label>Email</label>
           <input
             placeholder="you@example.com"
             type="email"
             value={form.email}
             onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            required
           />
         </div>
 

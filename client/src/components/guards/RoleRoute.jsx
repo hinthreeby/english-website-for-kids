@@ -24,6 +24,13 @@ export const ChildOnly = ({ children }) => (
   <RoleRoute allowedRoles={["child"]}>{children}</RoleRoute>
 );
 
+export const GuestOrChild = ({ children }) => {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <div className="loading-screen">Loading...</div>;
+  if (user && user.role !== "child") return <Navigate to={getRoleHome(user.role)} replace />;
+  return children;
+};
+
 export const ParentOnly = ({ children }) => (
   <RoleRoute allowedRoles={["parent", "admin"]}>{children}</RoleRoute>
 );

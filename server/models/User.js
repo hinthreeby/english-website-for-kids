@@ -76,6 +76,14 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    planetsUnlocked: {
+      type: [String],
+      default: [],
+    },
+    allPlanetsBonus: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

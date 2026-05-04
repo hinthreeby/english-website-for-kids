@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
-
 const ChildProgress = () => {
   const { childId } = useParams();
   const [data, setData] = useState({ child: null, results: [] });

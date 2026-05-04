@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
-
 const ParentDashboard = () => {
   const { refreshUser } = useAuth();
   const [children, setChildren] = useState([]);

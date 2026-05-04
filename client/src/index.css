@@ -3147,6 +3147,268 @@ body,
   font-size: 0.88rem;
 }
 
+/* ── Collection Page ──────────────────────────────────── */
+.collection-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.collection-sun {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.7));
+  animation: planetFloat 3s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ── Planet Collection ─────────────────────────────────── */
+.planets-section {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.planet-collection {
+  padding: 1.2rem 0 0.4rem;
+}
+
+.planet-collection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.streak-badge {
+  font-size: 1.15rem;
+  font-family: "Fredoka One", sans-serif;
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+.planet-next-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.planet-progress-bar-wrap {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+
+.planet-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7b2ff7, #ff6b9d);
+  border-radius: 99px;
+  transition: width 0.6s ease;
+}
+
+.planet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 600px) {
+  .planet-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+}
+
+.planet-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.planet-slot-inner {
+  position: relative;
+  width: 144px;
+  height: 144px;
+}
+
+.planet-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: filter 0.3s, transform 0.3s;
+}
+
+.planet-slot.locked .planet-slot-img {
+  filter: grayscale(1) brightness(0.35);
+}
+
+.planet-slot.unlocked .planet-slot-img {
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.55));
+  animation: planetFloat 3s ease-in-out infinite;
+}
+
+@keyframes planetFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+
+.planet-lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  pointer-events: none;
+}
+
+.planet-slot-name {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.planet-slot.unlocked .planet-slot-name {
+  color: var(--color-accent-3);
+  font-weight: 600;
+}
+
+.planet-slot-req {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Planet Unlock Modal ───────────────────────────────── */
+.planet-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.planet-modal-card {
+  position: relative;
+  background: linear-gradient(145deg, #2d0a5e, #1a0533);
+  border: 1.5px solid rgba(123, 47, 247, 0.5);
+  border-radius: 28px;
+  padding: 2.5rem 2rem 2rem;
+  max-width: 340px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(123, 47, 247, 0.4);
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.planet-modal-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #7b2ff7, #ff6b9d, #ffd700);
+  z-index: -1;
+  opacity: 0.35;
+  filter: blur(8px);
+}
+
+.planet-modal-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+}
+
+.planet-modal-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.7));
+  animation: planetFloat 2.5s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+.planet-modal-name {
+  font-size: 1.6rem;
+  color: var(--color-accent-3);
+  margin: 0 0 0.3rem;
+}
+
+.planet-modal-streak {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0 0 1.25rem;
+}
+
+.planet-bonus-banner {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(123, 47, 247, 0.2));
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-accent-3);
+  margin-bottom: 1.25rem;
+}
+
+.planet-modal-btn {
+  width: 100%;
+}
+
+/* Mouse particle effect */
+@keyframes particleFly {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--tx, 0px), -50px) scale(0.2) rotate(var(--rot, 90deg)); }
+}
+
+.mouse-particle {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+  animation: particleFly 0.8s ease-out forwards;
+  transform-origin: center;
+  translate: -50% -50%;
+}
+
+.music-toggle-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(10, 0, 32, 0.75);
+  backdrop-filter: blur(10px);
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.music-toggle-btn:hover {
+  transform: scale(1.12);
+  background: rgba(123, 47, 247, 0.5);
+}
+
 .success-msg {
   background: rgba(52, 211, 153, 0.12);
   border: 1px solid rgba(52, 211, 153, 0.3);

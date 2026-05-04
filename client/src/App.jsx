@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import useMouseParticles from "./hooks/useMouseParticles";
 import HomePage from "./pages/HomePage";
 import GamePage from "./pages/GamePage";
 import StoryPlayerPage from "./pages/StoryPlayerPage";
@@ -9,18 +10,21 @@ import RegisterPage from "./pages/RegisterPage";
 import ShopPage from "./pages/ShopPage";
 import MyHomePage from "./pages/MyHomePage";
 import RoomPage from "./pages/RoomPage";
-import { AdminOnly, ChildOnly, ParentOnly, TeacherOnly } from "./components/guards/RoleRoute";
+import { AdminOnly, ChildOnly, GuestOrChild, ParentOnly, TeacherOnly } from "./components/guards/RoleRoute";
 import ParentDashboard from "./pages/parent/ParentDashboard";
 import ChildProgress from "./pages/parent/ChildProgress";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import ClassroomPage from "./pages/teacher/ClassroomPage";
 import WordListEditor from "./pages/teacher/WordListEditor";
+import UserProfilePage from "./pages/UserProfilePage";
+import CollectionPage from "./pages/CollectionPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminApprovals from "./pages/admin/AdminApprovals";
 import AdminProfile from "./pages/admin/AdminProfile";
 
 const App = () => {
+  useMouseParticles();
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -31,32 +35,40 @@ const App = () => {
           <Route
             path="/"
             element={
-              <ChildOnly>
+              <GuestOrChild>
                 <HomePage />
-              </ChildOnly>
+              </GuestOrChild>
             }
           />
           <Route
             path="/game/:gameId"
             element={
-              <ChildOnly>
+              <GuestOrChild>
                 <GamePage />
-              </ChildOnly>
+              </GuestOrChild>
             }
           />
           <Route
             path="/story/:storyId"
             element={
-              <ChildOnly>
+              <GuestOrChild>
                 <StoryPlayerPage />
-              </ChildOnly>
+              </GuestOrChild>
             }
           />
           <Route
             path="/completion"
             element={
-              <ChildOnly>
+              <GuestOrChild>
                 <CompletionPage />
+              </GuestOrChild>
+            }
+          />
+          <Route
+            path="/collection"
+            element={
+              <ChildOnly>
+                <CollectionPage />
               </ChildOnly>
             }
           />
@@ -109,6 +121,14 @@ const App = () => {
               </ParentOnly>
             }
           />
+          <Route
+            path="/parent/profile"
+            element={
+              <ParentOnly>
+                <UserProfilePage apiBase="/parent" roleLabel="Parent" />
+              </ParentOnly>
+            }
+          />
 
           <Route
             path="/teacher/dashboard"
@@ -131,6 +151,14 @@ const App = () => {
             element={
               <TeacherOnly>
                 <WordListEditor />
+              </TeacherOnly>
+            }
+          />
+          <Route
+            path="/teacher/profile"
+            element={
+              <TeacherOnly>
+                <UserProfilePage apiBase="/teacher" roleLabel="Teacher" />
               </TeacherOnly>
             }
           />

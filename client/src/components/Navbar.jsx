@@ -25,8 +25,8 @@ const Navbar = () => {
         <div className="navbar-links" aria-label="Primary navigation">
           {isChild ? (
             <>
-              <Link className="nav-link" to="/" onClick={playPop}>
-                Games
+              <Link className="nav-link" to="/collection" onClick={playPop}>
+                Collection
               </Link>
               <Link className="nav-link" to="/shop" onClick={playPop}>
                 Store
@@ -45,6 +45,9 @@ const Navbar = () => {
               <Link className="nav-link" to="/parent/children" onClick={playPop}>
                 My Children
               </Link>
+              <Link className="nav-link" to="/parent/profile" onClick={playPop}>
+                Profile
+              </Link>
             </>
           ) : null}
 
@@ -55,6 +58,9 @@ const Navbar = () => {
               </Link>
               <Link className="nav-link" to="/teacher/wordlist" onClick={playPop}>
                 Word Lists
+              </Link>
+              <Link className="nav-link" to="/teacher/profile" onClick={playPop}>
+                Profile
               </Link>
             </>
           ) : null}

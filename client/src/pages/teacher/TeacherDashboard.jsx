@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
-
 const TeacherDashboard = () => {
   const [stats, setStats] = useState(null);
   const [classrooms, setClassrooms] = useState([]);

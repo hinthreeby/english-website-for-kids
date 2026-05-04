@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { celebrationMessages } from "../data/games";
 import useProgress from "../hooks/useProgress";
 import useSound from "../hooks/useSound";
+import PlanetUnlockModal from "../components/PlanetUnlockModal";
 
 const CompletionPage = () => {
   const { state } = useLocation();
@@ -18,6 +19,8 @@ const CompletionPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [savedData, setSavedData] = useState(null);
   const [error, setError] = useState(null);
+  const [unlockedPlanet, setUnlockedPlanet] = useState(null);
+  const [bonusInfo, setBonusInfo] = useState({ awarded: false, stars: 0 });
   const hasSaved = useRef(false);
   const hasPlayedCelebration = useRef(false);
 
@@ -88,6 +91,10 @@ const CompletionPage = () => {
             totalStars: data.totalStars ?? data.totals?.totalStars ?? user.totalStars ?? 0,
             streak: data.streak ?? data.totals?.currentStreak ?? user.currentStreak ?? 0,
           });
+          if (data.newPlanet) {
+            setUnlockedPlanet(data.newPlanet);
+            setBonusInfo({ awarded: data.bonusAwarded ?? false, stars: data.bonusStars ?? 0 });
+          }
           await refreshUser();
         } catch (err) {
           console.error("Save failed:", err);
@@ -246,6 +253,15 @@ const CompletionPage = () => {
           )}
         </div>
       </div>
+
+      {unlockedPlanet && (
+        <PlanetUnlockModal
+          planetId={unlockedPlanet}
+          bonusAwarded={bonusInfo.awarded}
+          bonusStars={bonusInfo.stars}
+          onClose={() => setUnlockedPlanet(null)}
+        />
+      )}
     </div>
   );
 };

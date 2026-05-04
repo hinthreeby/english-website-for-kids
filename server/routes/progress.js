@@ -2,6 +2,13 @@ const express = require("express");
 const GameResult = require("../models/GameResult");
 const User = require("../models/User");
 const { protect, isChild } = require("../middleware/authMiddleware");
+const {
+  PLANETS,
+  BONUS_STARS,
+  computeNewStreak,
+  computePlanetUpdate,
+  getNextPlanet,
+} = require("../services/streakService");
 
 const router = express.Router();
 
@@ -18,18 +25,6 @@ const VALID_GAME_IDS = [
   "guest-merge",
 ];
 
-const normalizeDate = (date) => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const getDayGap = (fromDate, toDate) => {
-  const start = normalizeDate(fromDate).getTime();
-  const end = normalizeDate(toDate).getTime();
-  return Math.round((end - start) / (1000 * 60 * 60 * 24));
-};
-
 router.post("/save", protect, isChild, async (req, res) => {
   try {
     const { gameId, starsEarned } = req.body;
@@ -38,22 +33,19 @@ router.post("/save", protect, isChild, async (req, res) => {
     if (!gameId || !Number.isFinite(normalizedStars)) {
       return res.status(400).json({ message: "Invalid game result payload." });
     }
-
     if (!VALID_GAME_IDS.includes(gameId)) {
       return res.status(400).json({ message: "Invalid gameId." });
     }
-
     if (normalizedStars < 0 || normalizedStars > 3) {
       return res.status(400).json({ message: "starsEarned must be between 0 and 3." });
     }
 
     const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
+    if (!user) return res.status(404).json({ message: "User not found." });
 
     const now = new Date();
 
+    // Duplicate check (skip for guest-merge)
     if (gameId !== "guest-merge") {
       const duplicateWindow = new Date(now.getTime() - 5000);
       const recentDuplicate = await GameResult.findOne({
@@ -61,49 +53,49 @@ router.post("/save", protect, isChild, async (req, res) => {
         gameId,
         starsEarned: normalizedStars,
         completedAt: { $gte: duplicateWindow },
-      }).sort({ completedAt: -1 });
-
+      });
       if (recentDuplicate) {
         return res.status(200).json({
           success: true,
           starsEarned: normalizedStars,
           totalStars: user.totalStars,
           streak: user.currentStreak,
-          totals: {
-            totalStars: user.totalStars,
-            currentStreak: user.currentStreak,
-          },
+          planetsUnlocked: user.planetsUnlocked,
+          newPlanet: null,
+          bonusAwarded: false,
           duplicate: true,
         });
       }
     }
 
-    let newStreak = user.currentStreak || 0;
-    if (!user.lastPlayedDate) {
-      newStreak = 1;
-    } else {
-      const dayGap = getDayGap(user.lastPlayedDate, now);
-      if (dayGap === 1) {
-        newStreak += 1;
-      } else if (dayGap > 1) {
-        newStreak = 1;
-      }
-    }
+    // Streak computation
+    const { newStreak } = computeNewStreak(
+      user.currentStreak,
+      user.lastPlayedDate,
+      now
+    );
 
-    await GameResult.create({
-      userId: user._id,
-      gameId,
-      starsEarned: normalizedStars,
-      completedAt: now,
-    });
+    // Planet computation
+    const { updatedPlanets, newPlanet, allUnlocked } = computePlanetUpdate(
+      user.planetsUnlocked || [],
+      newStreak
+    );
+
+    // Bonus stars if all planets just unlocked
+    const bonusAwarded = allUnlocked && !user.allPlanetsBonus;
+    const bonusStars = bonusAwarded ? BONUS_STARS : 0;
+
+    await GameResult.create({ userId: user._id, gameId, starsEarned: normalizedStars, completedAt: now });
 
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
       {
-        $inc: { totalStars: normalizedStars },
+        $inc: { totalStars: normalizedStars + bonusStars },
         $set: {
           currentStreak: newStreak,
           lastPlayedDate: now,
+          planetsUnlocked: updatedPlanets,
+          ...(bonusAwarded && { allPlanetsBonus: true }),
         },
       },
       { new: true }
@@ -115,6 +107,10 @@ router.post("/save", protect, isChild, async (req, res) => {
       starsEarned: normalizedStars,
       totalStars: updatedUser.totalStars,
       streak: updatedUser.currentStreak,
+      planetsUnlocked: updatedUser.planetsUnlocked,
+      newPlanet,
+      bonusAwarded,
+      bonusStars,
       totals: {
         totalStars: updatedUser.totalStars,
         currentStreak: updatedUser.currentStreak,
@@ -129,20 +125,50 @@ router.get("/me", protect, isChild, async (req, res) => {
   try {
     const [results, user] = await Promise.all([
       GameResult.find({ userId: req.user._id }).sort({ completedAt: -1 }),
-      User.findById(req.user._id).select("username totalStars currentStreak"),
+      User.findById(req.user._id).select("username totalStars currentStreak planetsUnlocked"),
     ]);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    return res.json({
-      user,
-      results,
-      totalStars: user.totalStars,
-    });
+    if (!user) return res.status(404).json({ message: "User not found." });
+    return res.json({ user, results, totalStars: user.totalStars });
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch progress." });
+  }
+});
+
+router.get("/planets", protect, isChild, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select(
+      "currentStreak planetsUnlocked allPlanetsBonus totalStars"
+    );
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const existing = user.planetsUnlocked || [];
+    const { updatedPlanets, newlyUnlocked, allUnlocked } = computePlanetUpdate(
+      existing,
+      user.currentStreak
+    );
+
+    // Retroactively save any planets missing from DB
+    if (newlyUnlocked.length > 0) {
+      const bonusAwarded = allUnlocked && !user.allPlanetsBonus;
+      await User.findByIdAndUpdate(user._id, {
+        $set: {
+          planetsUnlocked: updatedPlanets,
+          ...(bonusAwarded && { allPlanetsBonus: true }),
+        },
+        ...(bonusAwarded && { $inc: { totalStars: BONUS_STARS } }),
+      });
+    }
+
+    const nextPlanet = getNextPlanet(user.currentStreak);
+    return res.json({
+      streak: user.currentStreak,
+      planetsUnlocked: updatedPlanets,
+      allPlanets: PLANETS,
+      nextPlanet,
+      allPlanetsBonus: user.allPlanetsBonus,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch planets." });
   }
 });
 

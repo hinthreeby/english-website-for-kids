@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
-
 const WordListEditor = () => {
   const [title, setTitle] = useState("");
   const [gameType, setGameType] = useState("all");
