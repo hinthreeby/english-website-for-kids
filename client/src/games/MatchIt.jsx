@@ -17,7 +17,7 @@ const pairPool = [
 ];
 
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
-const TOTAL_QUESTIONS = 10;
+const TOTAL_QUESTIONS = 8;
 
 const MatchIt = ({ onComplete }) => {
   const { playPop, playChime, playWhoosh, speakText } = useSound();
@@ -117,7 +117,7 @@ const MatchIt = ({ onComplete }) => {
                 .join(" ")}
               onClick={() => onCardClick(card)}
             >
-              {isOpen ? card.text : "❓"}
+              {isOpen ? card.text : "✨"}
             </button>
           );
         })}

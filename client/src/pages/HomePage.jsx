@@ -102,7 +102,7 @@ const HomePage = () => {
         </section>
 
         <section className="stories-section">
-          <h2 className="section-title">🎬 LEARN BY VIDEOS 🎬</h2>
+          <h2 className="section-title">✨ LEARN BY VIDEOS ✨</h2>
           <div className="section-divider" />
 
           <div className="story-grid home-story-grid">
