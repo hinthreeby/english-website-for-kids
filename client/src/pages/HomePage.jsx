@@ -8,8 +8,6 @@ import { useAuth } from "../context/AuthContext";
 import { games } from "../data/games";
 import { stories } from "../data/stories";
 import useSound from "../hooks/useSound";
-import useBgMusic from "../hooks/useBgMusic";
-import bgMusic from "../assets/general/sound/background_music.mp3";
 import earthPlanet from "../assets/general/planet/earth.png";
 import jupiterPlanet from "../assets/general/planet/jupiter.png";
 import marsPlanet from "../assets/general/planet/mars.png";
@@ -19,7 +17,6 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { playPop } = useSound();
-  const { muted, toggle: toggleMusic } = useBgMusic(bgMusic);
 
   const stars = useMemo(
     () =>
@@ -125,16 +122,6 @@ const HomePage = () => {
       </main>
 
       <MascotGreeting user={user} isAuthLoading={loading} />
-
-      <button
-        type="button"
-        className="music-toggle-btn"
-        onClick={toggleMusic}
-        aria-label={muted ? "Unmute background music" : "Mute background music"}
-        title={muted ? "Unmute music" : "Mute music"}
-      >
-        {muted ? "🔇" : "🔊"}
-      </button>
     </div>
   );
 };

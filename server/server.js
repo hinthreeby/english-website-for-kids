@@ -10,6 +10,8 @@ const shopRoutes = require("./routes/shop");
 const parentRoutes = require("./routes/parent");
 const teacherRoutes = require("./routes/teacher");
 const adminRoutes = require("./routes/admin");
+const analyticsChildRoutes = require("./routes/analyticsChild");
+const analyticsClassRoutes = require("./routes/analyticsClass");
 
 dotenv.config();
 
@@ -34,6 +36,8 @@ app.use("/api/shop", shopRoutes);
 app.use("/api/parent", parentRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/children", analyticsChildRoutes);
+app.use("/api/classes", analyticsClassRoutes);
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/funEnglish";

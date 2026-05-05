@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import useMouseParticles from "./hooks/useMouseParticles";
+import useBgMusic from "./hooks/useBgMusic";
+import bgMusic from "./assets/general/sound/background_music.mp3";
 import HomePage from "./pages/HomePage";
 import GamePage from "./pages/GamePage";
 import StoryPlayerPage from "./pages/StoryPlayerPage";
@@ -25,6 +27,8 @@ import AdminProfile from "./pages/admin/AdminProfile";
 
 const App = () => {
   useMouseParticles();
+  const { muted, toggle: toggleMusic } = useBgMusic(bgMusic);
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -206,6 +210,16 @@ const App = () => {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+
+        <button
+          type="button"
+          className="music-toggle-btn"
+          onClick={toggleMusic}
+          aria-label={muted ? "Unmute background music" : "Mute background music"}
+          title={muted ? "Unmute music" : "Mute music"}
+        >
+          {muted ? "🔇" : "🔊"}
+        </button>
       </BrowserRouter>
     </AuthProvider>
   );
