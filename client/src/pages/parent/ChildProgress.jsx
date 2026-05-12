@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
+import StarBackground from "../../components/StarBackground";
 
 const GAME_LABELS = {
   "abc-letters": "ABC Letters",
@@ -269,6 +270,7 @@ const ChildProgress = () => {
 
   return (
     <div className="screen with-bg role-page">
+      <StarBackground />
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">

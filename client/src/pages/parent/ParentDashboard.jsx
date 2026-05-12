@@ -3,7 +3,17 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
+import StarBackground from "../../components/StarBackground";
+import ParentMascot from "../../components/ParentMascot";
 import { useAuth } from "../../context/AuthContext";
+import dashboardAudio from "../../assets/general/sound/parent_dashboard.mp3";
+
+const DASHBOARD_LINES = [
+  "Welcome to Mission Control! 🚀",
+  "Track your children's learning journey!",
+  "You're doing an amazing job! ⭐",
+];
+
 const ParentDashboard = () => {
   const { refreshUser } = useAuth();
   const [children, setChildren] = useState([]);
@@ -12,9 +22,6 @@ const ParentDashboard = () => {
   const [createForm, setCreateForm] = useState({
     username: "",
     password: "",
-    displayName: "",
-    age: "",
-    pin: "",
   });
   const navigate = useNavigate();
 
@@ -37,11 +44,8 @@ const ParentDashboard = () => {
     event.preventDefault();
     setError("");
     try {
-      await api.post("/parent/create-child", {
-        ...createForm,
-        age: createForm.age ? Number(createForm.age) : null,
-      });
-      setCreateForm({ username: "", password: "", displayName: "", age: "", pin: "" });
+      await api.post("/parent/create-child", createForm);
+      setCreateForm({ username: "", password: "" });
       loadChildren();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to create child");
@@ -49,9 +53,8 @@ const ParentDashboard = () => {
   };
 
   const switchToChild = async (childId) => {
-    const pin = window.prompt("Enter child PIN (leave empty if no PIN):", "") || "";
     try {
-      await api.post("/auth/switch-child", { childId, pin });
+      await api.post("/auth/switch-child", { childId });
       await refreshUser();
       navigate("/", { replace: true });
     } catch (err) {
@@ -73,6 +76,7 @@ const ParentDashboard = () => {
 
   return (
     <div className="screen with-bg role-page">
+      <StarBackground />
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
@@ -140,30 +144,11 @@ const ParentDashboard = () => {
                 required
               />
               <input
-                placeholder="Display Name"
-                value={createForm.displayName}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, displayName: e.target.value }))}
-              />
-              <input
                 placeholder="Password"
                 type="password"
                 value={createForm.password}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, password: e.target.value }))}
                 required
-              />
-              <input
-                placeholder="Age (optional)"
-                type="number"
-                min="3"
-                max="18"
-                value={createForm.age}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, age: e.target.value }))}
-              />
-              <input
-                placeholder="PIN — 4 digits (optional)"
-                maxLength={4}
-                value={createForm.pin}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, pin: e.target.value }))}
               />
               <button type="submit" className="btn-register">
                 Create Child
@@ -172,6 +157,7 @@ const ParentDashboard = () => {
           </div>
         </section>
       </main>
+      <ParentMascot audioSrc={dashboardAudio} lines={DASHBOARD_LINES} />
     </div>
   );
 };

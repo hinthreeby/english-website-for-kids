@@ -18,12 +18,9 @@ const RegisterPage = () => {
   const [form, setForm] = useState({
     role: "parent",
     username: "",
-    displayName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    teacherGrade: "",
-    learningGoal: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,7 +44,6 @@ const RegisterPage = () => {
         confirmPassword: form.confirmPassword,
         role: form.role,
         email: form.email.trim(),
-        displayName: form.displayName.trim(),
       });
       playChime();
       navigate(getRoleHome(createdUser?.role || form.role), { replace: true });
@@ -58,7 +54,6 @@ const RegisterPage = () => {
     }
   };
 
-  const isParent = form.role === "parent";
   const isTeacher = form.role === "teacher";
 
   return (
@@ -101,82 +96,53 @@ const RegisterPage = () => {
           <div className="notice-box">Teacher accounts require admin approval before login.</div>
         ) : null}
 
-        <div className="register-question-group">
-          <label>Username</label>
-          <input
-            placeholder="Choose your username"
-            value={form.username}
-            minLength={2}
-            onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))}
-            required
-          />
-        </div>
-
-        <div className="register-question-group">
-          <label>Display Name</label>
-          <input
-            placeholder="How should we call you?"
-            value={form.displayName}
-            onChange={(e) => setForm((prev) => ({ ...prev, displayName: e.target.value }))}
-          />
-        </div>
-
-        <div className="register-question-group">
-          <label>Email</label>
-          <input
-            placeholder="you@example.com"
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-            required
-          />
-        </div>
-
-        <div className="register-question-group">
-          <label>Password</label>
-          <input
-            placeholder="Create password"
-            type="password"
-            minLength={4}
-            value={form.password}
-            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-            required
-          />
-        </div>
-
-        <div className="register-question-group">
-          <label>Confirm Password</label>
-          <input
-            placeholder="Repeat password"
-            type="password"
-            minLength={4}
-            value={form.confirmPassword}
-            onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-            required
-          />
-        </div>
-
-        {isParent ? (
+        <div className="register-fields-grid">
           <div className="register-question-group">
-            <label>Learning Goal For Your Child</label>
+            <label>Username</label>
             <input
-              placeholder="Ex: Daily speaking practice"
-              value={form.learningGoal}
-              onChange={(e) => setForm((prev) => ({ ...prev, learningGoal: e.target.value }))}
+              placeholder="Your username"
+              value={form.username}
+              minLength={2}
+              onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))}
+              required
             />
           </div>
-        ) : null}
 
-        {isTeacher ? (
           <div className="register-question-group">
-            <label>Which grade do you teach?</label>
+            <label>Email</label>
             <input
-              placeholder="Ex: Grade 2"
-              value={form.teacherGrade}
-              onChange={(e) => setForm((prev) => ({ ...prev, teacherGrade: e.target.value }))}
+              placeholder="you@gmail.com"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+              required
             />
           </div>
-        ) : null}
+
+          <div className="register-question-group">
+            <label>Password</label>
+            <input
+              placeholder="Your password"
+              type="password"
+              minLength={4}
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              required
+            />
+          </div>
+
+          <div className="register-question-group">
+            <label>Confirm Password</label>
+            <input
+              placeholder="Repeat password"
+              type="password"
+              minLength={4}
+              value={form.confirmPassword}
+              onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+              required
+            />
+          </div>
+        </div>
 
         {error ? <p className="error-text auth-error">{error}</p> : null}
 

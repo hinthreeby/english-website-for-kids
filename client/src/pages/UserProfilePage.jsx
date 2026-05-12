@@ -1,8 +1,17 @@
 import { useState } from "react";
 import api from "../lib/api";
 import Navbar from "../components/Navbar";
+import StarBackground from "../components/StarBackground";
+import ParentMascot from "../components/ParentMascot";
 import { useAuth } from "../context/AuthContext";
 import useMouseParticles from "../hooks/useMouseParticles";
+import profileAudio from "../assets/general/sound/parent_profile.mp3";
+
+const PROFILE_LINES = [
+  "Update your profile here! ✨",
+  "Keep your info up to date!",
+  "You're a wonderful parent! 🌟",
+];
 
 const UserProfilePage = ({ apiBase, roleLabel }) => {
   useMouseParticles();
@@ -57,6 +66,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
 
   return (
     <div className="screen with-bg role-page">
+      <StarBackground />
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
@@ -145,6 +155,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
           </div>
         </section>
       </main>
+      {roleLabel === "Parent" ? <ParentMascot audioSrc={profileAudio} lines={PROFILE_LINES} /> : null}
     </div>
   );
 };

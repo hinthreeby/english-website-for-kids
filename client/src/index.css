@@ -2244,19 +2244,20 @@ body,
 }
 
 .auth-card-register {
-  width: 460px;
-  max-height: calc(100vh - 48px);
-  overflow-y: auto;
+  width: 1200px;
+  max-width: calc(100vw - 40px);
   top: 50%;
+  padding: 36px 48px;
 }
 
-.auth-card-register::-webkit-scrollbar {
-  width: 8px;
+.register-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
 }
 
-.auth-card-register::-webkit-scrollbar-thumb {
-  background: rgba(155, 79, 255, 0.6);
-  border-radius: 999px;
+.register-field-full {
+  grid-column: 1 / -1;
 }
 
 .game-panel {
@@ -2621,6 +2622,12 @@ body,
   animation: popIn 0.45s ease-out;
 }
 
+.auth-card-register {
+  width: 675px;
+  max-width: calc(100vw - 40px);
+  padding: 24px 28px;
+}
+
 .auth-card h2 {
   margin: 0 0 6px;
   color: #ffd700;
@@ -2636,7 +2643,7 @@ body,
 
 .auth-card input {
   width: 100%;
-  padding: 12px;
+  padding: 12px 18px;
   margin-bottom: 12px;
   border-radius: 12px;
   border: none;
@@ -2732,6 +2739,47 @@ body,
   text-align: center;
 }
 
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+  color: rgba(201, 184, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(201, 184, 255, 0.25);
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-google:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 .auth-back-link {
   display: inline-block;
   margin-top: 10px;
@@ -2798,6 +2846,12 @@ body,
   }
 }
 
+@media (max-width: 900px) {
+  .register-fields-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .auth-page {
     padding: 16px;
@@ -2810,9 +2864,12 @@ body,
   }
 
   .auth-card-register {
-    max-width: 420px;
-    max-height: calc(100vh - 24px);
-    padding: 20px 14px;
+    max-width: calc(100vw - 32px);
+    padding: 20px 18px;
+  }
+
+  .register-fields-grid {
+    grid-template-columns: 1fr;
   }
 
   .register-role-grid {

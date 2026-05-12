@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
+import StarBackground from "../../components/StarBackground";
 import { useAuth } from "../../context/AuthContext";
 
 const AdminProfile = () => {
@@ -55,6 +56,7 @@ const AdminProfile = () => {
 
   return (
     <div className="screen with-bg role-page">
+      <StarBackground />
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">

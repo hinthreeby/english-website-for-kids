@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
+import StarBackground from "../../components/StarBackground";
 const TeacherDashboard = () => {
   const [stats, setStats] = useState(null);
   const [classrooms, setClassrooms] = useState([]);
@@ -49,6 +50,7 @@ const TeacherDashboard = () => {
 
   return (
     <div className="screen with-bg role-page">
+      <StarBackground />
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">

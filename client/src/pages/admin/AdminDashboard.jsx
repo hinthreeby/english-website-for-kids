@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
+import StarBackground from "../../components/StarBackground";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -62,6 +63,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="screen with-bg role-page">
+      <StarBackground />
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
