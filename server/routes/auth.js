@@ -22,7 +22,7 @@ const sendToken = (user, res) => {
 };
 
 router.post("/register", async (req, res) => {
-  const { username, password, role, email, displayName, confirmPassword } = req.body;
+  const { username, password, role, email, confirmPassword } = req.body;
   const requestedRole = role || "parent";
   const allowedRoles = ["parent", "teacher"];
 
@@ -57,7 +57,7 @@ router.post("/register", async (req, res) => {
       password,
       role: requestedRole,
       email: emailTrimmed,
-      displayName: displayName || "",
+      displayName: usernameTrimmed,
       isApproved: requestedRole === "teacher" ? false : true,
     };
 
@@ -142,7 +142,7 @@ router.post("/login", async (req, res) => {
 
 router.post("/switch-child", protect, async (req, res) => {
   try {
-    const { childId, pin } = req.body;
+    const { childId } = req.body;
 
     if (req.user.role !== "parent") {
       return res.status(403).json({ error: "Only parents can switch to child profile" });
@@ -151,10 +151,6 @@ router.post("/switch-child", protect, async (req, res) => {
     const child = await User.findById(childId);
     if (!child || child.parentId?.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Not your child account" });
-    }
-
-    if (child.pin && child.pin !== pin) {
-      return res.status(401).json({ error: "Wrong PIN" });
     }
 
     sendToken(child, res);

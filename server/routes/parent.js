@@ -39,14 +39,15 @@ router.get("/child/:childId/progress", protect, isParent, async (req, res) => {
 });
 
 router.post("/create-child", protect, isParent, async (req, res) => {
-  const { username, password, displayName, age, pin } = req.body;
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
   try {
     const child = await User.create({
-      username,
+      username: username.trim(),
       password,
-      displayName,
-      age,
-      pin,
+      displayName: username.trim(),
       role: "child",
       parentId: req.user._id,
       isApproved: true,

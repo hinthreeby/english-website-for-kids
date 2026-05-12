@@ -15,9 +15,14 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    googleId: {
+      type: String,
+      sparse: true,
+      default: null,
+    },
     password: {
       type: String,
-      required: true,
+      default: null,
     },
     displayName: {
       type: String,
@@ -36,14 +41,6 @@ const userSchema = new mongoose.Schema(
     parentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null,
-    },
-    pin: {
-      type: String,
-      default: null,
-    },
-    age: {
-      type: Number,
       default: null,
     },
     children: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -89,11 +86,12 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+  if (!this.password || !this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 12);
 });
 
 userSchema.methods.comparePassword = async function (plain) {
+  if (!this.password) return false;
   return bcrypt.compare(plain, this.password);
 };
 

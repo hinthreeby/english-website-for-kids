@@ -1,10 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const session = require("express-session");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
+dotenv.config();
+
 const authRoutes = require("./routes/auth");
+const googleAuthRoutes = require("./routes/googleAuth");
 const progressRoutes = require("./routes/progress");
 const shopRoutes = require("./routes/shop");
 const parentRoutes = require("./routes/parent");
@@ -12,8 +16,7 @@ const teacherRoutes = require("./routes/teacher");
 const adminRoutes = require("./routes/admin");
 const analyticsChildRoutes = require("./routes/analyticsChild");
 const analyticsClassRoutes = require("./routes/analyticsClass");
-
-dotenv.config();
+const passport = require("./config/passport");
 
 const app = express();
 
@@ -26,11 +29,24 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Session is used only for the OAuth handshake; app auth uses JWT cookies
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === "production", sameSite: "lax" },
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/auth", googleAuthRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/shop", shopRoutes);
 app.use("/api/parent", parentRoutes);
