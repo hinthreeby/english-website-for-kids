@@ -146,7 +146,7 @@ const LoginPage = () => {
     setError("");
     try {
       const deviceId = getDeviceId();
-      const res = await api.post("/auth/login-verify", { pendingToken, code, deviceId });
+      const res = await api.post("/api/auth/login-verify", { pendingToken, code, deviceId });
       const loggedInUser = res.data.user;
       setUser(loggedInUser);
       sessionStorage.setItem(LOGIN_KEY, "true");
@@ -166,7 +166,7 @@ const LoginPage = () => {
     setResendLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/resend-otp", { pendingToken });
+      const res = await api.post("/api/auth/resend-otp", { pendingToken });
       setPendingToken(res.data.pendingToken);
       setDigits(Array(CODE_LENGTH).fill(""));
       setResendCooldown(RESEND_COOLDOWN);

@@ -78,7 +78,7 @@ const OAuthVerifyPage = () => {
     setError("");
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/verify-code`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/verify-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -107,7 +107,7 @@ const OAuthVerifyPage = () => {
     setError("");
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/resend-code`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/resend-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

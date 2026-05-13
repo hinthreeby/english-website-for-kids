@@ -10,7 +10,7 @@ const CollectionPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    api.get("/progress/planets")
+    api.get("/api/progress/planets")
       .then((res) => {
         setPlanetData(res.data);
         // sync context if backend retroactively fixed planets

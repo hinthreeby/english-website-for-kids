@@ -14,9 +14,9 @@ const TeacherDashboard = () => {
   const loadData = async () => {
     try {
       const [statsRes, classroomsRes, listsRes] = await Promise.all([
-        api.get("/teacher/stats"),
-        api.get("/teacher/classrooms"),
-        api.get("/teacher/wordlists"),
+        api.get("/api/teacher/stats"),
+        api.get("/api/teacher/classrooms"),
+        api.get("/api/teacher/wordlists"),
       ]);
       setStats(statsRes.data);
       setClassrooms(classroomsRes.data.classrooms || []);
@@ -34,7 +34,7 @@ const TeacherDashboard = () => {
     event.preventDefault();
     if (!newClassroomName.trim()) return;
     try {
-      await api.post("/teacher/classroom", { name: newClassroomName.trim() });
+      await api.post("/api/teacher/classroom", { name: newClassroomName.trim() });
       setNewClassroomName("");
       loadData();
     } catch (err) {

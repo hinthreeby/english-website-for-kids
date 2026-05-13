@@ -88,7 +88,7 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      const res = await api.post("/auth/register-init", {
+      const res = await api.post("/api/auth/register-init", {
         username: form.username.trim(),
         email: form.email.trim(),
         password: form.password,
@@ -142,7 +142,7 @@ const RegisterPage = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/register-verify", { pendingToken, code });
+      const res = await api.post("/api/auth/register-verify", { pendingToken, code });
       setUser(res.data.user);
       playChime();
       navigate(getRoleHome(res.data.user.role), { replace: true });
@@ -160,7 +160,7 @@ const RegisterPage = () => {
     setResendLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/resend-otp", { pendingToken });
+      const res = await api.post("/api/auth/resend-otp", { pendingToken });
       setPendingToken(res.data.pendingToken);
       setDigits(Array(CODE_LENGTH).fill(""));
       setResendCooldown(RESEND_COOLDOWN);

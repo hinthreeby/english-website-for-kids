@@ -76,7 +76,7 @@ const ForgotPasswordPage = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await api.post("/auth/forgot-password", { email: email.trim() });
+      const res = await api.post("/api/auth/forgot-password", { email: email.trim() });
       setPendingToken(res.data.pendingToken);
       setStep("otp");
       setTimeout(() => focusInput(0), 100);
@@ -124,7 +124,7 @@ const ForgotPasswordPage = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/verify-reset-otp", { pendingToken, code });
+      const res = await api.post("/api/auth/verify-reset-otp", { pendingToken, code });
       setResetToken(res.data.resetToken);
       setStep("reset");
     } catch (err) {
@@ -141,7 +141,7 @@ const ForgotPasswordPage = () => {
     setResendLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/resend-otp", { pendingToken });
+      const res = await api.post("/api/auth/resend-otp", { pendingToken });
       setPendingToken(res.data.pendingToken);
       setDigits(Array(CODE_LENGTH).fill(""));
       setResendCooldown(RESEND_COOLDOWN);
@@ -169,7 +169,7 @@ const ForgotPasswordPage = () => {
     }
     setLoading(true);
     try {
-      await api.post("/auth/reset-password", {
+      await api.post("/api/auth/reset-password", {
         resetToken,
         newPassword: passwords.newPassword,
         confirmNewPassword: passwords.confirmNewPassword,

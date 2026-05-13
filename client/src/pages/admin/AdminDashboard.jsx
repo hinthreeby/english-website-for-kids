@@ -14,10 +14,10 @@ const AdminDashboard = () => {
   const load = async () => {
     try {
       const [statsRes, teachersRes, listsRes, usersRes] = await Promise.all([
-        api.get("/admin/stats"),
-        api.get("/admin/pending-teachers"),
-        api.get("/admin/pending-wordlists"),
-        api.get("/admin/users?limit=8"),
+        api.get("/api/admin/stats"),
+        api.get("/api/admin/pending-teachers"),
+        api.get("/api/admin/pending-wordlists"),
+        api.get("/api/admin/users?limit=8"),
       ]);
       setStats(statsRes.data);
       setPendingTeachers(teachersRes.data.teachers || []);
@@ -34,7 +34,7 @@ const AdminDashboard = () => {
 
   const approveTeacher = async (id) => {
     try {
-      await api.patch(`/admin/approve-teacher/${id}`);
+      await api.patch(`/api/admin/approve-teacher/${id}`);
       load();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to approve teacher");
@@ -43,7 +43,7 @@ const AdminDashboard = () => {
 
   const rejectTeacher = async (id) => {
     try {
-      await api.patch(`/admin/user/${id}`, { isActive: false });
+      await api.patch(`/api/admin/user/${id}`, { isActive: false });
       load();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to reject teacher");
@@ -52,7 +52,7 @@ const AdminDashboard = () => {
 
   const approveWordList = async (id) => {
     try {
-      await api.patch(`/admin/approve-wordlist/${id}`);
+      await api.patch(`/api/admin/approve-wordlist/${id}`);
       load();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to approve word list");

@@ -80,7 +80,7 @@ const ShopPage = () => {
       }
 
       try {
-        const response = await api.get("/shop/inventory");
+        const response = await api.get("/api/shop/inventory");
         setTotalStars(response.data.totalStars || 0);
         setInventory(response.data.inventory || emptyInventory);
       } catch {
@@ -132,7 +132,7 @@ const ShopPage = () => {
     const itemType = pendingMeta.itemType;
 
     try {
-      const response = await api.post("/shop/buy", {
+      const response = await api.post("/api/shop/buy", {
         itemId: pendingItem.id,
         itemType,
         price: pendingItem.price,

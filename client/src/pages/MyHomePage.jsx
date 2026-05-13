@@ -53,7 +53,7 @@ const MyHomePage = () => {
       }
 
       try {
-        const response = await api.get("/shop/inventory");
+        const response = await api.get("/api/shop/inventory");
         setInventory(response.data.inventory || emptyInventory);
       } catch {
         setInventory(emptyInventory);
@@ -110,7 +110,7 @@ const MyHomePage = () => {
     if (!itemId || !user) return;
 
     try {
-      await api.post("/shop/equip", { itemId, itemType });
+      await api.post("/api/shop/equip", { itemId, itemType });
       if (itemType === "house") {
         setInventory((prev) => ({ ...prev, equippedHouse: itemId }));
         setShowChangeHouse(false);

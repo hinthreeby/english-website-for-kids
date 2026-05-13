@@ -12,7 +12,7 @@ const AdminUsers = () => {
 
   const loadUsers = async () => {
     try {
-      const res = await api.get("/admin/users?limit=100");
+      const res = await api.get("/api/admin/users?limit=100");
       setUsers(res.data.users || []);
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to load users");
@@ -25,7 +25,7 @@ const AdminUsers = () => {
 
   const updateUser = async (id, payload) => {
     try {
-      await api.patch(`/admin/user/${id}`, payload);
+      await api.patch(`/api/admin/user/${id}`, payload);
       loadUsers();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to update user");

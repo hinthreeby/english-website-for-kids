@@ -43,7 +43,7 @@ const RoomPage = () => {
       }
 
       try {
-        const response = await api.get("/shop/inventory");
+        const response = await api.get("/api/shop/inventory");
         setInventory(response.data.inventory || emptyInventory);
       } catch {
         setInventory(emptyInventory);
@@ -87,7 +87,7 @@ const RoomPage = () => {
     if (!itemId) return;
 
     try {
-      await api.post("/shop/equip", {
+      await api.post("/api/shop/equip", {
         itemId,
         itemType: "room",
         roomType: roomId,

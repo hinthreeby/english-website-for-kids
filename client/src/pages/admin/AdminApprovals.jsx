@@ -12,8 +12,8 @@ const AdminApprovals = () => {
   const load = async () => {
     try {
       const [teachersRes, listsRes] = await Promise.all([
-        api.get("/admin/pending-teachers"),
-        api.get("/admin/pending-wordlists"),
+        api.get("/api/admin/pending-teachers"),
+        api.get("/api/admin/pending-wordlists"),
       ]);
       setTeachers(teachersRes.data.teachers || []);
       setWordLists(listsRes.data.lists || []);
@@ -28,7 +28,7 @@ const AdminApprovals = () => {
 
   const approveTeacher = async (id) => {
     try {
-      await api.patch(`/admin/approve-teacher/${id}`);
+      await api.patch(`/api/admin/approve-teacher/${id}`);
       load();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to approve teacher");
@@ -37,7 +37,7 @@ const AdminApprovals = () => {
 
   const approveWordList = async (id) => {
     try {
-      await api.patch(`/admin/approve-wordlist/${id}`);
+      await api.patch(`/api/admin/approve-wordlist/${id}`);
       load();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to approve word list");
@@ -46,7 +46,7 @@ const AdminApprovals = () => {
 
   const rejectTeacher = async (id) => {
     try {
-      await api.patch(`/admin/user/${id}`, { isActive: false });
+      await api.patch(`/api/admin/user/${id}`, { isActive: false });
       load();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to reject teacher");
@@ -55,7 +55,7 @@ const AdminApprovals = () => {
 
   const rejectWordList = async (id) => {
     try {
-      await api.patch(`/admin/reject-wordlist/${id}`);
+      await api.patch(`/api/admin/reject-wordlist/${id}`);
       load();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to reject word list");

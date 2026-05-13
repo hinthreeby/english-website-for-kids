@@ -23,7 +23,7 @@ const AdminProfile = () => {
     setProfileMsg({ text: "", error: false });
     setProfileLoading(true);
     try {
-      const res = await api.patch("/admin/profile", { email, displayName });
+      const res = await api.patch("/api/admin/profile", { email, displayName });
       if (setUser) setUser(res.data.user);
       setProfileMsg({ text: "Profile updated successfully.", error: false });
     } catch (err) {
@@ -42,7 +42,7 @@ const AdminProfile = () => {
     }
     setPwLoading(true);
     try {
-      await api.patch("/admin/change-password", { currentPassword, newPassword });
+      await api.patch("/api/admin/change-password", { currentPassword, newPassword });
       setPwMsg({ text: "Password changed successfully.", error: false });
       setCurrentPassword("");
       setNewPassword("");

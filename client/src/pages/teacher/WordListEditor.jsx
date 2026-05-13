@@ -15,7 +15,7 @@ const WordListEditor = () => {
 
   const loadLists = async () => {
     try {
-      const res = await api.get("/teacher/wordlists");
+      const res = await api.get("/api/teacher/wordlists");
       setLists(res.data.lists || []);
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to load word lists");
@@ -48,7 +48,7 @@ const WordListEditor = () => {
     event.preventDefault();
     setError("");
     try {
-      await api.post("/teacher/wordlist", { title, gameType, words });
+      await api.post("/api/teacher/wordlist", { title, gameType, words });
       setTitle("");
       setGameType("all");
       setWords([]);

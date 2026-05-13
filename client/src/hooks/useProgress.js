@@ -18,12 +18,12 @@ const useProgress = () => {
   }, []);
 
   const saveProgress = useCallback(async (gameId, starsEarned) => {
-    const response = await api.post("/progress/save", { gameId, starsEarned });
+    const response = await api.post("/api/progress/save", { gameId, starsEarned });
     return response.data;
   }, []);
 
   const fetchMyProgress = useCallback(async () => {
-    const response = await api.get("/progress/me");
+    const response = await api.get("/api/progress/me");
     return response.data;
   }, []);
 

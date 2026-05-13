@@ -31,7 +31,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
     setProfileMsg({ text: "", error: false });
     setProfileLoading(true);
     try {
-      const res = await api.patch(`${apiBase}/profile`, { displayName, email });
+      const res = await api.patch(`${apiBase}/api/profile`, { displayName, email });
       if (setUser) setUser(res.data.user);
       setProfileMsg({ text: "Profile updated successfully.", error: false });
     } catch (err) {
@@ -50,7 +50,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
     }
     setPwLoading(true);
     try {
-      await api.patch(`${apiBase}/change-password`, { currentPassword, newPassword });
+      await api.patch(`${apiBase}/api/change-password`, { currentPassword, newPassword });
       setPwMsg({ text: "Password changed successfully.", error: false });
       setCurrentPassword("");
       setNewPassword("");

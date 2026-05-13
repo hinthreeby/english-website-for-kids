@@ -25,7 +25,7 @@ const ParentDashboard = () => {
 
   const loadChildren = async () => {
     try {
-      const res = await api.get("/parent/children");
+      const res = await api.get("/api/parent/children");
       setChildren(res.data.children || []);
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to load children");
@@ -42,7 +42,7 @@ const ParentDashboard = () => {
     event.preventDefault();
     setError("");
     try {
-      await api.post("/parent/create-child", createForm);
+      await api.post("/api/parent/create-child", createForm);
       setCreateForm({ username: "", password: "" });
       loadChildren();
     } catch (err) {
@@ -52,7 +52,7 @@ const ParentDashboard = () => {
 
   const switchToChild = async (childId) => {
     try {
-      await api.post("/auth/switch-child", { childId });
+      await api.post("/api/auth/switch-child", { childId });
       await refreshUser();
       navigate("/", { replace: true });
     } catch (err) {

@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = useCallback(async () => {
     try {
-      const response = await api.get("/auth/me");
+      const response = await api.get("/api/auth/me");
       setUser(response.data.user);
     } catch {
       setUser(null);
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   // Legacy register (calls old endpoint that creates account immediately)
   const register = useCallback(async (payload) => {
-    const response = await api.post("/auth/register", payload);
+    const response = await api.post("/api/auth/register", payload);
     setUser(response.data.user);
     return response.data.user;
   }, []);
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
     payload.deviceId = getDeviceId();
 
-    const response = await api.post("/auth/login", payload);
+    const response = await api.post("/api/auth/login", payload);
 
     if (response.data.requiresTwoFactor) {
       return { requiresTwoFactor: true, pendingToken: response.data.pendingToken };
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     try {
-      await api.post("/auth/logout");
+      await api.post("/api/auth/logout");
     } catch {
       // Client-side logout should still succeed even if server logout fails.
     } finally {
