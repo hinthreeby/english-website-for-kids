@@ -129,6 +129,11 @@ router.post("/register-verify", async (req, res) => {
 
 // Legacy register (kept for backward compatibility with existing AuthContext.register())
 router.post("/register", async (req, res) => {
+  // Check if body exists
+  if (!req.body) {
+    return res.status(400).json({ error: "Request body is required." });
+  }
+
   const { username, password, role, email, confirmPassword } = req.body;
   const requestedRole = role || "parent";
 
