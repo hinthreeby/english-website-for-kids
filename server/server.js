@@ -20,9 +20,21 @@ const passport = require("./config/passport");
 
 const app = express();
 
+// Configure CORS for multiple origins (dev + production)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://english-website-for-kids.vercel.app",
+];
+
+// Add CLIENT_URL from env if set (for flexibility)
+if (process.env.CLIENT_URL && !allowedOrigins.includes(process.env.CLIENT_URL)) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
