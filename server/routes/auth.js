@@ -49,6 +49,8 @@ function buildUserPayload(user) {
 // ── Registration (2-step with OTP) ───────────────────────────────────────────
 
 router.post("/register-init", async (req, res) => {
+  console.log("REGISTER INIT START");
+  
   const { username, email, password, confirmPassword, role } = req.body;
   const requestedRole = role || "parent";
 
@@ -83,9 +85,13 @@ router.post("/register-init", async (req, res) => {
       passwordPlain: password,
     });
 
+    console.log("before send mail", { email: emailTrimmed, otp });
     await sendOtpEmail(emailTrimmed, otp, "register");
+    console.log("after send mail");
+    
     return res.json({ pendingToken });
   } catch (err) {
+    console.error("REGISTER INIT ERROR:", err);
     return res.status(500).json({ error: err.message });
   }
 });
