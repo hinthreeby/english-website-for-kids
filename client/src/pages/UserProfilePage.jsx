@@ -8,9 +8,7 @@ import useMouseParticles from "../hooks/useMouseParticles";
 import profileAudio from "../assets/general/sound/parent_profile.mp3";
 
 const PROFILE_LINES = [
-  "Update your profile here! ✨",
-  "Keep your info up to date!",
-  "You're a wonderful parent! 🌟",
+  "You can change your personal information here! ✨"
 ];
 
 const UserProfilePage = ({ apiBase, roleLabel }) => {

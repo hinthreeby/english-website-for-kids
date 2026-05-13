@@ -1,8 +1,8 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const passport = require("../config/passport");
-const transporter = require("../config/email");
 const { createPending, verifyOtp, getPending } = require("../services/otpService");
+const { sendOtpEmail } = require("../services/emailService");
 const User = require("../models/User");
 
 const router = express.Router();
@@ -17,26 +17,6 @@ const buildCookieOptions = () => ({
   secure: process.env.NODE_ENV === "production",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
-
-async function sendOtpEmail(email, otp) {
-  await transporter.sendMail({
-    from: `"Fun English" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Mã xác thực của bạn – Fun English",
-    html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f8fafc;border-radius:12px;">
-        <h2 style="color:#6366f1;margin-top:0;">🔐 Xác thực đăng nhập</h2>
-        <p style="color:#334155;">Mã xác thực 2 bước của bạn là:</p>
-        <div style="font-size:40px;font-weight:700;letter-spacing:10px;color:#1e293b;text-align:center;
-                    background:#e0e7ff;border-radius:8px;padding:20px 0;margin:24px 0;">
-          ${otp}
-        </div>
-        <p style="color:#64748b;font-size:14px;">Mã có hiệu lực trong <strong>5 phút</strong>.<br/>
-           Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này.</p>
-      </div>
-    `,
-  });
-}
 
 // Step 1: redirect to Google consent screen
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -56,8 +36,8 @@ router.get(
         return res.redirect(`${CLIENT_URL}/login?error=no_email`);
       }
 
-      const { otp, pendingToken } = createPending(user._id, user.email);
-      await sendOtpEmail(user.email, otp);
+      const { otp, pendingToken } = createPending(user._id, user.email, "login-2fa");
+      await sendOtpEmail(user.email, otp, "login-2fa");
 
       return res.redirect(`${CLIENT_URL}/oauth/verify?token=${pendingToken}`);
     } catch (err) {
@@ -73,7 +53,7 @@ router.post("/verify-code", async (req, res) => {
   const { pendingToken, code } = req.body;
 
   if (!pendingToken || !code) {
-    return res.status(400).json({ error: "Thiếu thông tin xác thực." });
+    return res.status(400).json({ error: "Missing verification data." });
   }
 
   const result = verifyOtp(pendingToken, code.trim());
@@ -83,10 +63,10 @@ router.post("/verify-code", async (req, res) => {
 
   try {
     const user = await User.findById(result.userId);
-    if (!user) return res.status(404).json({ error: "Người dùng không tồn tại." });
+    if (!user) return res.status(404).json({ error: "User not found." });
 
     if (!user.isActive) {
-      return res.status(403).json({ error: "Tài khoản đã bị vô hiệu hóa." });
+      return res.status(403).json({ error: "Your account has been disabled." });
     }
 
     const token = signToken(user._id);
@@ -107,28 +87,27 @@ router.post("/verify-code", async (req, res) => {
   }
 });
 
-// Resend OTP (generate a new code for an existing pending session)
+// Resend OTP for Google OAuth verify page
 router.post("/resend-code", async (req, res) => {
   const { pendingToken } = req.body;
 
   if (!pendingToken) {
-    return res.status(400).json({ error: "Thiếu token phiên xác thực." });
+    return res.status(400).json({ error: "Missing session token." });
   }
 
   const record = getPending(pendingToken);
   if (!record) {
-    return res.status(400).json({ error: "Phiên xác thực không tồn tại hoặc đã hết hạn. Vui lòng đăng nhập lại." });
+    return res.status(400).json({ error: "Session not found or expired. Please log in again." });
   }
 
   try {
-    const { otp, pendingToken: newToken } = createPending(record.userId, record.email);
-    await sendOtpEmail(record.email, otp);
-
+    const { otp, pendingToken: newToken } = createPending(record.userId, record.email, "login-2fa");
+    await sendOtpEmail(record.email, otp, "login-2fa");
     return res.json({ pendingToken: newToken });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("Resend OTP error:", err.message);
-    return res.status(500).json({ error: "Gửi email thất bại. Vui lòng thử lại." });
+    return res.status(500).json({ error: "Failed to send email. Please try again." });
   }
 });
 

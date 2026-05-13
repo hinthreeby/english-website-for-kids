@@ -9,9 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import dashboardAudio from "../../assets/general/sound/parent_dashboard.mp3";
 
 const DASHBOARD_LINES = [
-  "Welcome to Mission Control! 🚀",
-  "Track your children's learning journey!",
-  "You're doing an amazing job! ⭐",
+  "You can track your child's learning progress here! ⭐"
 ];
 
 const ParentDashboard = () => {

@@ -26,6 +26,7 @@ import AdminApprovals from "./pages/admin/AdminApprovals";
 import AdminProfile from "./pages/admin/AdminProfile";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage";
 import OAuthVerifyPage from "./pages/OAuthVerifyPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 
 const App = () => {
   useMouseParticles();
@@ -37,6 +38,7 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           <Route path="/oauth/verify" element={<OAuthVerifyPage />} />
 

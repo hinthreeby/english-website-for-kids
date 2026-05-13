@@ -4,7 +4,20 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import api from "../lib/api";
 
 const AuthContext = createContext(null);
-const LOGIN_KEY = "mascot_just_logged_in";
+
+export const LOGIN_KEY = "mascot_just_logged_in";
+
+export function getDeviceId() {
+  let id = localStorage.getItem("funeng_device_id");
+  if (!id) {
+    id =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("funeng_device_id", id);
+  }
+  return id;
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -25,18 +38,31 @@ export const AuthProvider = ({ children }) => {
     refreshUser();
   }, [refreshUser]);
 
+  // Legacy register (calls old endpoint that creates account immediately)
   const register = useCallback(async (payload) => {
     const response = await api.post("/auth/register", payload);
     setUser(response.data.user);
     return response.data.user;
   }, []);
 
+  /**
+   * Login with email/username + password.
+   * Returns the user object on success, or { requiresTwoFactor: true, pendingToken } if 2FA is needed.
+   */
   const login = useCallback(async (arg1, arg2) => {
     const payload =
       typeof arg1 === "object" && arg1 !== null
         ? arg1
         : { username: arg1, password: arg2, identifier: arg1 };
+
+    payload.deviceId = getDeviceId();
+
     const response = await api.post("/auth/login", payload);
+
+    if (response.data.requiresTwoFactor) {
+      return { requiresTwoFactor: true, pendingToken: response.data.pendingToken };
+    }
+
     setUser(response.data.user);
     sessionStorage.setItem(LOGIN_KEY, "true");
     return response.data.user;

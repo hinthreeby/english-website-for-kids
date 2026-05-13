@@ -81,6 +81,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    trustedDevices: [
+      {
+        tokenHash: { type: String },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

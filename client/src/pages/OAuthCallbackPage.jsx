@@ -38,7 +38,7 @@ const OAuthCallbackPage = () => {
           animation: "spin 0.8s linear infinite",
         }}
       />
-      <p style={{ color: "#64748b", fontSize: "1rem" }}>Đang đăng nhập...</p>
+      <p style={{ color: "#64748b", fontSize: "1rem" }}>Log in...</p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

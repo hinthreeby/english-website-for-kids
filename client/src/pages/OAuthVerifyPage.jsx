@@ -70,7 +70,7 @@ const OAuthVerifyPage = () => {
     e.preventDefault();
     const code = digits.join("");
     if (code.length < CODE_LENGTH) {
-      setError("Vui lòng nhập đủ 6 chữ số.");
+      setError("Please enter all 6 digits.");
       return;
     }
 
@@ -87,7 +87,7 @@ const OAuthVerifyPage = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Xác thực thất bại.");
+        setError(data.error || "Verification failed.");
         setDigits(Array(CODE_LENGTH).fill(""));
         focusInput(0);
         return;
@@ -95,7 +95,7 @@ const OAuthVerifyPage = () => {
 
       navigate(getRoleHome(data.user.role), { replace: true });
     } catch {
-      setError("Lỗi kết nối. Vui lòng thử lại.");
+      setError("Connection error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ const OAuthVerifyPage = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Gửi lại thất bại.");
+        setError(data.error || "Resend failed.");
         return;
       }
 
@@ -125,7 +125,7 @@ const OAuthVerifyPage = () => {
       setResendCooldown(RESEND_COOLDOWN);
       focusInput(0);
     } catch {
-      setError("Lỗi kết nối. Vui lòng thử lại.");
+      setError("Connection error. Please try again.");
     } finally {
       setResendLoading(false);
     }
@@ -146,22 +146,22 @@ const OAuthVerifyPage = () => {
       <div className="shooting shooting-1" aria-hidden="true" />
       <div className="shooting shooting-2" aria-hidden="true" />
 
-      <form className="auth-card" onSubmit={handleSubmit} style={{ gap: "1rem" }}>
-        <h2>📧 Xác thực 2 bước</h2>
+      <form className="auth-card" onSubmit={handleSubmit} style={{ gap: "1.5rem", padding: "3rem 2.5rem" }}>
+        <h2>Two-Step Verification</h2>
         <p className="subtitle" style={{ marginBottom: "0.25rem" }}>
-          Mã xác thực đã được gửi đến email của bạn.
+          A verification code was sent to your email.
         </p>
         <p style={{ color: "#64748b", fontSize: "0.85rem", margin: 0 }}>
-          Mã có hiệu lực trong 5 phút.
+          Code expires in 5 minutes.
         </p>
 
         {/* 6-digit OTP inputs */}
         <div
           style={{
             display: "flex",
-            gap: "10px",
+            gap: "8px",
             justifyContent: "center",
-            margin: "0.5rem 0",
+            margin: "2rem 0",
           }}
           onPaste={handlePaste}
         >
@@ -176,19 +176,22 @@ const OAuthVerifyPage = () => {
               onChange={(e) => handleDigitChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               style={{
-                width: "46px",
-                height: "56px",
+                width: "48px",
+                height: "54px",
                 textAlign: "center",
-                fontSize: "1.6rem",
+                fontSize: "1.5rem",
                 fontWeight: "700",
-                borderRadius: "10px",
+                borderRadius: "9px",
                 border: `2px solid ${error ? "#f87171" : digit ? "#6366f1" : "#cbd5e1"}`,
                 outline: "none",
                 background: "#fff",
                 color: "#1e293b",
+                padding: "0",
+                boxSizing: "border-box",
                 transition: "border-color 0.15s",
+                flex: "0 0 auto",
               }}
-              aria-label={`Chữ số ${i + 1}`}
+              aria-label={`Digit ${i + 1}`}
             />
           ))}
         </div>
@@ -200,7 +203,7 @@ const OAuthVerifyPage = () => {
           type="submit"
           disabled={loading || digits.join("").length < CODE_LENGTH}
         >
-          {loading ? "Đang xác thực..." : "✅ Xác nhận"}
+          {loading ? "Verifying..." : "Confirm"}
         </button>
 
         <button
@@ -211,10 +214,10 @@ const OAuthVerifyPage = () => {
           style={{ fontSize: "0.9rem" }}
         >
           {resendLoading
-            ? "Đang gửi..."
+            ? "Sending..."
             : resendCooldown > 0
-            ? `Gửi lại mã (${resendCooldown}s)`
-            : "🔄 Gửi lại mã"}
+            ? `Resend code (${resendCooldown}s)`
+            : "Resend code"}
         </button>
 
         <button
@@ -223,7 +226,7 @@ const OAuthVerifyPage = () => {
           onClick={() => navigate("/login")}
           style={{ fontSize: "0.85rem", opacity: 0.7 }}
         >
-          ← Quay lại đăng nhập
+          ← Back to Login
         </button>
       </form>
     </div>
