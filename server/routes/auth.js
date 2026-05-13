@@ -85,14 +85,19 @@ router.post("/register-init", async (req, res) => {
       passwordPlain: password,
     });
 
-    console.log("before send mail", { email: emailTrimmed, otp });
-    await sendOtpEmail(emailTrimmed, otp, "register");
-    console.log("after send mail");
+    console.log("[REGISTER] Attempting to send OTP", { email: emailTrimmed });
+    try {
+      await sendOtpEmail(emailTrimmed, otp, "register");
+      console.log("[REGISTER] OTP sent successfully");
+    } catch (emailErr) {
+      console.error("[REGISTER] Email sending failed:", emailErr.message);
+      return res.status(500).json({ error: "Failed to send verification email. Please check your email address or try again later." });
+    }
     
     return res.json({ pendingToken });
   } catch (err) {
-    console.error("REGISTER INIT ERROR:", err);
-    return res.status(500).json({ error: err.message });
+    console.error("[REGISTER-INIT] Error:", err.message);
+    return res.status(500).json({ error: err.message || "Registration failed. Please try again." });
   }
 });
 
@@ -234,7 +239,14 @@ router.post("/login", async (req, res) => {
       const { otp, pendingToken } = createPending(user._id, user.email, "login-2fa", {
         deviceId: deviceId || null,
       });
-      await sendOtpEmail(user.email, otp, "login-2fa");
+      console.log("[LOGIN] Sending 2FA code to:", user.email);
+      try {
+        await sendOtpEmail(user.email, otp, "login-2fa");
+        console.log("[LOGIN] 2FA code sent successfully");
+      } catch (emailErr) {
+        console.error("[LOGIN] Email sending failed:", emailErr.message);
+        return res.status(500).json({ error: "Failed to send login code. Please try again or use a trusted device." });
+      }
       return res.json({ requiresTwoFactor: true, pendingToken });
     }
 
@@ -323,10 +335,18 @@ router.post("/resend-otp", async (req, res) => {
       passwordPlain,
       deviceId,
     });
-    await sendOtpEmail(email, otp, purpose);
+    console.log("[RESEND-OTP] Resending OTP to:", email, "(purpose:", purpose + ")");
+    try {
+      await sendOtpEmail(email, otp, purpose);
+      console.log("[RESEND-OTP] OTP resent successfully");
+    } catch (emailErr) {
+      console.error("[RESEND-OTP] Email sending failed:", emailErr.message);
+      return res.status(500).json({ error: "Failed to resend verification code. Please try again later." });
+    }
     return res.json({ pendingToken: newToken });
-  } catch {
-    return res.status(500).json({ error: "Failed to send email. Please try again." });
+  } catch (err) {
+    console.error("[RESEND-OTP] Unexpected error:", err.message);
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -347,7 +367,14 @@ router.post("/forgot-password", async (req, res) => {
       });
 
     const { otp, pendingToken } = createPending(user._id, user.email, "reset");
-    await sendOtpEmail(user.email, otp, "reset");
+    console.log("[FORGOT-PASSWORD] Sending password reset OTP to:", user.email);
+    try {
+      await sendOtpEmail(user.email, otp, "reset");
+      console.log("[FORGOT-PASSWORD] Reset OTP sent successfully");
+    } catch (emailErr) {
+      console.error("[FORGOT-PASSWORD] Email sending failed:", emailErr.message);
+      return res.status(500).json({ error: "Failed to send password reset code. Please try again later." });
+    }
     return res.json({ pendingToken });
   } catch (err) {
     return res.status(500).json({ error: err.message });
