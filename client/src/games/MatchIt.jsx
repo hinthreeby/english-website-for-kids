@@ -117,7 +117,9 @@ const MatchIt = ({ onComplete }) => {
                 .join(" ")}
               onClick={() => onCardClick(card)}
             >
-              {isOpen ? card.text : "✨"}
+              <span style={{ fontSize: "0.5em", display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+                {isOpen ? card.text : "⭐"}
+              </span>
             </button>
           );
         })}

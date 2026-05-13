@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import astronautImg from "../assets/general/astronaut/astronaut_3.png";
 import jupiterImg from "../assets/general/planet/jupiter.png";
 import starImg from "../assets/general/star/star.png";
+import gameResultSound from "../assets/general/sound/Game-Result.mp3";
 import { useAuth } from "../context/AuthContext";
 import { celebrationMessages } from "../data/games";
 import useProgress from "../hooks/useProgress";
@@ -23,6 +24,7 @@ const CompletionPage = () => {
   const [bonusInfo, setBonusInfo] = useState({ awarded: false, stars: 0 });
   const hasSaved = useRef(false);
   const hasPlayedCelebration = useRef(false);
+  const audioRef = useRef({ success: null, celebration: null });
 
   const starsEarned = Math.max(0, Math.min(3, Number(state?.stars || 0)));
 
@@ -57,23 +59,131 @@ const CompletionPage = () => {
     }
 
     hasPlayedCelebration.current = true;
-    const audio = new Audio("/sounds/success.mp3");
-    audio.volume = 0.6;
-    audio.play().catch(() => {
+    
+    // Play success sound
+    const successAudio = new Audio("/sounds/success.mp3");
+    successAudio.volume = 0.6;
+    successAudio.play().catch(() => {
       console.log("Autoplay blocked");
     });
+    audioRef.current.success = successAudio;
+    
+    // Play game result celebration sound with delay
+    const celebrationAudio = new Audio(gameResultSound);
+    celebrationAudio.volume = 0.7;
+    setTimeout(() => {
+      celebrationAudio.play().catch(() => {
+        console.log("Celebration sound autoplay blocked");
+      });
+    }, 500);
+    audioRef.current.celebration = celebrationAudio;
   }, [state?.stars]);
 
   useEffect(() => {
     if (state?.stars == null) {
       return;
     }
-    confetti({
-      particleCount: 220,
-      spread: 90,
-      origin: { y: 0.6 },
-    });
+    
+    const timeoutIds = [];
+    
+    // Reset confetti and start immediately with small delay to ensure DOM is ready
+    const startConfetti = setTimeout(() => {
+      // Main burst from center
+      confetti({
+        particleCount: 250,
+        spread: 90,
+        origin: { y: 0.6 },
+        gravity: 0.8,
+        decay: 0.95,
+      });
+      
+      // Left side burst
+      timeoutIds.push(setTimeout(() => {
+        confetti({
+          particleCount: 180,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0.1, y: 0.5 },
+          gravity: 0.8,
+          decay: 0.95,
+        });
+      }, 150));
+      
+      // Right side burst
+      timeoutIds.push(setTimeout(() => {
+        confetti({
+          particleCount: 180,
+          angle: 120,
+          spread: 60,
+          origin: { x: 0.9, y: 0.5 },
+          gravity: 0.8,
+          decay: 0.95,
+        });
+      }, 300));
+      
+      // Top burst
+      timeoutIds.push(setTimeout(() => {
+        confetti({
+          particleCount: 120,
+          spread: 180,
+          origin: { y: 0.2 },
+          gravity: 0.7,
+          decay: 0.93,
+        });
+      }, 450));
+      
+      // Bottom burst
+      timeoutIds.push(setTimeout(() => {
+        confetti({
+          particleCount: 100,
+          angle: 90,
+          spread: 120,
+          origin: { y: 0.9 },
+          gravity: 1,
+          decay: 0.96,
+        });
+      }, 600));
+      
+      // Continue with repeated bursts every 2 seconds until component unmounts
+      const repeatConfetti = setInterval(() => {
+        confetti({
+          particleCount: 150,
+          spread: 100,
+          origin: { y: Math.random() * 0.6 + 0.3 },
+          gravity: 0.8,
+          decay: 0.95,
+        });
+      }, 2000);
+      
+      timeoutIds.push(repeatConfetti);
+    }, 50);
+    
+    timeoutIds.push(startConfetti);
+    
+    // Cleanup: clear all timeouts when component unmounts
+    return () => {
+      timeoutIds.forEach(id => {
+        if (typeof id === 'number') {
+          clearTimeout(id);
+          clearInterval(id);
+        }
+      });
+    };
   }, [state?.stars]);
+
+  // Cleanup audio when component unmounts
+  useEffect(() => {
+    return () => {
+      if (audioRef.current.success) {
+        audioRef.current.success.pause();
+        audioRef.current.success.currentTime = 0;
+      }
+      if (audioRef.current.celebration) {
+        audioRef.current.celebration.pause();
+        audioRef.current.celebration.currentTime = 0;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (state?.stars == null || !state?.gameId || hasSaved.current) {

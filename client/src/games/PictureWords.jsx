@@ -80,24 +80,30 @@ const PictureWords = ({ onComplete }) => {
         <section className="game-panel">
           <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
           <div className="picture-target">{current.answer.emoji}</div>
-          <div className="options-stack">
-        {current.options.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            className={[
-              "kid-btn option-word",
-              feedback.id === option.id && feedback.type === "wrong" ? "shake" : "",
-              feedback.id === option.id && feedback.type === "correct" ? "flash-good" : "",
-              hint === option.id ? "wiggle" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            onClick={() => handleChoice(option)}
-          >
-            {option.word}
-          </button>
-        ))}
+          <div className="options-grid three">
+        {current.options.map((option) => {
+          const isCorrect = option.id === current.answer.id;
+          const className = [
+            "kid-btn option-card",
+            feedback.id === option.id && feedback.type === "wrong" ? "shake" : "",
+            feedback.id === option.id && feedback.type === "correct" ? "flash-good" : "",
+            hint === option.id ? "wiggle" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+          return (
+            <button
+              key={option.id}
+              type="button"
+              className={className}
+              onClick={() => handleChoice(option)}
+            >
+              <span className="big-emoji">{option.emoji}</span>
+              <span>{option.word}</span>
+            </button>
+          );
+        })}
           </div>
         </section>
       </div>
