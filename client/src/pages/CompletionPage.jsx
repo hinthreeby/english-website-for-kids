@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import astronautImg from "../assets/general/astronaut/astronaut_3.png";
 import jupiterImg from "../assets/general/planet/jupiter.png";
 import starImg from "../assets/general/star/star.png";
-import gameResultSound from "../assets/general/sound/Game-Result.mp3";
+const gameResultSound = "/sounds/Game-Result.mp3";
 import { useAuth } from "../context/AuthContext";
 import { celebrationMessages } from "../data/games";
 import useProgress from "../hooks/useProgress";

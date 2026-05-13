@@ -6,7 +6,7 @@ import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
 import ParentMascot from "../../components/ParentMascot";
 import { useAuth } from "../../context/AuthContext";
-import dashboardAudio from "../../assets/general/sound/parent_dashboard.mp3";
+const dashboardAudio = "/sounds/parent_dashboard.mp3";
 
 const DASHBOARD_LINES = [
   "You can track your child's learning progress here! ⭐"

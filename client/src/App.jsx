@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import useMouseParticles from "./hooks/useMouseParticles";
 import useBgMusic from "./hooks/useBgMusic";
-import bgMusic from "./assets/general/sound/background_music.mp3";
+const bgMusic = "/sounds/background_music.mp3";
 import HomePage from "./pages/HomePage";
 import GamePage from "./pages/GamePage";
 import StoryPlayerPage from "./pages/StoryPlayerPage";

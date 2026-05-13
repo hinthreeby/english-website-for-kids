@@ -31,8 +31,8 @@ export const getTimeBackground = () => {
   return nightBg;
 };
 
-export const HOME_AUDIO = "/src/assets/shop/home.mp3";
-export const CAR_AUDIO = "/src/assets/shop/car.mp3";
+export const HOME_AUDIO = "/sounds/home.mp3";
+export const CAR_AUDIO = "/sounds/car.mp3";
 
 export const HOUSES = [
   { id: "house_1", name: "Cozy Cottage", image: house1, price: 50, tier: 1 },

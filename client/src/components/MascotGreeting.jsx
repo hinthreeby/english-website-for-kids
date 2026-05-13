@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import mascotImg from "../assets/general/astronaut/welcome_character.png";
-import hiAudio from "../assets/general/sound/hi.mp3";
-import welcomeBackAudio from "../assets/general/sound/welcomeback.mp3";
+const hiAudio = "/sounds/hi.mp3";
+const welcomeBackAudio = "/sounds/welcomeback.mp3";
 
 const GREETING_KEY = "mascot_greeted";
 const LOGIN_KEY = "mascot_just_logged_in";

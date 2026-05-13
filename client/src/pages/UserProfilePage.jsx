@@ -5,7 +5,7 @@ import StarBackground from "../components/StarBackground";
 import ParentMascot from "../components/ParentMascot";
 import { useAuth } from "../context/AuthContext";
 import useMouseParticles from "../hooks/useMouseParticles";
-import profileAudio from "../assets/general/sound/parent_profile.mp3";
+const profileAudio = "/sounds/parent_profile.mp3";
 
 const PROFILE_LINES = [
   "You can change your personal information here! ✨"

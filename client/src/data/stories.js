@@ -1,6 +1,6 @@
-import seaStoryCover from "../assets/story/sea_story/MIA_SEA_STORY.png";
-import luckyCoinCover from "../assets/story/Lucky_coin/Lucky_coin.png";
-import lilyCover from "../assets/story/Lily/Lily.png";
+const seaStoryCover = "/story/sea_story/MIA_SEA_STORY.png";
+const luckyCoinCover = "/story/Lucky_coin/Lucky_coin.png";
+const lilyCover = "/story/Lily/Lily.png";
 
 export const stories = [
   {
@@ -10,7 +10,7 @@ export const stories = [
     emoji: "🌊",
     thumbnail: seaStoryCover,
     theme: "#42B8FF",
-    videoPath: "/src/assets/story/sea_story/MIA_SEA_STORY.mp4",
+    videoPath: "/story/sea_story/MIA_SEA_STORY.mp4",
     duration: "12:30",
   },
   {
@@ -20,7 +20,7 @@ export const stories = [
     emoji: "🪙",
     thumbnail: luckyCoinCover,
     theme: "#FFD700",
-    videoPath: "/src/assets/story/Lucky_coin/Lucky_coin.mp4",
+    videoPath: "/story/Lucky_coin/Lucky_coin.mp4",
     duration: "10:45",
   },
   {
@@ -30,7 +30,7 @@ export const stories = [
     emoji: "🌼",
     thumbnail: lilyCover,
     theme: "#FF89C2",
-    videoPath: "/src/assets/story/Lily/Lily.mp4",
+    videoPath: "/story/Lily/Lily.mp4",
     duration: "09:30",
   },
 ];
