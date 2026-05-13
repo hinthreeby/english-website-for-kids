@@ -6,23 +6,18 @@ const { protect } = require("../middleware/authMiddleware");
 const { getDayGap } = require("../services/streakService");
 const { createPending, verifyOtp, getPending, createResetToken, consumeResetToken } = require("../services/otpService");
 const { sendOtpEmail } = require("../services/emailService");
+const env = require("../config/env");
+const { cookieOptions } = require("../config/cookies");
 
 const router = express.Router();
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-const buildCookieOptions = () => ({
-  httpOnly: true,
-  sameSite: "lax",
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+const signToken = (id) => jwt.sign({ id }, env.JWT_SECRET, { expiresIn: "7d" });
 
 const sendToken = (user, res) => {
   const token = signToken(user._id);
-  res.cookie("token", token, buildCookieOptions());
+  res.cookie("token", token, cookieOptions);
   return token;
 };
 
@@ -447,7 +442,7 @@ router.get("/me", protect, async (req, res) => {
 });
 
 router.post("/logout", (_req, res) => {
-  res.clearCookie("token", buildCookieOptions());
+  res.clearCookie("token", cookieOptions);
   return res.json({ success: true });
 });
 
