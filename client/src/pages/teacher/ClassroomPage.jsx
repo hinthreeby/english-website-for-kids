@@ -49,7 +49,7 @@ function ClassAvgScoresChart({ classId }) {
 
   useEffect(() => {
     api
-      .get(`/classes/${classId}/average-scores`)
+      .get(`/api/classes/${classId}/average-scores`)
       .then((res) => setData(res.data.data || []))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
@@ -89,7 +89,7 @@ function CompletionPie({ classId }) {
 
   useEffect(() => {
     api
-      .get(`/classes/${classId}/completion-summary`)
+      .get(`/api/classes/${classId}/completion-summary`)
       .then((res) => setData(res.data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
@@ -145,7 +145,7 @@ function ProgressHistoryChart({ classId }) {
 
   useEffect(() => {
     api
-      .get(`/classes/${classId}/progress-history`, { params: { weeks: 8 } })
+      .get(`/api/classes/${classId}/progress-history`, { params: { weeks: 8 } })
       .then((res) => setData(res.data.data || []))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
@@ -194,7 +194,7 @@ function StudentsTable({ classId }) {
   useEffect(() => {
     setLoading(true);
     api
-      .get(`/classes/${classId}/students-analytics`, { params: { sort, order, filter, page, limit } })
+      .get(`/api/classes/${classId}/students-analytics`, { params: { sort, order, filter, page, limit } })
       .then((res) => {
         setRows(res.data.data || []);
         setTotal(res.data.total || 0);
@@ -332,7 +332,7 @@ const ClassroomPage = () => {
 
   useEffect(() => {
     api
-      .get(`/teacher/classroom/${id}/students`)
+      .get(`/api/teacher/classroom/${id}/students`)
       .then((res) => setStudents(res.data.students || []))
       .catch((err) => setError(err?.response?.data?.error || "Failed to load students"));
   }, [id]);

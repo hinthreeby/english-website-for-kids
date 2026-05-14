@@ -50,7 +50,7 @@ function ScoreHistoryChart({ childId }) {
   useEffect(() => {
     setLoading(true);
     api
-      .get(`/children/${childId}/score-history`, { params: { period, limit: 12 } })
+      .get(`/api/children/${childId}/score-history`, { params: { period, limit: 12 } })
       .then((res) => setData(res.data.data || []))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
@@ -98,7 +98,7 @@ function ScoresByGameChart({ childId }) {
 
   useEffect(() => {
     api
-      .get(`/children/${childId}/scores-by-game-type`)
+      .get(`/api/children/${childId}/scores-by-game-type`)
       .then((res) => setData(res.data.data || []))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
@@ -138,7 +138,7 @@ function CompletionRing({ childId }) {
 
   useEffect(() => {
     api
-      .get(`/children/${childId}/completion-rate`)
+      .get(`/api/children/${childId}/completion-rate`)
       .then((res) => setData(res.data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
@@ -193,7 +193,7 @@ function PlayCalendar({ childId }) {
 
   useEffect(() => {
     api
-      .get(`/children/${childId}/play-calendar`, { params: { days: 30 } })
+      .get(`/api/children/${childId}/play-calendar`, { params: { days: 30 } })
       .then((res) => setData(res.data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
@@ -260,7 +260,7 @@ const ChildProgress = () => {
 
   useEffect(() => {
     api
-      .get(`/parent/child/${childId}/progress`)
+      .get(`/api/parent/child/${childId}/progress`)
       .then((res) => setSummary({ child: res.data.child, results: res.data.results || [] }))
       .catch((err) => setError(err?.response?.data?.error || "Failed to load progress"))
       .finally(() => setLoading(false));
