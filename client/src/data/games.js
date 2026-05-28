@@ -7,6 +7,7 @@ import matchItThumb from "../assets/MatchIt/MatchIt.png";
 import spaceSpeakThumb from "../assets/SpacePronounce/space_speak.png";
 import funnyAnimalAvatarThumb from "../assets/funny_animal_game/funny_animal_game_avatar.png";
 import oceanGameAvatarThumb from "../assets/ocean_game/ocean_game_avatar.png";
+import familyPhotoThumb from "../assets/games/unit1-family/dad.png";
 
 export const games = [
   {
@@ -86,7 +87,20 @@ export const games = [
   },
 ];
 
-export const gameById = games.reduce((acc, game) => {
+// Games accessible via URL but not shown on the home page grid
+const roadmapGames = [
+  {
+    id: "family-photo",
+    name: "Family Photo",
+    emoji: "👨‍👩‍👧‍👦",
+    thumbnail: familyPhotoThumb,
+    theme: "#fde8f5",
+    subtitle: "Listen & match the family!",
+    route: "/game/family-photo",
+  },
+];
+
+export const gameById = [...games, ...roadmapGames].reduce((acc, game) => {
   acc[game.id] = game;
   return acc;
 }, {});

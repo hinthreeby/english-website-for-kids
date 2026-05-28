@@ -4,6 +4,46 @@ import { Link } from "react-router-dom";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
+
+function JoinCodeBadge({ code }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+      <code style={{
+        background: "rgba(124,58,237,0.25)",
+        border: "1px solid rgba(124,58,237,0.5)",
+        borderRadius: 6,
+        padding: "0.1rem 0.45rem",
+        fontSize: 13,
+        letterSpacing: "0.08em",
+        fontWeight: 700,
+        color: "#c4b5fd",
+      }}>
+        {code}
+      </code>
+      <button
+        type="button"
+        onClick={copy}
+        title="Copy join code"
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: "0.1rem 0.25rem",
+          color: copied ? "#10b981" : "#94a3b8",
+          fontSize: 13,
+        }}
+      >
+        {copied ? "✓" : "Copy"}
+      </button>
+    </span>
+  );
+}
 const TeacherDashboard = () => {
   const [stats, setStats] = useState(null);
   const [classrooms, setClassrooms] = useState([]);
@@ -102,9 +142,12 @@ const TeacherDashboard = () => {
                 <article key={room._id} className="role-item">
                   <div>
                     <strong>{room.name}</strong>
-                    <p>
+                    <p style={{ marginTop: "0.2rem" }}>
                       👦 {room.students?.length || 0} students &nbsp;|&nbsp;
                       ⭐ Avg {avgStarsForClassroom(room.students)}
+                    </p>
+                    <p style={{ marginTop: "0.25rem", color: "#94a3b8", fontSize: 12 }}>
+                      Join code: <JoinCodeBadge code={room.joinCode} />
                     </p>
                   </div>
                   <Link className="btn-secondary-glass" to={`/teacher/classroom/${room._id}`}>

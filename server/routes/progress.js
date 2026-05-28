@@ -1,6 +1,7 @@
 const express = require("express");
 const GameResult = require("../models/GameResult");
 const User = require("../models/User");
+const Classroom = require("../models/Classroom");
 const { protect, isChild } = require("../middleware/authMiddleware");
 const {
   PLANETS,
@@ -169,6 +170,47 @@ router.get("/planets", protect, isChild, async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch planets." });
+  }
+});
+
+router.get("/classrooms", protect, isChild, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate("classrooms", "name joinCode teacherId").lean();
+    const classrooms = (user?.classrooms || []).map((c) => ({
+      _id: c._id,
+      name: c.name,
+      joinCode: c.joinCode,
+    }));
+    return res.json({ classrooms });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/join-classroom", protect, isChild, async (req, res) => {
+  const { joinCode } = req.body;
+  if (!joinCode?.trim())
+    return res.status(400).json({ error: "Join code is required." });
+
+  try {
+    const classroom = await Classroom.findOne({ joinCode: joinCode.trim().toUpperCase() });
+    if (!classroom)
+      return res.status(404).json({ error: "Classroom not found. Check the join code." });
+    if (!classroom.isActive)
+      return res.status(400).json({ error: "This classroom is no longer active." });
+
+    const alreadyIn = classroom.students.some((id) => id.toString() === req.user._id.toString());
+    if (alreadyIn)
+      return res.status(400).json({ error: "You are already in this classroom." });
+
+    await Promise.all([
+      Classroom.findByIdAndUpdate(classroom._id, { $push: { students: req.user._id } }),
+      User.findByIdAndUpdate(req.user._id, { $push: { classrooms: classroom._id } }),
+    ]);
+
+    return res.json({ success: true, classroomName: classroom.name });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 });
 

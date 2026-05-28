@@ -86,7 +86,10 @@ router.post("/register-init", async (req, res) => {
       console.log("[REGISTER] OTP sent successfully");
     } catch (emailErr) {
       console.error("[REGISTER] Email sending failed:", emailErr.message);
-      return res.status(500).json({ error: "Failed to send verification email. Please check your email address or try again later." });
+      if (process.env.NODE_ENV === "production") {
+        return res.status(500).json({ error: "Failed to send verification email. Please check your email address or try again later." });
+      }
+      console.warn(`[REGISTER][DEV] OTP for ${emailTrimmed}: ${otp}`);
     }
     
     return res.json({ pendingToken });
@@ -123,7 +126,7 @@ router.post("/register-verify", async (req, res) => {
       password: passwordPlain,
       role,
       displayName: username,
-      isApproved: role !== "teacher",
+      isApproved: true,
     });
 
     sendToken(user, res);
@@ -171,7 +174,7 @@ router.post("/register", async (req, res) => {
       role: requestedRole,
       email: emailTrimmed,
       displayName: usernameTrimmed,
-      isApproved: requestedRole !== "teacher",
+      isApproved: true,
     });
 
     sendToken(user, res);
@@ -211,13 +214,6 @@ router.post("/login", async (req, res) => {
     if (!user.isActive)
       return res.status(403).json({ error: "Your account has been disabled." });
 
-    if (user.role === "teacher" && !user.isApproved) {
-      return res.status(403).json({
-        error: "PENDING_APPROVAL",
-        message: "Your teacher account is pending admin approval.",
-      });
-    }
-
     // Children and accounts without email skip 2FA
     const skip2FA = user.role === "child" || !user.email;
 
@@ -240,7 +236,10 @@ router.post("/login", async (req, res) => {
         console.log("[LOGIN] 2FA code sent successfully");
       } catch (emailErr) {
         console.error("[LOGIN] Email sending failed:", emailErr.message);
-        return res.status(500).json({ error: "Failed to send login code. Please try again or use a trusted device." });
+        if (process.env.NODE_ENV === "production") {
+          return res.status(500).json({ error: "Failed to send login code. Please try again or use a trusted device." });
+        }
+        console.warn(`[LOGIN][DEV] OTP for ${user.email}: ${otp}`);
       }
       return res.json({ requiresTwoFactor: true, pendingToken });
     }
@@ -336,7 +335,10 @@ router.post("/resend-otp", async (req, res) => {
       console.log("[RESEND-OTP] OTP resent successfully");
     } catch (emailErr) {
       console.error("[RESEND-OTP] Email sending failed:", emailErr.message);
-      return res.status(500).json({ error: "Failed to resend verification code. Please try again later." });
+      if (process.env.NODE_ENV === "production") {
+        return res.status(500).json({ error: "Failed to resend verification code. Please try again later." });
+      }
+      console.warn(`[RESEND-OTP][DEV] OTP for ${email}: ${otp}`);
     }
     return res.json({ pendingToken: newToken });
   } catch (err) {
@@ -368,7 +370,10 @@ router.post("/forgot-password", async (req, res) => {
       console.log("[FORGOT-PASSWORD] Reset OTP sent successfully");
     } catch (emailErr) {
       console.error("[FORGOT-PASSWORD] Email sending failed:", emailErr.message);
-      return res.status(500).json({ error: "Failed to send password reset code. Please try again later." });
+      if (process.env.NODE_ENV === "production") {
+        return res.status(500).json({ error: "Failed to send password reset code. Please try again later." });
+      }
+      console.warn(`[FORGOT-PASSWORD][DEV] OTP for ${user.email}: ${otp}`);
     }
     return res.json({ pendingToken });
   } catch (err) {

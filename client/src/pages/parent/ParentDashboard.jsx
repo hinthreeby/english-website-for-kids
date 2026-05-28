@@ -17,10 +17,9 @@ const ParentDashboard = () => {
   const [children, setChildren] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [createForm, setCreateForm] = useState({
-    username: "",
-    password: "",
-  });
+  const [createForm, setCreateForm] = useState({ username: "", password: "" });
+  const [joinForm, setJoinForm] = useState({ joinCode: "", childId: "" });
+  const [joinMsg, setJoinMsg] = useState(null);
   const navigate = useNavigate();
 
   const loadChildren = async () => {
@@ -47,6 +46,19 @@ const ParentDashboard = () => {
       loadChildren();
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to create child");
+    }
+  };
+
+  const handleJoinClassroom = async (e) => {
+    e.preventDefault();
+    setJoinMsg(null);
+    setError("");
+    try {
+      const res = await api.post("/api/parent/join-classroom", joinForm);
+      setJoinMsg({ ok: true, text: `Joined "${res.data.classroomName}" successfully!` });
+      setJoinForm({ joinCode: "", childId: "" });
+    } catch (err) {
+      setJoinMsg({ ok: false, text: err?.response?.data?.error || "Failed to join classroom." });
     }
   };
 
@@ -153,6 +165,54 @@ const ParentDashboard = () => {
               </button>
             </form>
           </div>
+        </section>
+
+        <section className="glass-card">
+          <h2>Join a Classroom</h2>
+          <p style={{ color: "#94a3b8", marginBottom: "1rem", fontSize: 14 }}>
+            Enter the join code from your child's teacher to enroll them in a classroom.
+          </p>
+          {joinMsg && (
+            <p style={{ color: joinMsg.ok ? "#10b981" : "#f43f5e", marginBottom: "0.75rem" }}>
+              {joinMsg.text}
+            </p>
+          )}
+          <form className="role-form role-inline-form" onSubmit={handleJoinClassroom} style={{ flexWrap: "wrap", gap: "0.75rem" }}>
+            <input
+              placeholder="Join code (e.g. AB12CD)"
+              value={joinForm.joinCode}
+              onChange={(e) => setJoinForm((prev) => ({ ...prev, joinCode: e.target.value.toUpperCase() }))}
+              style={{ textTransform: "uppercase", letterSpacing: "0.1em", maxWidth: 180 }}
+              maxLength={6}
+              required
+            />
+            <select
+              value={joinForm.childId}
+              onChange={(e) => setJoinForm((prev) => ({ ...prev, childId: e.target.value }))}
+              required
+              style={{
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: 8,
+                padding: "0.55rem 0.75rem",
+                color: "#e2e8f0",
+                minWidth: 160,
+              }}
+            >
+              <option value="" disabled>Select child</option>
+              {children.map((c) => (
+                <option key={c._id} value={c._id}>{c.displayName || c.username}</option>
+              ))}
+            </select>
+            <button type="submit" className="btn-register" disabled={children.length === 0}>
+              Join
+            </button>
+          </form>
+          {children.length === 0 && (
+            <p style={{ color: "#94a3b8", fontSize: 13, marginTop: "0.5rem" }}>
+              Create a child account first before joining a classroom.
+            </p>
+          )}
         </section>
       </main>
       <ParentMascot audioSrc={dashboardAudio} lines={DASHBOARD_LINES} />

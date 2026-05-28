@@ -20,6 +20,7 @@ import ClassroomPage from "./pages/teacher/ClassroomPage";
 import WordListEditor from "./pages/teacher/WordListEditor";
 import UserProfilePage from "./pages/UserProfilePage";
 import CollectionPage from "./pages/CollectionPage";
+import ClassroomsPage from "./pages/ClassroomsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminApprovals from "./pages/admin/AdminApprovals";
@@ -27,6 +28,7 @@ import AdminProfile from "./pages/admin/AdminProfile";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage";
 import OAuthVerifyPage from "./pages/OAuthVerifyPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import RoadmapPage from "./pages/RoadmapPage";
 
 const App = () => {
   useMouseParticles();
@@ -95,6 +97,14 @@ const App = () => {
             element={
               <ChildOnly>
                 <MyHomePage />
+              </ChildOnly>
+            }
+          />
+          <Route
+            path="/my-classrooms"
+            element={
+              <ChildOnly>
+                <ClassroomsPage />
               </ChildOnly>
             }
           />
@@ -205,6 +215,8 @@ const App = () => {
               </AdminOnly>
             }
           />
+
+          <Route path="/roadmap" element={<RoadmapPage />} />
 
           <Route
             path="/dashboard"

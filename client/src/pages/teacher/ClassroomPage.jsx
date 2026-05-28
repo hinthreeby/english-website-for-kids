@@ -58,7 +58,7 @@ function ClassAvgScoresChart({ classId }) {
   const chartData = data.map((d) => ({ ...d, name: GAME_LABELS[d.gameId] || d.gameId }));
 
   return (
-    <SectionCard title="📊 Class Average Stars by Game" loading={loading}>
+    <SectionCard title="Class Average Stars by Game" loading={loading}>
       {chartData.length === 0 ? (
         <p>No game data for this class yet.</p>
       ) : (
@@ -95,7 +95,7 @@ function CompletionPie({ classId }) {
       .finally(() => setLoading(false));
   }, [classId]);
 
-  if (loading) return <SectionCard title="✅ Assignment Completion" loading />;
+  if (loading) return <SectionCard title="Assignment Completion" loading />;
   if (!data) return null;
 
   const pieData = [
@@ -104,7 +104,7 @@ function CompletionPie({ classId }) {
   ];
 
   return (
-    <SectionCard title="✅ Assignment Completion" loading={false}>
+    <SectionCard title="Assignment Completion" loading={false}>
       <div style={{ display: "flex", alignItems: "center", gap: "2rem", flexWrap: "wrap" }}>
         <ResponsiveContainer width={200} height={200}>
           <PieChart>

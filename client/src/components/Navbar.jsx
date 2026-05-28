@@ -23,6 +23,10 @@ const Navbar = () => {
         </Link>
 
         <div className="navbar-links" aria-label="Primary navigation">
+          <Link className="nav-link roadmap-btn" to="/roadmap" onClick={playPop}>
+            🚀 Roadmap
+          </Link>
+
           {isChild ? (
             <>
               <Link className="nav-link" to="/collection" onClick={playPop}>
@@ -33,6 +37,9 @@ const Navbar = () => {
               </Link>
               <Link className="nav-link" to="/my-home" onClick={playPop}>
                 My Home
+              </Link>
+              <Link className="nav-link" to="/my-classrooms" onClick={playPop}>
+                My Class
               </Link>
             </>
           ) : null}

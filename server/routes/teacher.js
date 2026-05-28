@@ -57,6 +57,21 @@ router.post("/classroom", protect, isTeacher, async (req, res) => {
   }
 });
 
+router.get("/classroom/:id", protect, isTeacher, async (req, res) => {
+  try {
+    const classroom = await Classroom.findById(req.params.id).populate(
+      "students",
+      "username displayName totalStars currentStreak lastPlayedDate"
+    );
+    if (!classroom || classroom.teacherId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not your classroom" });
+    }
+    return res.json({ classroom });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 router.get("/classroom/:id/students", protect, isTeacher, async (req, res) => {
   try {
     const classroom = await Classroom.findById(req.params.id).populate(
@@ -69,6 +84,22 @@ router.get("/classroom/:id/students", protect, isTeacher, async (req, res) => {
     }
 
     return res.json({ students: classroom.students });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete("/classroom/:id/student/:studentId", protect, isTeacher, async (req, res) => {
+  try {
+    const classroom = await Classroom.findById(req.params.id);
+    if (!classroom || classroom.teacherId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not your classroom" });
+    }
+    await Promise.all([
+      Classroom.findByIdAndUpdate(req.params.id, { $pull: { students: req.params.studentId } }),
+      User.findByIdAndUpdate(req.params.studentId, { $pull: { classrooms: req.params.id } }),
+    ]);
+    return res.json({ success: true });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

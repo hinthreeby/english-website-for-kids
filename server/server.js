@@ -39,6 +39,7 @@ const teacherRoutes = require("./routes/teacher");
 const adminRoutes = require("./routes/admin");
 const analyticsChildRoutes = require("./routes/analyticsChild");
 const analyticsClassRoutes = require("./routes/analyticsClass");
+const roadmapRoutes = require("./routes/roadmap");
 
 // ── Initialize Express app ────────────────────────────────────────────────
 const app = express();
@@ -98,6 +99,7 @@ app.use("/api/teacher", teacherRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/children", analyticsChildRoutes);
 app.use("/api/classes", analyticsClassRoutes);
+app.use("/api/roadmaps", roadmapRoutes);
 
 // ── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

@@ -12,6 +12,7 @@ import FunnyAnimals from "../games/FunnyAnimals";
 import MatchIt from "../games/MatchIt";
 import PictureWords from "../games/PictureWords";
 import SpacePronounce from "../games/SpacePronounce";
+import FamilyPhoto from "../games/FamilyPhoto";
 
 const componentMap = {
   "abc-letters": ABCLetters,
@@ -23,6 +24,7 @@ const componentMap = {
   "space-pronounce": SpacePronounce,
   "funny-animals": FunnyAnimals,
   "clean-ocean-hero": CleanOceanHero,
+  "family-photo":     FamilyPhoto,
 };
 
 const GamePage = () => {

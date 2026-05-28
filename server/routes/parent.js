@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect, isParent } = require("../middleware/authMiddleware");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
+const Classroom = require("../models/Classroom");
 
 router.get("/children", protect, isParent, async (req, res) => {
   try {
@@ -60,6 +61,38 @@ router.post("/create-child", protect, isParent, async (req, res) => {
     return res.status(201).json({ child });
   } catch (err) {
     return res.status(400).json({ error: err.message });
+  }
+});
+
+router.post("/join-classroom", protect, isParent, async (req, res) => {
+  const { joinCode, childId } = req.body;
+  if (!joinCode?.trim() || !childId)
+    return res.status(400).json({ error: "Join code and child are required." });
+
+  try {
+    const parent = await User.findById(req.user._id);
+    const isMyChild = parent.children.some((id) => id.toString() === childId);
+    if (!isMyChild)
+      return res.status(403).json({ error: "That child does not belong to your account." });
+
+    const classroom = await Classroom.findOne({ joinCode: joinCode.trim().toUpperCase() });
+    if (!classroom)
+      return res.status(404).json({ error: "Classroom not found. Check the join code." });
+    if (!classroom.isActive)
+      return res.status(400).json({ error: "This classroom is no longer active." });
+
+    const alreadyIn = classroom.students.some((id) => id.toString() === childId);
+    if (alreadyIn)
+      return res.status(400).json({ error: "This child is already in that classroom." });
+
+    await Promise.all([
+      Classroom.findByIdAndUpdate(classroom._id, { $push: { students: childId } }),
+      User.findByIdAndUpdate(childId, { $push: { classrooms: classroom._id } }),
+    ]);
+
+    return res.json({ success: true, classroomName: classroom.name });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 });
 
