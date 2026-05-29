@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import earthImg from "../assets/general/planet/earth.png";
 import jupiterImg from "../assets/general/planet/jupiter.png";
 import planetImg from "../assets/general/planet/planet.png";
@@ -44,6 +45,7 @@ const OTP_INPUT_STYLE = (error, digit) => ({
 
 const ForgotPasswordPage = () => {
   const { playPop, playChime } = useSound();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // step: "email" | "otp" | "reset" | "done"
@@ -81,7 +83,7 @@ const ForgotPasswordPage = () => {
       setStep("otp");
       setTimeout(() => focusInput(0), 100);
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to send reset code. Please try again.");
+      setError(err?.response?.data?.error || t("forgotPassword.sendFailed"));
     } finally {
       setLoading(false);
     }
@@ -118,7 +120,7 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     const code = digits.join("");
     if (code.length < CODE_LENGTH) {
-      setError("Please enter all 6 digits.");
+      setError(t("forgotPassword.otp.enterAllDigits"));
       return;
     }
     setLoading(true);
@@ -128,7 +130,7 @@ const ForgotPasswordPage = () => {
       setResetToken(res.data.resetToken);
       setStep("reset");
     } catch (err) {
-      setError(err?.response?.data?.error || "Verification failed. Please try again.");
+      setError(err?.response?.data?.error || t("forgotPassword.otp.failed"));
       setDigits(Array(CODE_LENGTH).fill(""));
       focusInput(0);
     } finally {
@@ -147,7 +149,7 @@ const ForgotPasswordPage = () => {
       setResendCooldown(RESEND_COOLDOWN);
       focusInput(0);
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to resend code.");
+      setError(err?.response?.data?.error || t("forgotPassword.otp.resendFailed"));
     } finally {
       setResendLoading(false);
     }
@@ -160,11 +162,11 @@ const ForgotPasswordPage = () => {
     playPop();
     setError("");
     if (passwords.newPassword !== passwords.confirmNewPassword) {
-      setError("Passwords do not match.");
+      setError(t("forgotPassword.reset.passwordMismatch"));
       return;
     }
     if (passwords.newPassword.length < 4) {
-      setError("Password must be at least 4 characters.");
+      setError(t("forgotPassword.reset.tooShort"));
       return;
     }
     setLoading(true);
@@ -177,7 +179,7 @@ const ForgotPasswordPage = () => {
       playChime();
       setStep("done");
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to reset password. Please try again.");
+      setError(err?.response?.data?.error || t("forgotPassword.reset.failed"));
     } finally {
       setLoading(false);
     }
@@ -191,10 +193,10 @@ const ForgotPasswordPage = () => {
         <SpaceDecorations />
         <div className="auth-card" style={{ gap: "1rem", textAlign: "center" }}>
           <div style={{ fontSize: "3rem" }}>🎉</div>
-          <h2 style={{ margin: 0 }}>Password Reset!</h2>
-          <p className="subtitle">Your password has been updated successfully.</p>
+          <h2 style={{ margin: 0 }}>{t("forgotPassword.done.title")}</h2>
+          <p className="subtitle">{t("forgotPassword.done.subtitle")}</p>
           <button className="btn-primary" onClick={() => navigate("/login", { replace: true })}>
-            🔐 Go to Login
+            {t("forgotPassword.done.goToLogin")}
           </button>
         </div>
       </div>
@@ -206,12 +208,12 @@ const ForgotPasswordPage = () => {
       <div className="auth-page">
         <SpaceDecorations />
         <form className="auth-card" onSubmit={handleResetSubmit} style={{ gap: "1rem" }}>
-          <h2>🔑 Set New Password</h2>
-          <p className="subtitle">Choose a strong new password.</p>
+          <h2>{t("forgotPassword.reset.title")}</h2>
+          <p className="subtitle">{t("forgotPassword.reset.subtitle")}</p>
 
           <input
             type="password"
-            placeholder="New password (min 4 characters)"
+            placeholder={t("forgotPassword.reset.newPasswordPlaceholder")}
             minLength={4}
             value={passwords.newPassword}
             onChange={(e) => setPasswords((p) => ({ ...p, newPassword: e.target.value }))}
@@ -219,7 +221,7 @@ const ForgotPasswordPage = () => {
           />
           <input
             type="password"
-            placeholder="Confirm new password"
+            placeholder={t("forgotPassword.reset.confirmPasswordPlaceholder")}
             minLength={4}
             value={passwords.confirmNewPassword}
             onChange={(e) => setPasswords((p) => ({ ...p, confirmNewPassword: e.target.value }))}
@@ -229,11 +231,11 @@ const ForgotPasswordPage = () => {
           {error ? <p className="error-text auth-error">{error}</p> : null}
 
           <button className="btn-primary" type="submit" disabled={loading}>
-            {loading ? "Saving..." : "✅ Reset Password"}
+            {loading ? t("forgotPassword.reset.saving") : t("forgotPassword.reset.submit")}
           </button>
 
           <Link className="auth-back-link" to="/login">
-            ← Back to Login
+            {t("forgotPassword.reset.backToLogin")}
           </Link>
         </form>
       </div>
@@ -245,12 +247,12 @@ const ForgotPasswordPage = () => {
       <div className="auth-page">
         <SpaceDecorations />
         <form className="auth-card" onSubmit={handleOtpSubmit} style={{ gap: "1rem" }}>
-          <h2>📧 Check Your Email</h2>
+          <h2>{t("forgotPassword.otp.title")}</h2>
           <p className="subtitle" style={{ marginBottom: "0.25rem" }}>
-            A 6-digit reset code was sent to <strong>{email}</strong>.
+            {t("forgotPassword.otp.subtitle")} <strong>{email}</strong>.
           </p>
           <p style={{ color: "#64748b", fontSize: "0.85rem", margin: 0 }}>
-            Code expires in 5 minutes.
+            {t("forgotPassword.otp.expires")}
           </p>
 
           <div
@@ -280,7 +282,7 @@ const ForgotPasswordPage = () => {
             type="submit"
             disabled={loading || digits.join("").length < CODE_LENGTH}
           >
-            {loading ? "Verifying..." : "✅ Verify Code"}
+            {loading ? t("forgotPassword.otp.verifying") : t("forgotPassword.otp.verify")}
           </button>
 
           <button
@@ -291,10 +293,10 @@ const ForgotPasswordPage = () => {
             style={{ fontSize: "0.9rem" }}
           >
             {resendLoading
-              ? "Sending..."
+              ? t("forgotPassword.otp.sending")
               : resendCooldown > 0
-              ? `Resend code (${resendCooldown}s)`
-              : "🔄 Resend code"}
+              ? t("forgotPassword.otp.resendCooldown", { count: resendCooldown })
+              : t("forgotPassword.otp.resend")}
           </button>
 
           <button
@@ -303,7 +305,7 @@ const ForgotPasswordPage = () => {
             onClick={() => { setStep("email"); setError(""); setDigits(Array(CODE_LENGTH).fill("")); }}
             style={{ fontSize: "0.85rem", opacity: 0.7 }}
           >
-            ← Change email
+            {t("forgotPassword.otp.changeEmail")}
           </button>
         </form>
       </div>
@@ -315,12 +317,12 @@ const ForgotPasswordPage = () => {
     <div className="auth-page">
       <SpaceDecorations />
       <form className="auth-card" onSubmit={handleEmailSubmit}>
-        <h2>🔑 Forgot Password</h2>
-        <p className="subtitle">Enter your account email and we&apos;ll send you a reset code.</p>
+        <h2>{t("forgotPassword.title")}</h2>
+        <p className="subtitle">{t("forgotPassword.subtitle")}</p>
 
         <input
           type="email"
-          placeholder="you@example.com"
+          placeholder={t("forgotPassword.emailPlaceholder")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -329,7 +331,7 @@ const ForgotPasswordPage = () => {
         {error ? <p className="error-text auth-error">{error}</p> : null}
 
         <button className="btn-primary" type="submit" disabled={loading}>
-          {loading ? "Sending..." : "📧 Send Reset Code"}
+          {loading ? t("forgotPassword.sending") : t("forgotPassword.sendCode")}
         </button>
 
         <Link
@@ -338,7 +340,7 @@ const ForgotPasswordPage = () => {
           onClick={playPop}
           style={{ textAlign: "center", display: "block" }}
         >
-          ← Back to Login
+          {t("forgotPassword.backToLogin")}
         </Link>
       </form>
     </div>

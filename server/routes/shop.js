@@ -70,7 +70,7 @@ router.post("/buy", protect, isChild, async (req, res) => {
       itemType === "house" ? "ownedHouses" : itemType === "car" ? "ownedCars" : "ownedRooms";
 
     await Inventory.findOneAndUpdate(
-      { userId: req.user.id },
+      { userId: req.user._id },
       { $push: { [updateField]: itemId } },
       { new: true }
     );

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect, isTeacher } = require("../middleware/authMiddleware");
+const validateObjectId = require("../middleware/validateObjectId");
 const Classroom = require("../models/Classroom");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
@@ -28,7 +29,7 @@ async function verifyClassAccess(req, res) {
 }
 
 // GET /api/classes/:classId/average-scores
-router.get("/:classId/average-scores", protect, isTeacher, async (req, res) => {
+router.get("/:classId/average-scores", protect, isTeacher, validateObjectId("classId"), async (req, res) => {
   try {
     const classroom = await verifyClassAccess(req, res);
     if (!classroom) return;
@@ -67,7 +68,7 @@ router.get("/:classId/average-scores", protect, isTeacher, async (req, res) => {
 });
 
 // GET /api/classes/:classId/students-analytics?sort=stars&order=desc&page=1&limit=20&filter=
-router.get("/:classId/students-analytics", protect, isTeacher, async (req, res) => {
+router.get("/:classId/students-analytics", protect, isTeacher, validateObjectId("classId"), async (req, res) => {
   try {
     const classroom = await verifyClassAccess(req, res);
     if (!classroom) return;
@@ -143,7 +144,7 @@ router.get("/:classId/students-analytics", protect, isTeacher, async (req, res) 
 });
 
 // GET /api/classes/:classId/completion-summary
-router.get("/:classId/completion-summary", protect, isTeacher, async (req, res) => {
+router.get("/:classId/completion-summary", protect, isTeacher, validateObjectId("classId"), async (req, res) => {
   try {
     const classroom = await verifyClassAccess(req, res);
     if (!classroom) return;
@@ -180,7 +181,7 @@ router.get("/:classId/completion-summary", protect, isTeacher, async (req, res) 
 });
 
 // GET /api/classes/:classId/progress-history?weeks=8
-router.get("/:classId/progress-history", protect, isTeacher, async (req, res) => {
+router.get("/:classId/progress-history", protect, isTeacher, validateObjectId("classId"), async (req, res) => {
   try {
     const classroom = await verifyClassAccess(req, res);
     if (!classroom) return;

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import earthImg from "../assets/general/planet/earth.png";
 import jupiterImg from "../assets/general/planet/jupiter.png";
 import planetImg from "../assets/general/planet/planet.png";
@@ -49,6 +50,7 @@ const LoginPage = () => {
   const { login, setUser } = useAuth();
   const { mergeGuestStars } = useProgress();
   const { playPop, playChime } = useSound();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [step, setStep] = useState("credentials"); // "credentials" | "2fa"
@@ -101,7 +103,7 @@ const LoginPage = () => {
       navigate(getRoleHome(loggedInUser?.role), { replace: true });
     } catch (err) {
       setError(
-        err?.response?.data?.message || err?.response?.data?.error || "Login failed. Please try again."
+        err?.response?.data?.message || err?.response?.data?.error || t("login.error")
       );
     } finally {
       setLoading(false);
@@ -139,7 +141,7 @@ const LoginPage = () => {
     e.preventDefault();
     const code = digits.join("");
     if (code.length < CODE_LENGTH) {
-      setError("Please enter all 6 digits.");
+      setError(t("login.twoFa.enterAllDigits"));
       return;
     }
     setLoading(true);
@@ -153,7 +155,7 @@ const LoginPage = () => {
       playChime();
       navigate(getRoleHome(loggedInUser?.role), { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.error || "Verification failed. Please try again.");
+      setError(err?.response?.data?.error || t("login.twoFa.verificationFailed"));
       setDigits(Array(CODE_LENGTH).fill(""));
       focusInput(0);
     } finally {
@@ -172,7 +174,7 @@ const LoginPage = () => {
       setResendCooldown(RESEND_COOLDOWN);
       focusInput(0);
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to resend code.");
+      setError(err?.response?.data?.error || t("login.twoFa.resendFailed"));
     } finally {
       setResendLoading(false);
     }
@@ -185,12 +187,12 @@ const LoginPage = () => {
       <div className="auth-page">
         <SpaceDecorations />
         <form className="auth-card" onSubmit={handle2FASubmit} style={{ gap: "1rem" }}>
-          <h2>🔐 Two-Factor Authentication</h2>
+          <h2>🔐 {t("login.twoFa.title")}</h2>
           <p className="subtitle" style={{ marginBottom: "0.25rem" }}>
-            A verification code was sent to your email.
+            {t("login.twoFa.subtitle")}
           </p>
           <p style={{ color: "#64748b", fontSize: "0.85rem", margin: 0 }}>
-            Code expires in 5 minutes. This device will be remembered after verification.
+            {t("login.twoFa.deviceNote")}
           </p>
 
           <div
@@ -220,7 +222,7 @@ const LoginPage = () => {
             type="submit"
             disabled={loading || digits.join("").length < CODE_LENGTH}
           >
-            {loading ? "Verifying..." : "✅ Confirm"}
+            {loading ? t("login.twoFa.verifying") : t("login.twoFa.confirm")}
           </button>
 
           <button
@@ -231,10 +233,10 @@ const LoginPage = () => {
             style={{ fontSize: "0.9rem" }}
           >
             {resendLoading
-              ? "Sending..."
+              ? t("login.twoFa.sending")
               : resendCooldown > 0
-              ? `Resend code (${resendCooldown}s)`
-              : "🔄 Resend code"}
+              ? t("login.twoFa.resendCooldown", { count: resendCooldown })
+              : t("login.twoFa.resend")}
           </button>
 
           <button
@@ -243,7 +245,7 @@ const LoginPage = () => {
             onClick={() => { setStep("credentials"); setError(""); setDigits(Array(CODE_LENGTH).fill("")); }}
             style={{ fontSize: "0.85rem", opacity: 0.7 }}
           >
-            ← Back to Login
+            {t("login.twoFa.backToLogin")}
           </button>
         </form>
       </div>
@@ -257,18 +259,18 @@ const LoginPage = () => {
       <SpaceDecorations />
 
       <form className="auth-card" onSubmit={handleCredentialSubmit}>
-        <h2>🔐 Log In</h2>
-        <p className="subtitle">Welcome back, little explorer!</p>
+        <h2>🔐 {t("login.title")}</h2>
+        <p className="subtitle">{t("login.subtitle")}</p>
 
         <input
-          placeholder="Email or Username"
+          placeholder={t("login.identifier")}
           value={form.identifier}
           minLength={2}
           onChange={(e) => setForm((prev) => ({ ...prev, identifier: e.target.value }))}
           required
         />
         <input
-          placeholder="Password"
+          placeholder={t("login.password")}
           type="password"
           value={form.password}
           minLength={4}
@@ -282,14 +284,14 @@ const LoginPage = () => {
             style={{ color: "#6366f1", fontSize: "0.85rem", textDecoration: "none" }}
             onClick={playPop}
           >
-            Forgot password?
+            {t("login.forgotPassword")}
           </Link>
         </div>
 
         {error ? <p className="error-text auth-error">{error}</p> : null}
 
         <button className="btn-primary" type="submit" disabled={loading}>
-          {loading ? "Loading..." : "🔐 Log in"}
+          {loading ? t("login.loading") : `🔐 ${t("login.submit")}`}
         </button>
 
         <button
@@ -300,11 +302,11 @@ const LoginPage = () => {
             navigate("/register");
           }}
         >
-          ✨ Need an account?
+          ✨ {t("login.needAccount")}
         </button>
 
         <div className="auth-divider">
-          <span>or</span>
+          <span>{t("login.orDivider")}</span>
         </div>
 
         <a className="btn-google" href="/auth/google" onClick={playPop}>
@@ -314,11 +316,11 @@ const LoginPage = () => {
             <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
           </svg>
-          Sign in with Google
+          {t("login.googleSignIn")}
         </a>
 
         <Link className="auth-back-link" to="/" onClick={playPop}>
-          ← Back to Home
+          {t("login.backHome")}
         </Link>
       </form>
     </div>

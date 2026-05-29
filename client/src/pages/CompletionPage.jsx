@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { useLocation, useNavigate } from "react-router-dom";
 import astronautImg from "../assets/general/astronaut/astronaut_3.png";
@@ -10,6 +10,7 @@ import { celebrationMessages } from "../data/games";
 import useProgress from "../hooks/useProgress";
 import useSound from "../hooks/useSound";
 import PlanetUnlockModal from "../components/PlanetUnlockModal";
+import api from "../lib/api";
 
 const CompletionPage = () => {
   const { state } = useLocation();
@@ -28,23 +29,20 @@ const CompletionPage = () => {
 
   const starsEarned = Math.max(0, Math.min(3, Number(state?.stars || 0)));
 
-  const message = useMemo(() => {
-    const pick = Math.floor(Math.random() * celebrationMessages.length);
-    return celebrationMessages[pick];
-  }, []);
+  const [message] = useState(
+    () => celebrationMessages[Math.floor(Math.random() * celebrationMessages.length)]
+  );
 
-  const decorativeStars = useMemo(
-    () =>
-      Array.from({ length: 20 }, (_, index) => ({
-        id: index,
-        top: `${(Math.random() * 96 + 2).toFixed(2)}%`,
-        left: `${(Math.random() * 96 + 2).toFixed(2)}%`,
-        delay: `${(Math.random() * 3).toFixed(2)}s`,
-        duration: `${(2 + Math.random() * 1.8).toFixed(2)}s`,
-        size: `${(16 + Math.random() * 12).toFixed(2)}px`,
-        offset: `${(Math.random() * 20).toFixed(2)}px`,
-      })),
-    [],
+  const [decorativeStars] = useState(() =>
+    Array.from({ length: 20 }, (_, index) => ({
+      id: index,
+      top:      `${(Math.random() * 96 + 2).toFixed(2)}%`,
+      left:     `${(Math.random() * 96 + 2).toFixed(2)}%`,
+      delay:    `${(Math.random() * 3).toFixed(2)}s`,
+      duration: `${(2 + Math.random() * 1.8).toFixed(2)}s`,
+      size:     `${(16 + Math.random() * 12).toFixed(2)}px`,
+      offset:   `${(Math.random() * 20).toFixed(2)}px`,
+    }))
   );
 
   useEffect(() => {
@@ -173,14 +171,15 @@ const CompletionPage = () => {
 
   // Cleanup audio when component unmounts
   useEffect(() => {
+    const audio = audioRef.current;
     return () => {
-      if (audioRef.current.success) {
-        audioRef.current.success.pause();
-        audioRef.current.success.currentTime = 0;
+      if (audio.success) {
+        audio.success.pause();
+        audio.success.currentTime = 0;
       }
-      if (audioRef.current.celebration) {
-        audioRef.current.celebration.pause();
-        audioRef.current.celebration.currentTime = 0;
+      if (audio.celebration) {
+        audio.celebration.pause();
+        audio.celebration.currentTime = 0;
       }
     };
   }, []);
@@ -205,6 +204,12 @@ const CompletionPage = () => {
             setUnlockedPlanet(data.newPlanet);
             setBonusInfo({ awarded: data.bonusAwarded ?? false, stars: data.bonusStars ?? 0 });
           }
+          // Auto-complete the roadmap unit so the next one gets unlocked
+          if (state.unitId) {
+            await api.post(`/api/roadmaps/units/${state.unitId}/complete`).catch((err) => {
+              console.error("[Roadmap] unit complete failed:", err?.response?.data || err.message);
+            });
+          }
           await refreshUser();
         } catch (err) {
           console.error("Save failed:", err);
@@ -219,7 +224,7 @@ const CompletionPage = () => {
     };
 
     save();
-  }, [addGuestStars, getGuestStars, refreshUser, saveProgress, starsEarned, state?.gameId, state?.stars, user]);
+  }, [addGuestStars, getGuestStars, refreshUser, saveProgress, starsEarned, state?.gameId, state?.stars, state?.unitId, user]);
 
   if (state?.stars == null) {
     return null;
@@ -294,68 +299,59 @@ const CompletionPage = () => {
         )}
 
         <div className="completion-buttons">
+          {/* Back to Roadmap — shown for any roadmap unit game */}
+          {state.unitId && (
+            <button
+              className="btn-completion btn-choose-game"
+              type="button"
+              onClick={() => { playPop(); navigate("/roadmap"); }}
+            >
+              🗺️ Back to Roadmap
+            </button>
+          )}
+
+          <button
+            className="btn-completion btn-play-again"
+            type="button"
+            onClick={() => { playPop(); navigate(`/game/${state.gameId}`); }}
+          >
+            🔄 Play Again
+          </button>
+
           {user ? (
             <>
-              <button
-                className="btn-completion btn-play-again"
-                type="button"
-                onClick={() => {
-                  playPop();
-                  navigate(`/game/${state.gameId}`);
-                }}
-              >
-                🔄 Play Again
-              </button>
-              <button
-                className="btn-completion btn-choose-game"
-                type="button"
-                onClick={() => {
-                  playPop();
-                  navigate("/");
-                }}
-              >
-                🎮 Choose Game
-              </button>
+              {!state.unitId && (
+                <button
+                  className="btn-completion btn-choose-game"
+                  type="button"
+                  onClick={() => { playPop(); navigate("/"); }}
+                >
+                  🎮 Choose Game
+                </button>
+              )}
               <button
                 className="btn-completion btn-view-stars"
                 type="button"
-                onClick={() => {
-                  playPop();
-                  navigate("/dashboard");
-                }}
+                onClick={() => { playPop(); navigate("/dashboard"); }}
               >
                 ⭐ My Stars
               </button>
             </>
           ) : (
             <>
-              <button
-                className="btn-completion btn-play-again"
-                type="button"
-                onClick={() => {
-                  playPop();
-                  navigate(`/game/${state.gameId}`);
-                }}
-              >
-                🔄 Play Again
-              </button>
-              <button
-                className="btn-completion btn-choose-game"
-                type="button"
-                onClick={() => {
-                  playPop();
-                  navigate("/");
-                }}
-              >
-                🎮 Choose Game
-              </button>
+              {!state.unitId && (
+                <button
+                  className="btn-completion btn-choose-game"
+                  type="button"
+                  onClick={() => { playPop(); navigate("/"); }}
+                >
+                  🎮 Choose Game
+                </button>
+              )}
               <button
                 className="btn-completion btn-view-stars"
                 type="button"
-                onClick={() => {
-                  playPop();
-                  navigate("/login");
-                }}
+                onClick={() => { playPop(); navigate("/login"); }}
               >
                 🔐 Login to Save
               </button>

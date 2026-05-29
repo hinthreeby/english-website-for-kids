@@ -23,6 +23,9 @@ const VALID_GAME_IDS = [
   "space-pronounce",
   "funny-animals",
   "clean-ocean-hero",
+  // Roadmap unit games
+  "family-photo",
+  "school-find",
   "guest-merge",
 ];
 

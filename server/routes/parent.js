@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect, isParent } = require("../middleware/authMiddleware");
+const validateObjectId = require("../middleware/validateObjectId");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
 const Classroom = require("../models/Classroom");
@@ -14,7 +15,7 @@ router.get("/children", protect, isParent, async (req, res) => {
   }
 });
 
-router.get("/child/:childId/progress", protect, isParent, async (req, res) => {
+router.get("/child/:childId/progress", protect, isParent, validateObjectId("childId"), async (req, res) => {
   try {
     const child = await User.findById(req.params.childId);
     if (!child || child.parentId?.toString() !== req.user._id.toString()) {

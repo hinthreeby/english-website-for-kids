@@ -1,11 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import useSound from "../hooks/useSound";
 import { getRoleHome } from "../lib/roleHome";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
   const { user, logout, isChild, isParent, isTeacher, isAdmin } = useAuth();
   const { playPop } = useSound();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const userName = user?.displayName || user?.username || "Kid Explorer";
 
@@ -24,22 +27,22 @@ const Navbar = () => {
 
         <div className="navbar-links" aria-label="Primary navigation">
           <Link className="nav-link roadmap-btn" to="/roadmap" onClick={playPop}>
-            🚀 Roadmap
+            🚀 {t("nav.roadmap")}
           </Link>
 
           {isChild ? (
             <>
               <Link className="nav-link" to="/collection" onClick={playPop}>
-                Collection
+                {t("nav.collection")}
               </Link>
               <Link className="nav-link" to="/shop" onClick={playPop}>
-                Store
+                {t("nav.store")}
               </Link>
               <Link className="nav-link" to="/my-home" onClick={playPop}>
-                My Home
+                {t("nav.myHome")}
               </Link>
               <Link className="nav-link" to="/my-classrooms" onClick={playPop}>
-                My Class
+                {t("nav.myClass")}
               </Link>
             </>
           ) : null}
@@ -47,13 +50,13 @@ const Navbar = () => {
           {isParent ? (
             <>
               <Link className="nav-link" to="/parent/dashboard" onClick={playPop}>
-                Dashboard
+                {t("nav.dashboard")}
               </Link>
               <Link className="nav-link" to="/parent/children" onClick={playPop}>
-                My Children
+                {t("nav.myChildren")}
               </Link>
               <Link className="nav-link" to="/parent/profile" onClick={playPop}>
-                Profile
+                {t("nav.profile")}
               </Link>
             </>
           ) : null}
@@ -61,13 +64,13 @@ const Navbar = () => {
           {isTeacher ? (
             <>
               <Link className="nav-link" to="/teacher/dashboard" onClick={playPop}>
-                Dashboard
+                {t("nav.dashboard")}
               </Link>
-              <Link className="nav-link" to="/teacher/wordlist" onClick={playPop}>
-                Word Lists
+              <Link className="nav-link" to="/teacher/contents" onClick={playPop}>
+                {t("nav.myContent")}
               </Link>
               <Link className="nav-link" to="/teacher/profile" onClick={playPop}>
-                Profile
+                {t("nav.profile")}
               </Link>
             </>
           ) : null}
@@ -75,16 +78,16 @@ const Navbar = () => {
           {isAdmin ? (
             <>
               <Link className="nav-link" to="/admin/dashboard" onClick={playPop}>
-                Dashboard
+                {t("nav.dashboard")}
               </Link>
               <Link className="nav-link" to="/admin/users" onClick={playPop}>
-                Users
+                {t("nav.users")}
               </Link>
               <Link className="nav-link" to="/admin/approvals" onClick={playPop}>
-                Approvals
+                {t("nav.approvals")}
               </Link>
               <Link className="nav-link" to="/admin/profile" onClick={playPop}>
-                Profile
+                {t("nav.profile")}
               </Link>
             </>
           ) : null}
@@ -92,15 +95,15 @@ const Navbar = () => {
           {!user ? (
             <>
               <Link className="nav-link join-now" to="/register" onClick={playPop}>
-                Register Now
+                {t("nav.registerNow")}
               </Link>
               <Link className="nav-link" to="/login" onClick={playPop}>
-                Log in
+                {t("nav.logIn")}
               </Link>
             </>
           ) : (
             <button type="button" className="nav-link" onClick={handleLogout}>
-              Log out
+              {t("nav.logOut")}
             </button>
           )}
         </div>
@@ -115,16 +118,17 @@ const Navbar = () => {
               {userName}
             </span>
           ) : (
-            <span className="nav-email-badge">Guest</span>
+            <span className="nav-email-badge">{t("nav.guest")}</span>
           )}
           {user ? (
             <>
               {isChild ? <span className="nav-stars">⭐ {user.totalStars || 0}</span> : null}
               <Link className="btn-stars" to={getRoleHome(user.role)} onClick={playPop}>
-                Home
+                {t("nav.home")}
               </Link>
             </>
           ) : null}
+          <LanguageSwitcher />
         </div>
       </div>
     </nav>

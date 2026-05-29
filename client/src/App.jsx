@@ -17,7 +17,8 @@ import ParentDashboard from "./pages/parent/ParentDashboard";
 import ChildProgress from "./pages/parent/ChildProgress";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import ClassroomPage from "./pages/teacher/ClassroomPage";
-import WordListEditor from "./pages/teacher/WordListEditor";
+import TeacherContentsPage from "./pages/teacher/TeacherContentsPage";
+import StudentContentsPage from "./pages/student/StudentContentsPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import CollectionPage from "./pages/CollectionPage";
 import ClassroomsPage from "./pages/ClassroomsPage";
@@ -25,6 +26,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminApprovals from "./pages/admin/AdminApprovals";
 import AdminProfile from "./pages/admin/AdminProfile";
+import AdminVideosPage from "./pages/admin/AdminVideosPage";
+import VideosPage from "./pages/VideosPage";
 import OAuthCallbackPage from "./pages/OAuthCallbackPage";
 import OAuthVerifyPage from "./pages/OAuthVerifyPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -109,6 +112,14 @@ const App = () => {
             }
           />
           <Route
+            path="/my-content"
+            element={
+              <ChildOnly>
+                <StudentContentsPage />
+              </ChildOnly>
+            }
+          />
+          <Route
             path="/room/:roomId"
             element={
               <ChildOnly>
@@ -167,10 +178,10 @@ const App = () => {
             }
           />
           <Route
-            path="/teacher/wordlist"
+            path="/teacher/contents"
             element={
               <TeacherOnly>
-                <WordListEditor />
+                <TeacherContentsPage />
               </TeacherOnly>
             }
           />
@@ -215,8 +226,24 @@ const App = () => {
               </AdminOnly>
             }
           />
+          <Route
+            path="/admin/videos"
+            element={
+              <AdminOnly>
+                <AdminVideosPage />
+              </AdminOnly>
+            }
+          />
 
           <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route
+            path="/videos"
+            element={
+              <GuestOrChild>
+                <VideosPage />
+              </GuestOrChild>
+            }
+          />
 
           <Route
             path="/dashboard"

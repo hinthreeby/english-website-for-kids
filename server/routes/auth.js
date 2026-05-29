@@ -8,6 +8,7 @@ const { createPending, verifyOtp, getPending, createResetToken, consumeResetToke
 const { sendOtpEmail } = require("../services/emailService");
 const env = require("../config/env");
 const { cookieOptions } = require("../config/cookies");
+const { loginLimiter, registerLimiter, forgotLimiter } = require("../config/rateLimiters");
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ function buildUserPayload(user) {
 
 // ── Registration (2-step with OTP) ───────────────────────────────────────────
 
-router.post("/register-init", async (req, res) => {
+router.post("/register-init", registerLimiter, async (req, res) => {
   console.log("REGISTER INIT START");
   
   const { username, email, password, confirmPassword, role } = req.body;
@@ -57,8 +58,8 @@ router.post("/register-init", async (req, res) => {
     return res.status(400).json({ error: "Email is required." });
   if (!password)
     return res.status(400).json({ error: "Password is required." });
-  if (password.length < 4)
-    return res.status(400).json({ error: "Password must be at least 4 characters." });
+  if (password.length < 6)
+    return res.status(400).json({ error: "Password must be at least 6 characters." });
   if (password !== confirmPassword)
     return res.status(400).json({ error: "Passwords do not match." });
 
@@ -137,7 +138,7 @@ router.post("/register-verify", async (req, res) => {
 });
 
 // Legacy register (kept for backward compatibility with existing AuthContext.register())
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
   // Check if body exists
   if (!req.body) {
     return res.status(400).json({ error: "Request body is required." });
@@ -154,6 +155,8 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ error: "Email is required." });
   if (!password)
     return res.status(400).json({ error: "Password is required." });
+  if (password.length < 6)
+    return res.status(400).json({ error: "Password must be at least 6 characters." });
   if (confirmPassword !== undefined && password !== confirmPassword)
     return res.status(400).json({ error: "Passwords do not match." });
 
@@ -186,7 +189,7 @@ router.post("/register", async (req, res) => {
 
 // ── Login (with trusted-device check + optional 2FA) ─────────────────────────
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   const { username, password, identifier, deviceId } = req.body;
   const loginIdentifier = (username || identifier || "").trim();
 
@@ -200,16 +203,11 @@ router.post("/login", async (req, res) => {
     });
 
     if (!user) {
-      const isEmail = loginIdentifier.includes("@");
-      return res.status(401).json({
-        error: isEmail
-          ? "Email is not registered. Please sign up first."
-          : "Invalid username or password.",
-      });
+      return res.status(401).json({ error: "Invalid credentials." });
     }
 
     const ok = await user.comparePassword(password);
-    if (!ok) return res.status(401).json({ error: "Incorrect password." });
+    if (!ok) return res.status(401).json({ error: "Invalid credentials." });
 
     if (!user.isActive)
       return res.status(403).json({ error: "Your account has been disabled." });
@@ -312,7 +310,7 @@ router.post("/login-verify", async (req, res) => {
 
 // ── Resend OTP (for register / login-2fa / reset flows) ──────────────────────
 
-router.post("/resend-otp", async (req, res) => {
+router.post("/resend-otp", forgotLimiter, async (req, res) => {
   const { pendingToken } = req.body;
   if (!pendingToken)
     return res.status(400).json({ error: "Missing pending token." });
@@ -349,7 +347,7 @@ router.post("/resend-otp", async (req, res) => {
 
 // ── Forgot Password ───────────────────────────────────────────────────────────
 
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", forgotLimiter, async (req, res) => {
   const { email } = req.body;
   if (!email?.trim())
     return res.status(400).json({ error: "Email is required." });
@@ -401,8 +399,8 @@ router.post("/reset-password", async (req, res) => {
     return res.status(400).json({ error: "Missing reset token." });
   if (!newPassword)
     return res.status(400).json({ error: "Password is required." });
-  if (newPassword.length < 4)
-    return res.status(400).json({ error: "Password must be at least 4 characters." });
+  if (newPassword.length < 6)
+    return res.status(400).json({ error: "Password must be at least 6 characters." });
   if (newPassword !== confirmNewPassword)
     return res.status(400).json({ error: "Passwords do not match." });
 

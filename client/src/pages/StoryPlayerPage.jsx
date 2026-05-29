@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { stories } from "../data/stories";
 import Navbar from "../components/Navbar";
@@ -9,9 +9,12 @@ import "../styles/StoryPlayer.css";
 const StoryPlayerPage = () => {
   const { storyId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { playPop } = useSound();
 
-  const story = stories.find((s) => s.id === storyId);
+  const episodeOverride = location.state?.episode;
+  const baseStory = stories.find((s) => s.id === storyId);
+  const story = episodeOverride ? { ...baseStory, ...episodeOverride } : baseStory;
 
   if (!story) {
     return (

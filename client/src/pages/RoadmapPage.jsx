@@ -98,6 +98,7 @@ const isFB  = (id) => String(id).startsWith("fb-");
 // Maps unitNumber → gameId. Extend as more unit games are built.
 const UNIT_GAME_MAP = {
   1: "family-photo",
+  2: "school-find",
 };
 
 // Static dot stars — computed once at module load to avoid impure render
@@ -193,7 +194,11 @@ const RoadmapPage = () => {
 
   const handlePlay = (unit) => {
     const gameId = UNIT_GAME_MAP[unit.unitNumber];
-    if (gameId) navigate(`/game/${gameId}`);
+    if (gameId) {
+      navigate(`/game/${gameId}`, {
+        state: { unitId: isFB(unit._id) ? null : String(unit._id) },
+      });
+    }
   };
 
   return (
@@ -428,10 +433,6 @@ const ZigzagNode = ({ unit, pos, status, img, onClick }) => {
           <span className="absolute inset-0 flex items-center justify-center text-2xl"
             style={{ background:"rgba(0,0,0,0.35)", textShadow:"0 0 6px rgba(0,0,0,0.9)" }}>🔒</span>
         )}
-        {isCompleted && (
-          <span className="absolute bottom-1 right-1 text-base leading-none"
-            style={{ textShadow:"0 0 4px rgba(0,0,0,0.9)" }}>✅</span>
-        )}
       </div>
 
       {/* Label: unit name + planet name */}
@@ -510,7 +511,7 @@ const UnitModal = ({ unit, detail, status, isChild, completing, onComplete, onPl
             ▶ Play Game
           </button>
         )}
-        {isChild && !done && !fallback && (
+        {isChild && !done && !fallback && !gameId && (
           <button type="button" disabled={completing} onClick={() => onComplete(unit._id)}
             className="mt-3 w-full py-3 rounded-2xl font-bold text-white transition-all duration-200 hover:scale-105 disabled:opacity-60"
             style={{ background:"linear-gradient(90deg,#7c3aed,#be185d)", boxShadow:"0 0 20px rgba(124,58,237,0.5)" }}>

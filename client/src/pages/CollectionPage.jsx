@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import PlanetCollection from "../components/PlanetCollection";
+import SpaceBackground from "../components/SpaceBackground";
 import { useAuth } from "../context/AuthContext";
 import api from "../lib/api";
 
@@ -13,7 +14,6 @@ const CollectionPage = () => {
     api.get("/api/progress/planets")
       .then((res) => {
         setPlanetData(res.data);
-        // sync context if backend retroactively fixed planets
         refreshUser();
       })
       .catch(() => {});
@@ -23,6 +23,7 @@ const CollectionPage = () => {
   const streak = planetData?.streak ?? user?.currentStreak ?? 0;
   const planetsUnlocked = planetData?.planetsUnlocked ?? user?.planetsUnlocked ?? [];
 
+  // Keep existing stars for fallback (used by PlanetCollection internals if needed)
   const stars = useMemo(
     () =>
       Array.from({ length: 100 }, (_, i) => ({
@@ -35,33 +36,31 @@ const CollectionPage = () => {
       })),
     []
   );
+  void stars; // retained for any child components that rely on it
 
   return (
-    <div className="screen with-bg space-bg">
+    <div
+      className="relative min-h-screen overflow-x-hidden"
+      style={{ background: "radial-gradient(circle at top, #2b0a5a 0%, #12002e 40%, #07001a 100%)" }}
+    >
+      <SpaceBackground />
       <Navbar />
 
-      <div className="star-field" aria-hidden="true">
-        {stars.map((star) => (
-          <span
-            key={star.id}
-            className="space-star"
-            style={{
-              "--star-x": `${star.x}%`,
-              "--star-y": `${star.y}%`,
-              "--star-size": `${star.size}px`,
-              "--star-duration": `${star.duration}s`,
-              "--star-delay": `${star.delay}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="nebula-glow" aria-hidden="true" />
-
-      <main className="role-wrap">
+      <main className="role-wrap" style={{ position: "relative", zIndex: 2, paddingTop: "80px" }}>
         <section className="role-hero glass-card">
-          <h1>Planet Collection</h1>
-          <p>Keep your streak alive to unlock all 8 planets in the solar system!</p>
+          <h1
+            style={{
+              background: "linear-gradient(90deg,#ffd700,#ff6b9d,#a78bfa)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              filter: "drop-shadow(0 0 16px rgba(255,215,0,0.4))",
+            }}
+          >
+            Planet Collection
+          </h1>
+          <p style={{ color: "#c4b5fd" }}>
+            Keep your streak alive to unlock all 8 planets in the solar system!
+          </p>
         </section>
 
         <section className="glass-card">

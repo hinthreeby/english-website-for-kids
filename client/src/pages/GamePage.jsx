@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoadingDots from "../components/LoadingDots";
 import { gameById } from "../data/games";
@@ -13,23 +13,27 @@ import MatchIt from "../games/MatchIt";
 import PictureWords from "../games/PictureWords";
 import SpacePronounce from "../games/SpacePronounce";
 import FamilyPhoto from "../games/FamilyPhoto";
+import SchoolFind  from "../games/SchoolFind";
 
 const componentMap = {
-  "abc-letters": ABCLetters,
-  "picture-words": PictureWords,
-  "count-learn": CountLearn,
-  "color-fun": ColorFun,
-  "animal-sounds": AnimalSounds,
-  "match-it": MatchIt,
+  "abc-letters":    ABCLetters,
+  "picture-words":  PictureWords,
+  "count-learn":    CountLearn,
+  "color-fun":      ColorFun,
+  "animal-sounds":  AnimalSounds,
+  "match-it":       MatchIt,
   "space-pronounce": SpacePronounce,
-  "funny-animals": FunnyAnimals,
+  "funny-animals":  FunnyAnimals,
   "clean-ocean-hero": CleanOceanHero,
-  "family-photo":     FamilyPhoto,
+  "family-photo":   FamilyPhoto,
+  "school-find":    SchoolFind,
 };
 
 const GamePage = () => {
   const { gameId } = useParams();
-  const navigate = useNavigate();
+  const navigate   = useNavigate();
+  const location   = useLocation();
+  const unitId     = location.state?.unitId ?? null;
 
   const GameComponent = useMemo(() => componentMap[gameId], [gameId]);
   const game = gameById[gameId];
@@ -55,6 +59,7 @@ const GamePage = () => {
                 gameId,
                 gameName: game.name,
                 theme: game.theme,
+                unitId,
                 ...extra,
               },
             });

@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const { protect, isAdmin } = require("../middleware/authMiddleware");
+const validateObjectId = require("../middleware/validateObjectId");
+const { adminLog } = require("../middleware/adminLogger");
 const User = require("../models/User");
 const WordList = require("../models/WordList");
 const GameResult = require("../models/GameResult");
+const Video = require("../models/Video");
 
 router.get("/users", protect, isAdmin, async (req, res) => {
   try {
@@ -30,7 +33,7 @@ router.get("/users", protect, isAdmin, async (req, res) => {
   }
 });
 
-router.patch("/user/:id", protect, isAdmin, async (req, res) => {
+router.patch("/user/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
   try {
     const allowed = ["isActive", "role", "isApproved"];
     const update = {};
@@ -41,15 +44,20 @@ router.patch("/user/:id", protect, isAdmin, async (req, res) => {
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select(
       "-password"
     );
+    adminLog("UPDATE_USER", req.user._id, req.params.id, update);
     return res.json({ user });
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
 });
 
-router.delete("/user/:id", protect, isAdmin, async (req, res) => {
+router.delete("/user/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
   try {
+    if (req.params.id === req.user._id.toString()) {
+      return res.status(400).json({ error: "Admin cannot delete their own account." });
+    }
     await User.findByIdAndUpdate(req.params.id, { isActive: false });
+    adminLog("DELETE_USER", req.user._id, req.params.id);
     return res.json({ success: true });
   } catch (err) {
     return res.status(400).json({ error: err.message });
@@ -65,13 +73,14 @@ router.get("/pending-teachers", protect, isAdmin, async (_req, res) => {
   }
 });
 
-router.patch("/approve-teacher/:id", protect, isAdmin, async (req, res) => {
+router.patch("/approve-teacher/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { isApproved: true },
       { new: true }
     ).select("-password");
+    adminLog("APPROVE_TEACHER", req.user._id, req.params.id);
     return res.json({ user });
   } catch (err) {
     return res.status(400).json({ error: err.message });
@@ -90,26 +99,28 @@ router.get("/pending-wordlists", protect, isAdmin, async (_req, res) => {
   }
 });
 
-router.patch("/approve-wordlist/:id", protect, isAdmin, async (req, res) => {
+router.patch("/approve-wordlist/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
   try {
     const list = await WordList.findByIdAndUpdate(
       req.params.id,
       { isApproved: true, isPublished: true },
       { new: true }
     );
+    adminLog("APPROVE_WORDLIST", req.user._id, req.params.id);
     return res.json({ list });
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
 });
 
-router.patch("/reject-wordlist/:id", protect, isAdmin, async (req, res) => {
+router.patch("/reject-wordlist/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
   try {
     const list = await WordList.findByIdAndUpdate(
       req.params.id,
       { isApproved: false, isPublished: false },
       { new: true }
     );
+    adminLog("REJECT_WORDLIST", req.user._id, req.params.id);
     return res.json({ list });
   } catch (err) {
     return res.status(400).json({ error: err.message });
@@ -159,15 +170,28 @@ router.patch("/change-password", protect, isAdmin, async (req, res) => {
 
 router.get("/stats", protect, isAdmin, async (_req, res) => {
   try {
-    const [totalUsers, totalChildren, totalParents, totalTeachers, totalGames, totalStarsGiven] =
-      await Promise.all([
-        User.countDocuments({ isActive: true }),
-        User.countDocuments({ role: "child", isActive: true }),
-        User.countDocuments({ role: "parent", isActive: true }),
-        User.countDocuments({ role: "teacher", isActive: true }),
-        GameResult.countDocuments(),
-        GameResult.aggregate([{ $group: { _id: null, total: { $sum: "$starsEarned" } } }]),
-      ]);
+    const [
+      totalUsers, totalChildren, totalParents, totalTeachers,
+      totalGames, totalStarsGiven,
+      totalVideos, publishedVideos,
+      videoViewsAgg, videosByTypeAgg, topViewedVideos, recentVideos,
+    ] = await Promise.all([
+      User.countDocuments({ isActive: true }),
+      User.countDocuments({ role: "child", isActive: true }),
+      User.countDocuments({ role: "parent", isActive: true }),
+      User.countDocuments({ role: "teacher", isActive: true }),
+      GameResult.countDocuments(),
+      GameResult.aggregate([{ $group: { _id: null, total: { $sum: "$starsEarned" } } }]),
+      Video.countDocuments(),
+      Video.countDocuments({ isPublished: true }),
+      Video.aggregate([{ $group: { _id: null, total: { $sum: "$views" } } }]),
+      Video.aggregate([{ $group: { _id: "$type", count: { $sum: 1 }, published: { $sum: { $cond: ["$isPublished", 1, 0] } } } }]),
+      Video.find({ isPublished: true }).sort({ views: -1 }).limit(5).select("title type views thumbnailUrl field"),
+      Video.find().sort({ createdAt: -1 }).limit(5).select("title type isPublished createdAt thumbnailUrl"),
+    ]);
+
+    const videosByType = { "story-series": 0, "quick-video": 0, "song": 0 };
+    videosByTypeAgg.forEach((v) => { if (videosByType[v._id] !== undefined) videosByType[v._id] = v.count; });
 
     return res.json({
       totalUsers,
@@ -176,6 +200,13 @@ router.get("/stats", protect, isAdmin, async (_req, res) => {
       totalTeachers,
       totalGames,
       totalStarsGiven: totalStarsGiven[0]?.total ?? 0,
+      totalVideos,
+      publishedVideos,
+      draftVideos: totalVideos - publishedVideos,
+      totalVideoViews: videoViewsAgg[0]?.total ?? 0,
+      videosByType,
+      topViewedVideos,
+      recentVideos,
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });

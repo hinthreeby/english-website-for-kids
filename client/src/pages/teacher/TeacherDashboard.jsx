@@ -47,20 +47,17 @@ function JoinCodeBadge({ code }) {
 const TeacherDashboard = () => {
   const [stats, setStats] = useState(null);
   const [classrooms, setClassrooms] = useState([]);
-  const [wordLists, setWordLists] = useState([]);
   const [newClassroomName, setNewClassroomName] = useState("");
   const [error, setError] = useState("");
 
   const loadData = async () => {
     try {
-      const [statsRes, classroomsRes, listsRes] = await Promise.all([
+      const [statsRes, classroomsRes] = await Promise.all([
         api.get("/api/teacher/stats"),
         api.get("/api/teacher/classrooms"),
-        api.get("/api/teacher/wordlists"),
       ]);
       setStats(statsRes.data);
       setClassrooms(classroomsRes.data.classrooms || []);
-      setWordLists(listsRes.data.lists || []);
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to load teacher dashboard");
     }
@@ -95,7 +92,7 @@ const TeacherDashboard = () => {
       <main className="role-wrap">
         <section className="role-hero glass-card">
           <h1>Teacher Control Deck</h1>
-          <p>Manage classrooms, track student progress, and submit word lists.</p>
+          <p>Manage classrooms, create content, and track student progress.</p>
         </section>
 
         {error ? <p className="error-msg">{error}</p> : null}
@@ -160,26 +157,13 @@ const TeacherDashboard = () => {
           </div>
 
           <div>
-            <h2>Word Lists</h2>
-            <Link to="/teacher/wordlist" className="btn-register">
-              + New Word List
+            <h2>My Content</h2>
+            <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: "1rem" }}>
+              Create games and quizzes for your students.
+            </p>
+            <Link to="/teacher/contents" className="btn-register">
+              Go to My Content
             </Link>
-            <div className="role-list">
-              {wordLists.map((list) => (
-                <article key={list._id} className="role-item">
-                  <div>
-                    <strong>{list.title}</strong>
-                    <p>
-                      {list.gameType} • {list.words?.length || 0} words
-                    </p>
-                  </div>
-                  <span className={list.isApproved ? "badge-ok" : "badge-pending"}>
-                    {list.isApproved ? "Approved" : "Pending"}
-                  </span>
-                </article>
-              ))}
-              {wordLists.length === 0 ? <p>No word lists yet.</p> : null}
-            </div>
           </div>
         </section>
       </main>

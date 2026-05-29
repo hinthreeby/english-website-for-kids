@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect, isParent } = require("../middleware/authMiddleware");
+const validateObjectId = require("../middleware/validateObjectId");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
 const cache = require("../utils/cache");
@@ -27,7 +28,7 @@ async function verifyChildAccess(req, res) {
 }
 
 // GET /api/children/:childId/score-history?period=weekly&limit=12
-router.get("/:childId/score-history", protect, isParent, async (req, res) => {
+router.get("/:childId/score-history", protect, isParent, validateObjectId("childId"), async (req, res) => {
   try {
     const child = await verifyChildAccess(req, res);
     if (!child) return;
@@ -77,7 +78,7 @@ router.get("/:childId/score-history", protect, isParent, async (req, res) => {
 });
 
 // GET /api/children/:childId/scores-by-game-type
-router.get("/:childId/scores-by-game-type", protect, isParent, async (req, res) => {
+router.get("/:childId/scores-by-game-type", protect, isParent, validateObjectId("childId"), async (req, res) => {
   try {
     const child = await verifyChildAccess(req, res);
     if (!child) return;
@@ -115,7 +116,7 @@ router.get("/:childId/scores-by-game-type", protect, isParent, async (req, res) 
 });
 
 // GET /api/children/:childId/completion-rate
-router.get("/:childId/completion-rate", protect, isParent, async (req, res) => {
+router.get("/:childId/completion-rate", protect, isParent, validateObjectId("childId"), async (req, res) => {
   try {
     const child = await verifyChildAccess(req, res);
     if (!child) return;
@@ -138,7 +139,7 @@ router.get("/:childId/completion-rate", protect, isParent, async (req, res) => {
 });
 
 // GET /api/children/:childId/play-calendar?days=30
-router.get("/:childId/play-calendar", protect, isParent, async (req, res) => {
+router.get("/:childId/play-calendar", protect, isParent, validateObjectId("childId"), async (req, res) => {
   try {
     const child = await verifyChildAccess(req, res);
     if (!child) return;

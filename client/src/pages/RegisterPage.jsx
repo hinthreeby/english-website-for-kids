@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import earthImg from "../assets/general/planet/earth.png";
 import jupiterImg from "../assets/general/planet/jupiter.png";
 import planetImg from "../assets/general/planet/planet.png";
@@ -47,6 +48,7 @@ const OTP_INPUT_STYLE = (error, digit) => ({
 const RegisterPage = () => {
   const { setUser } = useAuth();
   const { playPop, playChime } = useSound();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [step, setStep] = useState("form"); // "form" | "verify"
@@ -82,7 +84,7 @@ const RegisterPage = () => {
     setError("");
 
     if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("register.passwordMismatch"));
       return;
     }
 
@@ -99,7 +101,7 @@ const RegisterPage = () => {
       setStep("verify");
       setTimeout(() => focusInput(0), 100);
     } catch (err) {
-      setError(err?.response?.data?.error || "Registration failed. Please try again.");
+      setError(err?.response?.data?.error || t("register.error"));
     } finally {
       setLoading(false);
     }
@@ -136,7 +138,7 @@ const RegisterPage = () => {
     e.preventDefault();
     const code = digits.join("");
     if (code.length < CODE_LENGTH) {
-      setError("Please enter all 6 digits.");
+      setError(t("register.verify.enterAllDigits"));
       return;
     }
     setLoading(true);
@@ -147,7 +149,7 @@ const RegisterPage = () => {
       playChime();
       navigate(getRoleHome(res.data.user.role), { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.error || "Verification failed. Please try again.");
+      setError(err?.response?.data?.error || t("register.verify.failed"));
       setDigits(Array(CODE_LENGTH).fill(""));
       focusInput(0);
     } finally {
@@ -166,7 +168,7 @@ const RegisterPage = () => {
       setResendCooldown(RESEND_COOLDOWN);
       focusInput(0);
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to resend code.");
+      setError(err?.response?.data?.error || t("register.verify.resendFailed"));
     } finally {
       setResendLoading(false);
     }
@@ -179,12 +181,12 @@ const RegisterPage = () => {
       <div className="auth-page">
         <SpaceDecorations />
         <form className="auth-card" onSubmit={handleVerifySubmit} style={{ gap: "1rem" }}>
-          <h2>Verify Your Email</h2>
+          <h2>{t("register.verify.title")}</h2>
           <p className="subtitle" style={{ marginBottom: "0.25rem" }}>
-            A 6-digit code was sent to <strong>{form.email}</strong>.
+            {t("register.verify.subtitle")} <strong>{form.email}</strong>.
           </p>
           <p style={{ color: "#64748b", fontSize: "0.85rem", margin: 0 }}>
-            Code expires in 5 minutes.
+            {t("register.verify.expires")}
           </p>
 
           <div
@@ -214,7 +216,7 @@ const RegisterPage = () => {
             type="submit"
             disabled={loading || digits.join("").length < CODE_LENGTH}
           >
-            {loading ? "Verifying..." : "Verify & Create Account"}
+            {loading ? t("register.verify.verifying") : t("register.verify.verifyAccount")}
           </button>
 
           <button
@@ -225,10 +227,10 @@ const RegisterPage = () => {
             style={{ fontSize: "0.9rem" }}
           >
             {resendLoading
-              ? "Sending..."
+              ? t("register.verify.sending")
               : resendCooldown > 0
-              ? `Resend code (${resendCooldown}s)`
-              : "Resend code"}
+              ? t("register.verify.resendCooldown", { count: resendCooldown })
+              : t("register.verify.resendCode")}
           </button>
 
           <button
@@ -237,7 +239,7 @@ const RegisterPage = () => {
             onClick={() => { setStep("form"); setError(""); setDigits(Array(CODE_LENGTH).fill("")); }}
             style={{ fontSize: "0.85rem", opacity: 0.7 }}
           >
-            ← Back to form
+            {t("register.verify.backToForm")}
           </button>
         </form>
       </div>
@@ -253,13 +255,13 @@ const RegisterPage = () => {
       <SpaceDecorations />
 
       <form className="auth-card auth-card-register" onSubmit={handleFormSubmit}>
-        <h2>✨ Sign Up</h2>
-        <p className="subtitle">Create your account to get started.</p>
+        <h2>{t("register.title")}</h2>
+        <p className="subtitle">{t("register.subtitle")}</p>
 
         <div className="register-role-grid" role="radiogroup" aria-label="Choose role">
           {[
-            { id: "parent", emoji: "👨‍👩‍👧", label: "Parent" },
-            { id: "teacher", emoji: "👩‍🏫", label: "Teacher" },
+            { id: "parent", emoji: "👨‍👩‍👧", label: t("register.roleParent") },
+            { id: "teacher", emoji: "👩‍🏫", label: t("register.roleTeacher") },
           ].map((option) => (
             <button
               key={option.id}
@@ -274,14 +276,14 @@ const RegisterPage = () => {
         </div>
 
         {isTeacher ? (
-          <div className="notice-box">Teacher accounts require admin approval before login.</div>
+          <div className="notice-box">{t("register.teacherNotice")}</div>
         ) : null}
 
         <div className="register-fields-grid">
           <div className="register-question-group">
-            <label>Username</label>
+            <label>{t("register.username")}</label>
             <input
-              placeholder="Your username"
+              placeholder={t("register.usernamePlaceholder")}
               value={form.username}
               minLength={2}
               onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))}
@@ -290,7 +292,7 @@ const RegisterPage = () => {
           </div>
 
           <div className="register-question-group">
-            <label>Email</label>
+            <label>{t("register.email")}</label>
             <input
               placeholder="you@example.com"
               type="email"
@@ -301,9 +303,9 @@ const RegisterPage = () => {
           </div>
 
           <div className="register-question-group">
-            <label>Password</label>
+            <label>{t("register.password")}</label>
             <input
-              placeholder="At least 4 characters"
+              placeholder={t("register.passwordPlaceholder")}
               type="password"
               minLength={4}
               value={form.password}
@@ -313,9 +315,9 @@ const RegisterPage = () => {
           </div>
 
           <div className="register-question-group">
-            <label>Confirm Password</label>
+            <label>{t("register.confirmPassword")}</label>
             <input
-              placeholder="Repeat password"
+              placeholder={t("register.confirmPasswordPlaceholder")}
               type="password"
               minLength={4}
               value={form.confirmPassword}
@@ -328,7 +330,7 @@ const RegisterPage = () => {
         {error ? <p className="error-text auth-error">{error}</p> : null}
 
         <button className="btn-primary" type="submit" disabled={loading}>
-          {loading ? "Sending code..." : "🚀 Continue"}
+          {loading ? t("register.sendingCode") : t("register.continue")}
         </button>
 
         <button
@@ -339,11 +341,11 @@ const RegisterPage = () => {
             navigate("/login");
           }}
         >
-          Already have an account?
+          {t("register.haveAccount")}
         </button>
 
         <Link className="auth-back-link" to="/" onClick={playPop}>
-          ← Back to Home
+          {t("register.backHome")}
         </Link>
       </form>
     </div>

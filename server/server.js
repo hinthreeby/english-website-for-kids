@@ -18,10 +18,12 @@
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const mongoose = require("mongoose");
 const passport = require("./config/passport");
+const path = require("path");
 
 // ── Load environment configuration first ────────────────────────────────────
 const env = require("./config/env");
@@ -36,10 +38,16 @@ const progressRoutes = require("./routes/progress");
 const shopRoutes = require("./routes/shop");
 const parentRoutes = require("./routes/parent");
 const teacherRoutes = require("./routes/teacher");
+const teacherContentRoutes = require("./routes/teacherContent");
+const studentContentRoutes = require("./routes/studentContent");
 const adminRoutes = require("./routes/admin");
+const adminVideoRoutes = require("./routes/adminVideos");
+const videoRoutes = require("./routes/videos");
+const uploadRoutes = require("./routes/upload");
 const analyticsChildRoutes = require("./routes/analyticsChild");
 const analyticsClassRoutes = require("./routes/analyticsClass");
-const roadmapRoutes = require("./routes/roadmap");
+const roadmapRoutes    = require("./routes/roadmap");
+const autoSeedRoadmap  = require("./utils/autoSeedRoadmap");
 
 // ── Initialize Express app ────────────────────────────────────────────────
 const app = express();
@@ -49,6 +57,9 @@ if (env.TRUST_PROXY) {
   app.set("trust proxy", 1);
   console.log("[SERVER] ✅ Proxy trust enabled for Render");
 }
+
+// ── Middleware: Security headers ────────────────────────────────────────────
+app.use(helmet());
 
 // ── Middleware: CORS ────────────────────────────────────────────────────────
 app.use(cors(corsConfig));
@@ -80,6 +91,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// ── Serve uploaded files as static assets ──────────────────────────────────
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // ── Health Check Endpoint ───────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
   res.json({
@@ -96,7 +110,12 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/shop", shopRoutes);
 app.use("/api/parent", parentRoutes);
 app.use("/api/teacher", teacherRoutes);
+app.use("/api/teacher/contents", teacherContentRoutes);
+app.use("/api/student/contents", studentContentRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/videos", adminVideoRoutes);
+app.use("/api/videos", videoRoutes);
+app.use("/api/upload", uploadRoutes);
 app.use("/api/children", analyticsChildRoutes);
 app.use("/api/classes", analyticsClassRoutes);
 app.use("/api/roadmaps", roadmapRoutes);
@@ -124,6 +143,9 @@ async function startServer() {
     console.log("[DB] Connecting to MongoDB...");
     await mongoose.connect(env.MONGODB_URI);
     console.log("[DB] ✅ MongoDB connected");
+
+    // Ensure default roadmap data exists
+    await autoSeedRoadmap();
 
     // Start listening
     app.listen(env.PORT, () => {

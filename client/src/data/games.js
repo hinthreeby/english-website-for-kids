@@ -98,6 +98,15 @@ const roadmapGames = [
     subtitle: "Listen & match the family!",
     route: "/game/family-photo",
   },
+  {
+    id: "school-find",
+    name: "Find the Object",
+    emoji: "🔍",
+    thumbnail: familyPhotoThumb,
+    theme: "#fef9c3",
+    subtitle: "Listen & find it on the shelf!",
+    route: "/game/school-find",
+  },
 ];
 
 export const gameById = [...games, ...roadmapGames].reduce((acc, game) => {

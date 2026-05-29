@@ -27,9 +27,13 @@ const StoryCard = ({ story, onClick, index }) => {
           </div>
         )}
 
+        <span className="video-badge short-badge">SHORT</span>
+
         <div className="card-text story-card-text">
+          {story.duration && (
+            <span className="video-duration-tag">⏱ {story.duration}</span>
+          )}
           <h3 className="card-title">{story.title}</h3>
-          <p className="card-subtitle">{story.description}</p>
         </div>
       </div>
     </motion.button>

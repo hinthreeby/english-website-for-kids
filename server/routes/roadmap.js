@@ -4,6 +4,7 @@ const Roadmap = require("../models/Roadmap");
 const RoadmapUnit = require("../models/RoadmapUnit");
 const RoadmapProgress = require("../models/RoadmapProgress");
 const { protect, requireRole } = require("../middleware/authMiddleware");
+const validateObjectId = require("../middleware/validateObjectId");
 
 // GET /api/roadmaps — list all active roadmaps
 router.get("/", async (req, res) => {
@@ -18,7 +19,7 @@ router.get("/", async (req, res) => {
 });
 
 // GET /api/roadmaps/:id — roadmap detail with units (no questions)
-router.get("/:id", async (req, res) => {
+router.get("/:id", validateObjectId("id"), async (req, res) => {
   try {
     const roadmap = await Roadmap.findById(req.params.id);
     if (!roadmap) return res.status(404).json({ error: "Roadmap not found" });
@@ -34,7 +35,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // GET /api/roadmaps/:id/progress — get or create progress for current child
-router.get("/:id/progress", protect, requireRole("child", "admin"), async (req, res) => {
+router.get("/:id/progress", protect, requireRole("child", "admin"), validateObjectId("id"), async (req, res) => {
   try {
     const roadmap = await Roadmap.findById(req.params.id);
     if (!roadmap) return res.status(404).json({ error: "Roadmap not found" });
@@ -68,8 +69,8 @@ router.get("/:id/progress", protect, requireRole("child", "admin"), async (req, 
   }
 });
 
-// GET /api/roadmaps/units/:unitId — unit detail including questions
-router.get("/units/:unitId", async (req, res) => {
+// GET /api/roadmaps/units/:unitId — unit detail including questions (auth required)
+router.get("/units/:unitId", protect, requireRole("child", "admin"), validateObjectId("unitId"), async (req, res) => {
   try {
     const unit = await RoadmapUnit.findById(req.params.unitId);
     if (!unit) return res.status(404).json({ error: "Unit not found" });
@@ -84,6 +85,7 @@ router.post(
   "/units/:unitId/complete",
   protect,
   requireRole("child", "admin"),
+  validateObjectId("unitId"),
   async (req, res) => {
     try {
       const unit = await RoadmapUnit.findById(req.params.unitId);
@@ -94,8 +96,22 @@ router.post(
         roadmapId: unit.roadmapId,
       });
 
+      // Auto-initialize progress if the player completes a unit without
+      // having visited the roadmap page first (e.g. via direct game URL).
       if (!progress) {
-        return res.status(400).json({ error: "Progress not initialized. Load roadmap first." });
+        const firstUnit = await RoadmapUnit.findOne({
+          roadmapId: unit.roadmapId,
+          order: 1,
+          isActive: true,
+        });
+        progress = await RoadmapProgress.create({
+          userId:         req.user._id,
+          roadmapId:      unit.roadmapId,
+          completedUnits: [],
+          unlockedUnits:  firstUnit ? [firstUnit._id] : [],
+          currentUnit:    firstUnit ? firstUnit._id : null,
+          stars:          0,
+        });
       }
 
       const unitId = unit._id;
