@@ -24,12 +24,14 @@ const session = require("express-session");
 const mongoose = require("mongoose");
 const passport = require("./config/passport");
 const path = require("path");
+const pinoHttp = require("pino-http");
 
 // ── Load environment configuration first ────────────────────────────────────
 const env = require("./config/env");
 const corsConfig = require("./config/cors");
 const { sessionCookieOptions } = require("./config/cookies");
 const { checkEmailService } = require("./services/emailService");
+const logger = require("./config/logger");
 
 // ── Import routes ──────────────────────────────────────────────────────────
 const authRoutes = require("./routes/auth");
@@ -48,6 +50,7 @@ const analyticsChildRoutes = require("./routes/analyticsChild");
 const analyticsClassRoutes = require("./routes/analyticsClass");
 const roadmapRoutes    = require("./routes/roadmap");
 const autoSeedRoadmap  = require("./utils/autoSeedRoadmap");
+const testLogRoutes    = require("./routes/testLog");
 
 // ── Initialize Express app ────────────────────────────────────────────────
 const app = express();
@@ -55,8 +58,31 @@ const app = express();
 // ── Trust proxy for Render (behind reverse proxy with X-Forwarded-* headers) ─
 if (env.TRUST_PROXY) {
   app.set("trust proxy", 1);
-  console.log("[SERVER] ✅ Proxy trust enabled for Render");
+  logger.info("Proxy trust enabled for Render");
 }
+
+// ── Middleware: HTTP request logging (pino-http) ─────────────────────────────
+// Flat top-level fields so Filebeat/ELK can parse without extra mapping config.
+app.use(
+  pinoHttp({
+    logger,
+    // Suppress nested req/res objects; fields are injected flat via customProps
+    serializers: {
+      req: () => undefined,
+      res: () => undefined,
+    },
+    // Called when response finishes — res.statusCode is final at this point
+    customProps(req, res) {
+      return {
+        method: req.method,
+        url: req.originalUrl || req.url,
+        statusCode: res.statusCode,
+        ip: req.ip || req.socket?.remoteAddress,
+        userAgent: req.headers?.["user-agent"],
+      };
+    },
+  })
+);
 
 // ── Middleware: Security headers ────────────────────────────────────────────
 app.use(helmet());
@@ -119,6 +145,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/children", analyticsChildRoutes);
 app.use("/api/classes", analyticsClassRoutes);
 app.use("/api/roadmaps", roadmapRoutes);
+app.use("/api/v1/test-log", testLogRoutes);
 
 // ── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -127,7 +154,7 @@ app.use((req, res) => {
 
 // ── Global Error Handler ────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error("[ERROR]", err.message);
+  logger.error({ err: err.message, status: err.status }, "API error");
   res.status(err.status || 500).json({
     error: env.isProduction ? "Internal server error" : err.message,
   });
@@ -140,22 +167,26 @@ async function startServer() {
     await checkEmailService();
 
     // Connect to MongoDB
-    console.log("[DB] Connecting to MongoDB...");
+    logger.info("Connecting to MongoDB...");
     await mongoose.connect(env.MONGODB_URI);
-    console.log("[DB] ✅ MongoDB connected");
+    logger.info("MongoDB connected successfully");
 
     // Ensure default roadmap data exists
     await autoSeedRoadmap();
 
     // Start listening
     app.listen(env.PORT, () => {
-      console.log(`[SERVER] ✅ Server running on port ${env.PORT}`);
-      console.log(`[SERVER]    Environment: ${env.NODE_ENV}`);
-      console.log(`[SERVER]    Frontend URL: ${env.CLIENT_URL}`);
-      console.log(`[SERVER]    MongoDB: ${env.MONGODB_URI.substring(0, 40)}...`);
+      logger.info(
+        {
+          port: env.PORT,
+          environment: env.NODE_ENV,
+          clientUrl: env.CLIENT_URL,
+        },
+        "Server started"
+      );
     });
   } catch (error) {
-    console.error("[SERVER] ❌ Startup error:", error.message);
+    logger.error({ err: error.message }, "Startup failed");
     process.exit(1);
   }
 }
@@ -165,7 +196,7 @@ startServer();
 
 // ── Graceful shutdown ───────────────────────────────────────────────────────
 process.on("SIGTERM", async () => {
-  console.log("[SERVER] ⚠️  SIGTERM received, shutting down gracefully...");
+  logger.info("SIGTERM received, shutting down gracefully...");
   await mongoose.connection.close();
   process.exit(0);
 });

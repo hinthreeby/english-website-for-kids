@@ -1,0 +1,54 @@
+# =============================================================================
+# Filebeat Configuration Example — english-learning-api
+# =============================================================================
+#
+# Luồng log:
+#   Node.js app  -->  server/logs/app.log  -->  Filebeat  -->  Logstash:5044
+#                                                               (ELK server)
+#
+# Máy nào cài Filebeat?
+#   - App đang chạy LOCAL  : cài Filebeat trên chính máy local đó.
+#   - App deploy lên VPS   : cài Filebeat trên VPS chạy web app,
+#                            KHÔNG phải trên máy/server chạy ELK.
+#   Nguyên tắc: Filebeat luôn chạy cùng máy với file log cần đọc.
+#
+# YOUR_ELK_SERVER_IP:
+#   Thay bằng IP của máy/server đang chạy ELK Stack (Logstash lắng nghe port 5044).
+#   Ví dụ: "192.168.1.100:5044"  hoặc  "elk.example.com:5044"
+#
+# Cách dùng:
+#   1. Copy file này thành filebeat.yml (KHÔNG commit filebeat.yml)
+#   2. Thay /ABSOLUTE/PATH/TO/PROJECT bằng đường dẫn tuyệt đối thực tế:
+#        Windows : C:/Users/HP/HK2/Lap-trinh-web/project
+#        Linux   : /home/user/project
+#   3. Thay YOUR_ELK_SERVER_IP bằng IP máy chạy ELK
+#   4. Chạy Filebeat: filebeat -e -c filebeat.yml
+# =============================================================================
+
+filebeat.inputs:
+  - type: filestream
+    id: english-learning-api-logs
+    enabled: true
+    paths:
+      # Đường dẫn tuyệt đối tới file log trên máy đang chạy app.
+      # Thay /ABSOLUTE/PATH/TO/PROJECT bằng path thực tế trước khi chạy.
+      - D:/HK2/Lap-trinh-web/project/server/logs/app.log
+
+    parsers:
+      - ndjson:
+          # Mỗi dòng trong app.log là một JSON object (ndjson format).
+          # target: ""        → giữ các field JSON ở top-level, không nest vào sub-key.
+          # overwrite_keys    → field trong JSON được ghi đè lên field mặc định Filebeat.
+          # add_error_key     → thêm field "_ingesterror" nếu một dòng không parse được.
+          target: ""
+          overwrite_keys: true
+          add_error_key: true
+
+# Gửi log tới Logstash trên ELK server.
+# Thay YOUR_ELK_SERVER_IP bằng địa chỉ IP thực của máy chạy ELK/Logstash.
+output.logstash:
+  hosts: ["10.42.212.32:5044"]
+
+# Logging của chính Filebeat (không liên quan đến app log)
+logging.level: info
+logging.to_files: false

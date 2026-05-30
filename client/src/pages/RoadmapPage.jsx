@@ -124,7 +124,6 @@ const RoadmapPage = () => {
   const [unitDetail,   setUnitDetail]   = useState(null);
   const [toast,        setToast]        = useState("");
   const [loading,      setLoading]      = useState(true);
-  const [completing,   setCompleting]   = useState(false);
 
   const displayUnits = apiUnits.length > 0 ? apiUnits : FALLBACK_UNITS;
 
@@ -168,22 +167,6 @@ const RoadmapPage = () => {
       api.get(`/api/roadmaps/units/${unit._id}`)
         .then((r) => setUnitDetail(r.data))
         .catch(() => {});
-    }
-  };
-
-  const handleComplete = async (unitId) => {
-    if (!isChild)     { showToast("Log in as a child account to track progress!"); return; }
-    if (isFB(unitId)) { showToast("Run the seed script to enable progress tracking!"); return; }
-    setCompleting(true);
-    try {
-      const r = await api.post(`/api/roadmaps/units/${unitId}/complete`);
-      setProgress(r.data.progress);
-      showToast("Unit completed! +3 ⭐");
-      setSelectedUnit(null);
-    } catch (e) {
-      showToast(e?.response?.data?.error || "Something went wrong.");
-    } finally {
-      setCompleting(false);
     }
   };
 
@@ -344,9 +327,6 @@ const RoadmapPage = () => {
           unit={selectedUnit}
           detail={unitDetail}
           status={getStatus(selectedUnit)}
-          isChild={isChild}
-          completing={completing}
-          onComplete={handleComplete}
           onPlay={handlePlay}
           onClose={() => { setSelectedUnit(null); setUnitDetail(null); }}
         />
@@ -396,7 +376,7 @@ const ZigzagNode = ({ unit, pos, status, img, onClick }) => {
       {/* START / FINISH badge */}
       {pos.label && (
         <span
-          className="mb-1.5 px-2.5 py-0.5 rounded-full text-xs font-black tracking-widest uppercase whitespace-nowrap"
+          className="mb-1.5 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase whitespace-nowrap inline-flex items-center justify-center"
           style={{
             background: pos.label === "START"
               ? "linear-gradient(90deg,#7b2ff7,#06b6d4)"
@@ -499,7 +479,7 @@ const UnitModal = ({ unit, detail, status, isChild, completing, onComplete, onPl
           {done && (
             <span className="mt-2 px-3 py-1 rounded-full text-xs font-bold"
               style={{ background:"rgba(255,215,0,0.15)", border:"1px solid #ffd700", color:"#ffd700" }}>
-              ✅ Completed
+              Completed
             </span>
           )}
         </div>
@@ -509,13 +489,6 @@ const UnitModal = ({ unit, detail, status, isChild, completing, onComplete, onPl
             className="mt-6 w-full py-3 rounded-2xl font-bold text-white transition-all duration-200 hover:scale-105"
             style={{ background:"linear-gradient(90deg,#f59e0b,#ef4444)", boxShadow:"0 0 20px rgba(245,158,11,0.5)" }}>
             ▶ Play Game
-          </button>
-        )}
-        {isChild && !done && !fallback && !gameId && (
-          <button type="button" disabled={completing} onClick={() => onComplete(unit._id)}
-            className="mt-3 w-full py-3 rounded-2xl font-bold text-white transition-all duration-200 hover:scale-105 disabled:opacity-60"
-            style={{ background:"linear-gradient(90deg,#7c3aed,#be185d)", boxShadow:"0 0 20px rgba(124,58,237,0.5)" }}>
-            {completing ? "Saving…" : "Mark as Complete ✨"}
           </button>
         )}
       </div>
