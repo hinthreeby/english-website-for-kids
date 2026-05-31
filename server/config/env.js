@@ -55,12 +55,11 @@ const env = {
   COOKIE_SECURE: process.env.COOKIE_SECURE === "true" || NODE_ENV === "production",
   COOKIE_SAMESITE: process.env.COOKIE_SAMESITE || (NODE_ENV === "production" ? "none" : "lax"),
 
-  // Ollama (local AI for draw-guess game)
-  OLLAMA_URL: process.env.OLLAMA_URL || "http://localhost:11434",
-  OLLAMA_MODEL: process.env.OLLAMA_MODEL || "llava",
-
   // Groq (AI chat game)
   GROQ_API_KEY: process.env.GROQ_API_KEY,
+
+  // Groq (draw-guess game vision)
+  GROQ_DRAW_API_KEY: process.env.GROQ_DRAW_API_KEY,
 
   // Derived flags
   isDevelopment: NODE_ENV === "development",

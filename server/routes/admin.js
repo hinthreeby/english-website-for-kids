@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect, isAdmin } = require("../middleware/authMiddleware");
 const validateObjectId = require("../middleware/validateObjectId");
 const { adminLog } = require("../middleware/adminLogger");
+const { admin: pinoAdmin } = require("../config/loggers");
 const User = require("../models/User");
 const WordList = require("../models/WordList");
 const GameResult = require("../models/GameResult");
@@ -45,6 +46,15 @@ router.patch("/user/:id", protect, isAdmin, validateObjectId("id"), async (req, 
       "-password"
     );
     adminLog("UPDATE_USER", req.user._id, req.params.id, update);
+    pinoAdmin(update.role ? "change_role" : "update_user", {
+      adminId:  req.user._id.toString(),
+      targetId: req.params.id,
+      method:   req.method,
+      url:      req.originalUrl || req.url,
+      message:  update.role
+        ? `Admin changed role of user ${req.params.id} to ${update.role}`
+        : `Admin updated user ${req.params.id}`,
+    });
     return res.json({ user });
   } catch (err) {
     return res.status(400).json({ error: err.message });
@@ -58,6 +68,13 @@ router.delete("/user/:id", protect, isAdmin, validateObjectId("id"), async (req,
     }
     await User.findByIdAndUpdate(req.params.id, { isActive: false });
     adminLog("DELETE_USER", req.user._id, req.params.id);
+    pinoAdmin("delete_user", {
+      adminId:  req.user._id.toString(),
+      targetId: req.params.id,
+      method:   req.method,
+      url:      req.originalUrl || req.url,
+      message:  `Admin disabled user ${req.params.id}`,
+    });
     return res.json({ success: true });
   } catch (err) {
     return res.status(400).json({ error: err.message });
@@ -81,6 +98,13 @@ router.patch("/approve-teacher/:id", protect, isAdmin, validateObjectId("id"), a
       { new: true }
     ).select("-password");
     adminLog("APPROVE_TEACHER", req.user._id, req.params.id);
+    pinoAdmin("update_user", {
+      adminId:  req.user._id.toString(),
+      targetId: req.params.id,
+      method:   req.method,
+      url:      req.originalUrl || req.url,
+      message:  `Admin approved teacher ${req.params.id}`,
+    });
     return res.json({ user });
   } catch (err) {
     return res.status(400).json({ error: err.message });

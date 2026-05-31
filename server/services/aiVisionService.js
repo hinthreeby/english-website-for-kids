@@ -1,15 +1,8 @@
 const env = require("../config/env");
 
-/**
- * Check if a drawing matches a keyword using a vision AI model.
- *
- * Currently uses local Ollama (llava). To migrate to cloud:
- *   - Remote Ollama: change OLLAMA_URL in .env to your hosted instance
- *   - Cloud API: replace callOllama() with callOpenAI() / callClaude() etc.
- */
 async function checkDrawing(imageBase64, keyword) {
-  const prompt = `This is a drawing made by a young child. Be very generous and encouraging. Could this drawing possibly represent a "${keyword}" in any way — even if it is simple, rough, or abstract? If there is any resemblance at all, answer "yes". Only answer "no" if the drawing looks completely unrelated. Answer with only "yes" or "no".`;
-  const raw = await callOllama(imageBase64, prompt);
+  const prompt = `Look at this hand-drawn picture. Does it represent a "${keyword}"? The drawing should be clearly recognizable as a ${keyword} — you should be able to identify its main shape or key features. Answer "yes" only if the drawing is reasonably recognizable as a ${keyword}. Answer "no" if it is too vague, scribbled, incomplete, or does not actually look like a ${keyword}. Answer with only "yes" or "no".`;
+  const raw = await callGroq(imageBase64, prompt);
   const normalized = raw.trim().toLowerCase();
   return {
     correct: normalized.startsWith("yes"),
@@ -17,26 +10,40 @@ async function checkDrawing(imageBase64, keyword) {
   };
 }
 
-async function callOllama(imageBase64, prompt) {
-  const response = await fetch(`${env.OLLAMA_URL}/api/generate`, {
+async function callGroq(imageBase64, prompt) {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.GROQ_DRAW_API_KEY}`,
+    },
     body: JSON.stringify({
-      model: env.OLLAMA_MODEL,
-      prompt,
-      images: [imageBase64],
-      stream: false,
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: { url: `data:image/jpeg;base64,${imageBase64}` },
+            },
+            { type: "text", text: prompt },
+          ],
+        },
+      ],
+      max_tokens: 10,
+      temperature: 0,
     }),
     signal: AbortSignal.timeout(30_000),
   });
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    throw new Error(`Ollama returned ${response.status}: ${text}`);
+    throw new Error(`Groq returned ${response.status}: ${text}`);
   }
 
   const data = await response.json();
-  return data.response ?? "";
+  return data.choices?.[0]?.message?.content ?? "";
 }
 
 module.exports = { checkDrawing };

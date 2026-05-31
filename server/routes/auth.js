@@ -9,6 +9,7 @@ const { sendOtpEmail } = require("../services/emailService");
 const env = require("../config/env");
 const { cookieOptions } = require("../config/cookies");
 const { loginLimiter, registerLimiter, forgotLimiter } = require("../config/rateLimiters");
+const { auth } = require("../config/loggers");
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ function buildUserPayload(user) {
 
 router.post("/register-init", registerLimiter, async (req, res) => {
   console.log("REGISTER INIT START");
-  
+
   const { username, email, password, confirmPassword, role } = req.body;
   const requestedRole = role || "parent";
 
@@ -92,7 +93,7 @@ router.post("/register-init", registerLimiter, async (req, res) => {
       }
       console.warn(`[REGISTER][DEV] OTP for ${emailTrimmed}: ${otp}`);
     }
-    
+
     return res.json({ pendingToken });
   } catch (err) {
     console.error("[REGISTER-INIT] Error:", err.message);
@@ -130,6 +131,15 @@ router.post("/register-verify", async (req, res) => {
       isApproved: true,
     });
 
+    auth("info", "register_success", {
+      userId:    user._id.toString(),
+      email:     user.email,
+      role:      user.role,
+      ip:        req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message:   `New user registered: ${user.username}`,
+    });
+
     sendToken(user, res);
     return res.status(201).json({ user: buildUserPayload(user) });
   } catch (err) {
@@ -139,7 +149,6 @@ router.post("/register-verify", async (req, res) => {
 
 // Legacy register (kept for backward compatibility with existing AuthContext.register())
 router.post("/register", registerLimiter, async (req, res) => {
-  // Check if body exists
   if (!req.body) {
     return res.status(400).json({ error: "Request body is required." });
   }
@@ -180,6 +189,15 @@ router.post("/register", registerLimiter, async (req, res) => {
       isApproved: true,
     });
 
+    auth("info", "register_success", {
+      userId:    user._id.toString(),
+      email:     user.email,
+      role:      user.role,
+      ip:        req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message:   `New user registered (legacy): ${user.username}`,
+    });
+
     sendToken(user, res);
     return res.status(201).json({ user: buildUserPayload(user) });
   } catch (err) {
@@ -196,6 +214,9 @@ router.post("/login", loginLimiter, async (req, res) => {
   if (!loginIdentifier || !password)
     return res.status(400).json({ error: "Email/username and password are required." });
 
+  const ip        = req.ip || req.socket?.remoteAddress;
+  const userAgent = req.headers?.["user-agent"];
+
   try {
     const normalizedEmail = loginIdentifier.toLowerCase();
     const user = await User.findOne({
@@ -203,14 +224,40 @@ router.post("/login", loginLimiter, async (req, res) => {
     });
 
     if (!user) {
+      auth("warn", "login_failed", {
+        reason:     "user_not_found",
+        identifier: loginIdentifier,
+        ip,
+        userAgent,
+        message:    "Login failed: user not found",
+      });
       return res.status(401).json({ error: "Invalid credentials." });
     }
 
     const ok = await user.comparePassword(password);
-    if (!ok) return res.status(401).json({ error: "Invalid credentials." });
+    if (!ok) {
+      auth("warn", "login_failed", {
+        reason:    "invalid_password",
+        email:     user.email,
+        userId:    user._id.toString(),
+        ip,
+        userAgent,
+        message:   "Login failed: wrong password",
+      });
+      return res.status(401).json({ error: "Invalid credentials." });
+    }
 
-    if (!user.isActive)
+    if (!user.isActive) {
+      auth("warn", "login_failed", {
+        reason:    "account_disabled",
+        email:     user.email,
+        userId:    user._id.toString(),
+        ip,
+        userAgent,
+        message:   "Login failed: account disabled",
+      });
       return res.status(403).json({ error: "Your account has been disabled." });
+    }
 
     // Children and accounts without email skip 2FA
     const skip2FA = user.role === "child" || !user.email;
@@ -221,7 +268,7 @@ router.post("/login", loginLimiter, async (req, res) => {
         const trusted = user.trustedDevices?.some((d) => d.tokenHash === hash);
         if (trusted) {
           // Trusted device → direct login
-          return await doDirectLogin(user, res, false);
+          return await doDirectLogin(user, req, res, false);
         }
       }
       // New device → send 2FA OTP
@@ -243,13 +290,13 @@ router.post("/login", loginLimiter, async (req, res) => {
     }
 
     // Skip 2FA path
-    return await doDirectLogin(user, res, user.role === "child");
+    return await doDirectLogin(user, req, res, user.role === "child");
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });
 
-async function doDirectLogin(user, res, checkStreak) {
+async function doDirectLogin(user, req, res, checkStreak) {
   const loginUpdate = { lastLogin: new Date() };
   let streakReset = false;
   if (checkStreak && user.lastPlayedDate) {
@@ -260,6 +307,16 @@ async function doDirectLogin(user, res, checkStreak) {
     }
   }
   const updatedUser = await User.findByIdAndUpdate(user._id, loginUpdate, { new: true });
+
+  auth("info", "login_success", {
+    userId:    updatedUser._id.toString(),
+    email:     updatedUser.email,
+    role:      updatedUser.role,
+    ip:        req.ip || req.socket?.remoteAddress,
+    userAgent: req.headers?.["user-agent"],
+    message:   `User ${updatedUser.username} logged in`,
+  });
+
   sendToken(updatedUser, res);
   return res.json({ user: buildUserPayload(updatedUser), streakReset });
 }
@@ -300,6 +357,15 @@ router.post("/login-verify", async (req, res) => {
       }
     }
     const updatedUser = await User.findByIdAndUpdate(user._id, loginUpdate, { new: true });
+
+    auth("info", "login_success", {
+      userId:    updatedUser._id.toString(),
+      email:     updatedUser.email,
+      role:      updatedUser.role,
+      ip:        req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message:   `User ${updatedUser.username} logged in (2FA verified)`,
+    });
 
     sendToken(updatedUser, res);
     return res.json({ user: buildUserPayload(updatedUser), streakReset, deviceId: effectiveDeviceId });
@@ -444,7 +510,12 @@ router.get("/me", protect, async (req, res) => {
   return res.json({ user: req.user });
 });
 
-router.post("/logout", (_req, res) => {
+router.post("/logout", (req, res) => {
+  auth("info", "logout", {
+    ip:        req.ip || req.socket?.remoteAddress,
+    userAgent: req.headers?.["user-agent"],
+    message:   "User logged out",
+  });
   res.clearCookie("token", cookieOptions);
   return res.json({ success: true });
 });

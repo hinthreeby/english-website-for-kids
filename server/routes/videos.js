@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { activity } = require("../config/loggers");
 const Video = require("../models/Video");
 const VideoView = require("../models/VideoView");
 const validateObjectId = require("../middleware/validateObjectId");
@@ -46,6 +47,11 @@ router.post("/:id/view", validateObjectId("id"), viewLimiter, async (req, res) =
 
     // Fire-and-forget — record the view event without blocking the response
     VideoView.create({ videoId: video._id }).catch(() => {});
+
+    activity("video_watched", {
+      videoId: video._id.toString(),
+      message: `Video viewed: ${video.title || video._id}`,
+    });
 
     res.json({ views: video.views });
   } catch (err) {

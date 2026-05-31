@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { activity } = require("../config/loggers");
 const Roadmap = require("../models/Roadmap");
 const RoadmapUnit = require("../models/RoadmapUnit");
 const RoadmapProgress = require("../models/RoadmapProgress");
@@ -74,6 +75,13 @@ router.get("/units/:unitId", protect, requireRole("child", "admin"), validateObj
   try {
     const unit = await RoadmapUnit.findById(req.params.unitId);
     if (!unit) return res.status(404).json({ error: "Unit not found" });
+
+    activity("lesson_started", {
+      userId:   req.user._id.toString(),
+      lessonId: unit._id.toString(),
+      message:  `Lesson started: ${unit.title || unit._id}`,
+    });
+
     res.json(unit);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -120,6 +128,13 @@ router.post(
       );
 
       if (!alreadyCompleted) {
+        activity("lesson_completed", {
+          userId:   req.user._id.toString(),
+          lessonId: unitId.toString(),
+          score:    3,
+          message:  `Lesson completed: ${unit.title || unitId}`,
+        });
+
         progress.completedUnits.push(unitId);
         progress.stars += 3;
 

@@ -242,7 +242,7 @@ const DrawGuess = ({ onComplete }) => {
   const resultText = {
     correct: `✅ Yes! That looks like a ${current.word}!`,
     wrong:   timeUp ? `⏰ Time's up! Try again?` : `🤔 Not quite a ${current.word}… Keep trying!`,
-    error:   "⚠️ Couldn't reach AI. Is Ollama running?",
+    error:   "⚠️ Couldn't reach AI. Please try again!",
   }[status];
 
   return (
@@ -311,7 +311,7 @@ const DrawGuess = ({ onComplete }) => {
                           setStatus("idle");
                         }}
                       >
-                        🔄 Try Again ({3 - attempts} left)
+                        Try Again ({3 - attempts})
                       </button>
                     )}
                     <button type="button" className="kid-btn ghost dg-check-btn" onClick={handleNext}>

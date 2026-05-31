@@ -21,7 +21,7 @@ router.post("/check", drawLimiter, async (req, res) => {
     return res.json(result);
   } catch {
     return res.status(503).json({
-      error: "AI service unavailable. Make sure Ollama is running locally.",
+      error: "AI service unavailable. Please try again later.",
     });
   }
 });

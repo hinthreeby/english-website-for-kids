@@ -341,17 +341,26 @@
 
 .dg-check-btn {
   width: 100%;
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  min-width: 120px;
+  max-width: 200px;
+  padding: 0.4rem 1rem;
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
 }
 
 .dg-retry-btns {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: 100%;
+  align-items: center;
+  width: fit-content;
 }
 
-/* Override global bounce → grow for all buttons inside draw-guess */
+/* Override size + bounce for all buttons inside draw-guess */
+.draw-guess-panel .kid-btn {
+  min-height: 52px;
+  min-width: 0;
+}
+
 .draw-guess-panel .kid-btn:hover {
   animation: none;
   transform: scale(1.06);
