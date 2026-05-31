@@ -57,4 +57,22 @@ const uploadVideo = multer({
   limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
 });
 
-module.exports = { uploadThumbnail, uploadVideo };
+const avatarStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    const dir = path.join(__dirname, "../uploads/avatars");
+    mkdirIfNeeded(dir);
+    cb(null, dir);
+  },
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `avatar_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
+  },
+});
+
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  fileFilter: imageFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+});
+
+module.exports = { uploadThumbnail, uploadVideo, uploadAvatar };

@@ -1,4 +1,5 @@
-import { useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useRef, useState } from "react";
 import api from "../lib/api";
 import Navbar from "../components/Navbar";
 import StarBackground from "../components/StarBackground";
@@ -26,12 +27,17 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
   const [pwMsg, setPwMsg] = useState({ text: "", error: false });
   const [pwLoading, setPwLoading] = useState(false);
 
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarMsg, setAvatarMsg] = useState({ text: "", error: false });
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const fileInputRef = useRef(null);
+
   const handleProfileSave = async (e) => {
     e.preventDefault();
     setProfileMsg({ text: "", error: false });
     setProfileLoading(true);
     try {
-      const res = await api.patch(`${apiBase}/api/profile`, { displayName, email });
+      const res = await api.patch(`/api${apiBase}/profile`, { displayName, email });
       if (setUser) setUser(res.data.user);
       setProfileMsg({ text: "Profile updated successfully.", error: false });
     } catch (err) {
@@ -50,7 +56,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
     }
     setPwLoading(true);
     try {
-      await api.patch(`${apiBase}/api/change-password`, { currentPassword, newPassword });
+      await api.patch(`/api${apiBase}/change-password`, { currentPassword, newPassword });
       setPwMsg({ text: "Password changed successfully.", error: false });
       setCurrentPassword("");
       setNewPassword("");
@@ -62,6 +68,41 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
     }
   };
 
+  const uploadAvatarFile = async (file) => {
+    setAvatarMsg({ text: "", error: false });
+    setAvatarLoading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await api.post("/api/upload/avatar", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (setUser) setUser(res.data.user);
+      setAvatarMsg({ text: "Avatar updated!", error: false });
+    } catch (err) {
+      setAvatarMsg({ text: err?.response?.data?.error || "Upload failed", error: true });
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
+  const handleAvatarUrlSave = async (e) => {
+    e.preventDefault();
+    if (!avatarUrl.trim()) return;
+    setAvatarMsg({ text: "", error: false });
+    setAvatarLoading(true);
+    try {
+      const res = await api.post("/api/upload/avatar", { avatarUrl: avatarUrl.trim() });
+      if (setUser) setUser(res.data.user);
+      setAvatarMsg({ text: "Avatar updated!", error: false });
+      setAvatarUrl("");
+    } catch (err) {
+      setAvatarMsg({ text: err?.response?.data?.error || "Failed to set avatar", error: true });
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
   return (
     <div className="screen with-bg role-page">
       <StarBackground />
@@ -69,7 +110,62 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
       <main className="role-wrap">
         <section className="role-hero glass-card">
           <h1>{roleLabel} Profile</h1>
-          <p>Update your display name, email, and password.</p>
+          <p>Update your display name, email, password, and avatar.</p>
+        </section>
+
+        {/* Avatar section */}
+        <section className="glass-card" style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ marginBottom: "1rem" }}>Avatar</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
+            <div className="avatar-preview-lg">
+              {user?.avatar
+                ? <img src={user.avatar} alt="avatar" />
+                : <span>{(user?.displayName || user?.username || "?")[0].toUpperCase()}</span>
+              }
+            </div>
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <p style={{ color: "#94a3b8", fontSize: 13, marginBottom: "0.75rem" }}>
+                Upload an image file or paste an image URL.
+              </p>
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                <button
+                  className="btn-secondary-glass"
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={avatarLoading}
+                >
+                  Upload Image
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) uploadAvatarFile(e.target.files[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              <form onSubmit={handleAvatarUrlSave} style={{ display: "flex", gap: "0.5rem" }}>
+                <input
+                  className="profile-input"
+                  type="url"
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/avatar.png"
+                  style={{ flex: 1 }}
+                />
+                <button className="btn-register" type="submit" disabled={avatarLoading || !avatarUrl.trim()}>
+                  {avatarLoading ? "Saving…" : "Set URL"}
+                </button>
+              </form>
+              {avatarMsg.text
+                ? <p className={avatarMsg.error ? "error-msg" : "success-msg"} style={{ marginTop: "0.5rem" }}>{avatarMsg.text}</p>
+                : null
+              }
+            </div>
+          </div>
         </section>
 
         <section className="glass-card role-grid role-grid-2">

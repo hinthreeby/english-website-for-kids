@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import useSound from "../hooks/useSound";
 import api from "../lib/api";
 
+// ── Keyframes (injected once) ─────────────────────────────────────────────────
 if (typeof document !== "undefined" && !document.getElementById("cp-kf")) {
   const s = document.createElement("style");
   s.id = "cp-kf";
@@ -34,17 +35,45 @@ if (typeof document !== "undefined" && !document.getElementById("cp-kf")) {
       20%       { transform: translateX(-7px); }
       60%       { transform: translateX(7px); }
     }
+    @keyframes cpTwinkle {
+      0%, 100% { opacity: 0.12; transform: scale(0.6); }
+      50%       { opacity: 1;    transform: scale(1.4); }
+    }
+    @keyframes cpShootingStar {
+      0%   { opacity: 0;   transform: rotate(-25deg) translateX(-100px); }
+      6%   { opacity: 1; }
+      88%  { opacity: 0.8; }
+      100% { opacity: 0;   transform: rotate(-25deg) translateX(750px); }
+    }
+    @keyframes cpFloatPlanet {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-11px); }
+    }
+    @keyframes cpModalEntrance {
+      from { opacity: 0; transform: scale(0.91) translateY(26px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+    @keyframes cpBadgePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.55), 0 0 14px rgba(236,72,153,0.4); }
+      50%       { box-shadow: 0 0 0 7px rgba(236,72,153,0),  0 0 26px rgba(236,72,153,0.65); }
+    }
+    @keyframes cpAnswerHover {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-2px); }
+    }
   `;
   document.head.appendChild(s);
 }
 
+// ── Quiz answer colors (Kahoot-style, pink for circle instead of red) ─────────
 const QUIZ_COLORS = [
-  { bg: "rgba(59,130,246,0.25)",  border: "rgba(59,130,246,0.7)",  text: "#93c5fd", glow: "rgba(59,130,246,0.45)",  icon: "▲" },
-  { bg: "rgba(239,68,68,0.22)",   border: "rgba(239,68,68,0.65)",   text: "#fca5a5", glow: "rgba(239,68,68,0.45)",   icon: "●" },
-  { bg: "rgba(34,197,94,0.22)",   border: "rgba(34,197,94,0.65)",   text: "#86efac", glow: "rgba(34,197,94,0.45)",   icon: "◆" },
-  { bg: "rgba(245,158,11,0.22)",  border: "rgba(245,158,11,0.65)",  text: "#fcd34d", glow: "rgba(245,158,11,0.45)",  icon: "■" },
+  { bg: "rgba(59,130,246,0.25)",  border: "rgba(59,130,246,0.75)",  text: "#93c5fd", glow: "rgba(59,130,246,0.5)",  icon: "▲" },
+  { bg: "rgba(236,72,153,0.22)",  border: "rgba(236,72,153,0.75)",  text: "#f9a8d4", glow: "rgba(236,72,153,0.5)",  icon: "●" },
+  { bg: "rgba(34,197,94,0.22)",   border: "rgba(34,197,94,0.70)",   text: "#86efac", glow: "rgba(34,197,94,0.5)",   icon: "◆" },
+  { bg: "rgba(245,158,11,0.22)",  border: "rgba(245,158,11,0.70)",  text: "#fcd34d", glow: "rgba(245,158,11,0.5)",  icon: "■" },
 ];
 
+// ── Item card colors for variety ──────────────────────────────────────────────
 const CARD_COLORS = [
   { bg: "rgba(124,58,237,0.22)", border: "rgba(124,58,237,0.65)", text: "#c4b5fd", glow: "rgba(124,58,237,0.4)" },
   { bg: "rgba(6,182,212,0.18)",  border: "rgba(6,182,212,0.6)",   text: "#67e8f9", glow: "rgba(6,182,212,0.4)" },
@@ -53,6 +82,99 @@ const CARD_COLORS = [
   { bg: "rgba(239,68,68,0.18)",  border: "rgba(239,68,68,0.55)",  text: "#fca5a5", glow: "rgba(239,68,68,0.4)" },
   { bg: "rgba(236,72,153,0.18)", border: "rgba(236,72,153,0.55)", text: "#f9a8d4", glow: "rgba(236,72,153,0.4)" },
 ];
+
+// ── Galaxy decoration data (static, computed once at module load) ──────────────
+const _STARS = Array.from({ length: 72 }, (_, i) => ({
+  x:     Number(((i * 131.17 + 7.3)  % 97).toFixed(1)),
+  y:     Number(((i * 167.33 + 11.9) % 93).toFixed(1)),
+  w:     1 + (i % 4 === 0 ? 2 : i % 3 === 0 ? 1.5 : 0.8),
+  opa:   0.2 + (i % 7) * 0.1,
+  dur:   2.0 + (i % 6) * 0.55,
+  delay: (i % 9) * 0.45,
+  color: ["#fff", "#c4b5fd", "#93c5fd", "#f9a8d4", "#fde68a", "#a5f3fc"][i % 6],
+}));
+
+const _EMOJI_STARS = [
+  { x: 7,  y: 7,  em: "✨", fs: "1.1rem", dur: 3.2, del: 0.0 },
+  { x: 82, y: 5,  em: "⭐", fs: "1.0rem", dur: 4.1, del: 1.2 },
+  { x: 94, y: 37, em: "💫", fs: "1.3rem", dur: 3.5, del: 0.4 },
+  { x: 3,  y: 55, em: "✨", fs: "0.9rem", dur: 2.9, del: 1.8 },
+  { x: 50, y: 3,  em: "⭐", fs: "1.0rem", dur: 3.7, del: 0.9 },
+  { x: 66, y: 92, em: "💫", fs: "1.2rem", dur: 4.3, del: 0.2 },
+  { x: 22, y: 89, em: "✨", fs: "1.1rem", dur: 2.6, del: 1.5 },
+  { x: 89, y: 77, em: "⭐", fs: "0.85rem",dur: 3.9, del: 0.7 },
+  { x: 42, y: 96, em: "💫", fs: "0.9rem", dur: 3.1, del: 2.0 },
+  { x: 76, y: 51, em: "✨", fs: "1.0rem", dur: 2.8, del: 0.3 },
+];
+
+const _SHOOTING = [
+  { x: 5,  y: 10, dur: 4.5, del: 0.0 },
+  { x: 42, y: 4,  dur: 5.5, del: 3.5 },
+  { x: 72, y: 8,  dur: 4.0, del: 7.5 },
+];
+
+// ── GalaxyOverlay ─────────────────────────────────────────────────────────────
+function GalaxyOverlay() {
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+      {/* Tiny dot stars */}
+      {_STARS.map((s, i) => (
+        <div key={i} style={{
+          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
+          width: s.w, height: s.w, borderRadius: "50%",
+          background: s.color, opacity: s.opa,
+          animation: `cpTwinkle ${s.dur}s ${s.delay}s infinite ease-in-out`,
+        }} />
+      ))}
+
+      {/* Emoji stars */}
+      {_EMOJI_STARS.map((s, i) => (
+        <div key={i} style={{
+          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
+          fontSize: s.fs, lineHeight: 1, userSelect: "none",
+          animation: `cpTwinkle ${s.dur}s ${s.del}s infinite ease-in-out`,
+        }}>{s.em}</div>
+      ))}
+
+      {/* Shooting stars */}
+      {_SHOOTING.map((s, i) => (
+        <div key={i} style={{
+          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
+          width: 130, height: 2, borderRadius: 99,
+          background: "linear-gradient(90deg, rgba(255,255,255,0.95), rgba(196,181,253,0.7), transparent)",
+          animation: `cpShootingStar ${s.dur}s ${s.del}s infinite linear`,
+        }} />
+      ))}
+
+      {/* Planet 1 — large purple */}
+      <div style={{
+        position: "absolute", right: "6%", top: "10%",
+        width: 88, height: 88, borderRadius: "50%",
+        background: "radial-gradient(circle at 36% 30%, rgba(216,180,254,0.8), rgba(139,92,246,0.5) 45%, rgba(76,29,149,0.18))",
+        boxShadow: "0 0 40px rgba(139,92,246,0.45), 0 0 90px rgba(139,92,246,0.15)",
+        animation: "cpFloatPlanet 7s ease-in-out infinite",
+      }} />
+
+      {/* Planet 2 — medium cyan */}
+      <div style={{
+        position: "absolute", left: "4%", bottom: "18%",
+        width: 54, height: 54, borderRadius: "50%",
+        background: "radial-gradient(circle at 36% 30%, rgba(103,232,249,0.75), rgba(6,182,212,0.45) 50%, rgba(8,145,178,0.15))",
+        boxShadow: "0 0 26px rgba(6,182,212,0.45), 0 0 55px rgba(6,182,212,0.15)",
+        animation: "cpFloatPlanet 9s 2.5s ease-in-out infinite",
+      }} />
+
+      {/* Planet 3 — small pink */}
+      <div style={{
+        position: "absolute", right: "13%", bottom: "22%",
+        width: 38, height: 38, borderRadius: "50%",
+        background: "radial-gradient(circle at 36% 30%, rgba(249,168,212,0.75), rgba(236,72,153,0.4) 50%, rgba(157,23,77,0.18))",
+        boxShadow: "0 0 20px rgba(236,72,153,0.45)",
+        animation: "cpFloatPlanet 5.5s 1s ease-in-out infinite",
+      }} />
+    </div>
+  );
+}
 
 // ── FloatingStar ───────────────────────────────────────────────────────────────
 function FloatingStar({ x, y, char, onDone }) {
@@ -284,7 +406,9 @@ function QuizGame({ content, mode, alreadySubmitted }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Already-submitted screen (score only, no graded breakdown)
+  const isPreview = mode === "preview";
+
+  // Already-submitted screen
   if (alreadySubmitted && !freshResult) {
     const score = alreadySubmitted.score;
     return (
@@ -336,7 +460,7 @@ function QuizGame({ content, mode, alreadySubmitted }) {
     );
   }
 
-  // Quiz answering screen
+  // Submit handler
   const handleSubmit = async () => {
     if (answers.some((a) => a === null)) { setError("Please answer all questions before submitting."); return; }
     setSubmitting(true); setError("");
@@ -349,57 +473,210 @@ function QuizGame({ content, mode, alreadySubmitted }) {
     } finally { setSubmitting(false); }
   };
 
+  // ── Quiz answering screen ───────────────────────────────────────────────────
   return (
     <div>
       {error && (
-        <div style={{ background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: 8, padding: "0.6rem 1rem", marginBottom: "1rem", color: "#f87171", fontSize: 14 }}>
+        <div style={{ background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: 10, padding: "0.65rem 1rem", marginBottom: "1rem", color: "#f87171", fontSize: 14 }}>
           {error}
         </div>
       )}
 
-      {content.questions.map((q, qi) => (
-        <div key={qi} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "1.25rem", marginBottom: "1.1rem", animation: "cpSlideIn 0.3s ease" }}>
-          {q.imageUrl && (
-            <img src={q.imageUrl} alt="" style={{ maxWidth: "100%", maxHeight: 240, borderRadius: 10, marginBottom: "0.9rem", display: "block", margin: "0 auto 0.9rem" }} />
-          )}
-          <p style={{ color: "#e2e8f0", fontWeight: 700, marginBottom: "1.1rem", fontSize: 17 }}>
-            {qi + 1}. {q.questionText}
-          </p>
+      {content.questions.map((q, qi) => {
+        // ── Question card ────────────────────────────────────────────────────
+        const qCardStyle = isPreview ? {
+          background: "linear-gradient(145deg, rgba(30,12,65,0.92), rgba(18,7,42,0.96))",
+          border: "2px solid rgba(168,85,247,0.45)",
+          borderRadius: 24,
+          padding: "1.75rem",
+          marginBottom: "1.6rem",
+          animation: "cpSlideIn 0.3s ease",
+          boxShadow: "0 0 32px rgba(168,85,247,0.2), 0 10px 40px rgba(0,0,0,0.55)",
+          position: "relative",
+          overflow: "hidden",
+        } : {
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 14,
+          padding: "1.25rem",
+          marginBottom: "1.1rem",
+          animation: "cpSlideIn 0.3s ease",
+        };
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem" }}>
-            {q.options.map((opt, oi) => {
-              const col = QUIZ_COLORS[oi % QUIZ_COLORS.length];
-              const isSelected = answers[qi] === opt;
-              const isCorrect = opt === q.correctAnswer;
-              let bg = isSelected ? col.bg : "rgba(255,255,255,0.04)";
-              let border = isSelected ? col.border : "rgba(255,255,255,0.1)";
-              if (revealed) {
-                if (isCorrect)       { bg = col.bg; border = col.border; }
-                else if (isSelected) { bg = "rgba(239,68,68,0.15)"; border = "rgba(239,68,68,0.5)"; }
-                else                 { bg = "rgba(255,255,255,0.03)"; border = "rgba(255,255,255,0.08)"; }
-              }
-              return (
-                <button key={oi} type="button"
-                  onClick={() => { if (revealed) return; playPop(); setAnswers((a) => a.map((x, i) => i === qi ? opt : x)); }}
-                  style={{ background: bg, border: `2px solid ${border}`, borderRadius: 12, padding: "1rem 1.1rem", textAlign: "left", cursor: revealed ? "default" : "pointer", transition: "all .15s", display: "flex", alignItems: "center", gap: "0.75rem", boxShadow: isSelected && !revealed ? `0 0 0 3px ${col.glow}, 0 4px 14px ${col.glow}` : "none", minHeight: 64 }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 8, background: col.bg, border: `1px solid ${col.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0, color: col.text, fontWeight: 800 }}>
-                    {col.icon}
-                  </span>
-                  <span style={{ color: revealed ? (isCorrect ? col.text : isSelected ? "#f87171" : "#475569") : (isSelected ? col.text : "#e2e8f0"), fontWeight: isSelected || (revealed && isCorrect) ? 700 : 400, fontSize: 15 }}>
-                    {revealed && isCorrect ? "✓ " : ""}{opt}
-                  </span>
-                </button>
-              );
-            })}
+        return (
+          <div key={qi} style={qCardStyle}>
+            {/* Subtle inner aurora for preview mode */}
+            {isPreview && (
+              <div style={{
+                position: "absolute", inset: 0, pointerEvents: "none",
+                background: "radial-gradient(ellipse at 8% 8%, rgba(168,85,247,0.1) 0%, transparent 60%)",
+              }} />
+            )}
+
+            {/* Question number + text */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: isPreview ? "1rem" : "0.5rem", marginBottom: q.imageUrl ? "1rem" : "1.3rem" }}>
+              {/* Number badge */}
+              {isPreview ? (
+                <div style={{
+                  width: 44, height: 44, flexShrink: 0, borderRadius: "50%",
+                  background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+                  border: "2px solid rgba(196,181,253,0.35)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 15, fontWeight: 900, color: "#fff",
+                  boxShadow: "0 0 18px rgba(124,58,237,0.65), 0 4px 14px rgba(0,0,0,0.45)",
+                  position: "relative", zIndex: 1, flexShrink: 0,
+                }}>
+                  {qi + 1}
+                </div>
+              ) : null}
+              <p style={{
+                color: isPreview ? "#f0e6ff" : "#e2e8f0",
+                fontWeight: 700,
+                marginBottom: 0,
+                fontSize: isPreview ? 19 : 17,
+                lineHeight: 1.5,
+                position: "relative", zIndex: 1,
+                ...(isPreview ? {} : {}),
+              }}>
+                {!isPreview && `${qi + 1}. `}{q.questionText}
+              </p>
+            </div>
+
+            {/* Optional image */}
+            {q.imageUrl && (
+              <img src={q.imageUrl} alt="" style={{
+                maxWidth: "100%", maxHeight: 240, borderRadius: isPreview ? 14 : 10,
+                marginBottom: "1.25rem", display: "block", margin: "0 auto 1.25rem",
+                boxShadow: isPreview ? "0 4px 24px rgba(0,0,0,0.55)" : "none",
+                border: isPreview ? "1px solid rgba(168,85,247,0.3)" : "none",
+              }} />
+            )}
+
+            {/* Answer grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: isPreview ? "0.9rem" : "0.65rem" }}>
+              {q.options.map((opt, oi) => {
+                const col = QUIZ_COLORS[oi % QUIZ_COLORS.length];
+                const isSelected = answers[qi] === opt;
+                const isCorrect = opt === q.correctAnswer;
+
+                let bgColor    = isSelected ? col.bg : (isPreview ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.04)");
+                let borderColor = isSelected ? col.border : (isPreview ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.1)");
+
+                if (revealed) {
+                  if (isCorrect)       { bgColor = col.bg;                        borderColor = col.border; }
+                  else if (isSelected) { bgColor = "rgba(239,68,68,0.18)";        borderColor = "rgba(239,68,68,0.6)"; }
+                  else                 { bgColor = "rgba(255,255,255,0.02)";      borderColor = "rgba(255,255,255,0.07)"; }
+                }
+
+                const boxShadow = isSelected && !revealed
+                  ? `0 0 0 3px ${col.glow}, 0 ${isPreview ? 10 : 4}px ${isPreview ? 22 : 14}px ${col.glow}`
+                  : revealed && isCorrect
+                    ? `0 0 ${isPreview ? 22 : 12}px ${col.glow}`
+                    : "none";
+
+                return (
+                  <button key={oi} type="button"
+                    onClick={() => { if (revealed) return; playPop(); setAnswers((a) => a.map((x, i) => i === qi ? opt : x)); }}
+                    style={{
+                      background: bgColor,
+                      border: `${isPreview ? "2.5px" : "2px"} solid ${borderColor}`,
+                      borderRadius: isPreview ? 18 : 12,
+                      padding: isPreview ? "1.1rem 1.3rem" : "1rem 1.1rem",
+                      textAlign: "left",
+                      cursor: revealed ? "default" : "pointer",
+                      transition: "all .18s",
+                      display: "flex", alignItems: "center",
+                      gap: isPreview ? "0.9rem" : "0.75rem",
+                      boxShadow,
+                      minHeight: isPreview ? 88 : 64,
+                      position: "relative", overflow: "hidden",
+                    }}
+                  >
+                    {/* Subtle radial glow behind selected/correct card */}
+                    {isPreview && (isSelected || (revealed && isCorrect)) && (
+                      <div style={{
+                        position: "absolute", inset: 0, pointerEvents: "none",
+                        background: `radial-gradient(circle at 20% 50%, ${col.glow} 0%, transparent 70%)`,
+                        opacity: 0.25,
+                      }} />
+                    )}
+
+                    {/* Shape icon */}
+                    <span style={{
+                      width: isPreview ? 44 : 34,
+                      height: isPreview ? 44 : 34,
+                      borderRadius: isPreview ? 13 : 8,
+                      background: col.bg,
+                      border: `${isPreview ? "2px" : "1px"} solid ${col.border}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: isPreview ? 20 : 17,
+                      flexShrink: 0,
+                      color: col.text, fontWeight: 900,
+                      boxShadow: isPreview ? `0 0 12px ${col.glow}` : "none",
+                      position: "relative", zIndex: 1,
+                    }}>
+                      {col.icon}
+                    </span>
+
+                    {/* Answer text */}
+                    <span style={{
+                      color: revealed
+                        ? (isCorrect ? col.text : isSelected ? "#f87171" : (isPreview ? "#374151" : "#475569"))
+                        : (isSelected ? col.text : "#e2e8f0"),
+                      fontWeight: isSelected || (revealed && isCorrect) ? 700 : isPreview ? 500 : 400,
+                      fontSize: isPreview ? 15 : 15,
+                      lineHeight: 1.4,
+                      flex: 1,
+                      position: "relative", zIndex: 1,
+                    }}>
+                      {revealed && isCorrect ? "✓ " : ""}{opt}
+                    </span>
+
+                    {/* Sparkle on correct reveal */}
+                    {revealed && isCorrect && isPreview && (
+                      <span style={{ fontSize: "1.2rem", flexShrink: 0, position: "relative", zIndex: 1 }}>✨</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
+      {/* Action button */}
+      <div style={{ display: "flex", gap: "0.75rem", marginTop: isPreview ? "0.5rem" : "1rem" }}>
         {mode === "preview" ? (
-          <button className="btn-register"
-            onClick={() => { setRevealed((r) => !r); if (!revealed) { answers.forEach((a, qi) => { if (a === content.questions[qi]?.correctAnswer) playChime(); }); } }}>
+          <button
+            onClick={() => {
+              setRevealed((r) => !r);
+              if (!revealed) {
+                answers.forEach((a, qi) => {
+                  if (a === content.questions[qi]?.correctAnswer) playChime();
+                });
+              }
+            }}
+            style={{
+              background: revealed
+                ? "rgba(255,255,255,0.08)"
+                : "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)",
+              border: revealed ? "1.5px solid rgba(255,255,255,0.18)" : "none",
+              borderRadius: 16,
+              padding: "0.9rem 2.4rem",
+              color: "#fff",
+              fontSize: 16, fontWeight: 800,
+              cursor: "pointer",
+              boxShadow: revealed
+                ? "none"
+                : "0 4px 28px rgba(124,58,237,0.65), 0 0 60px rgba(236,72,153,0.25), 0 8px 32px rgba(0,0,0,0.45)",
+              display: "flex", alignItems: "center", gap: "0.6rem",
+              transition: "all .2s",
+              letterSpacing: "0.02em",
+            }}
+          >
+            <span style={{ fontSize: "1.15rem" }}>{revealed ? "🙈" : "✨"}</span>
             {revealed ? "Hide Answers" : "Show Answers"}
+            {!revealed && <span style={{ fontSize: "1.15rem" }}>🔮</span>}
           </button>
         ) : (
           <button className="btn-register" disabled={submitting} onClick={handleSubmit}>
@@ -412,9 +689,8 @@ function QuizGame({ content, mode, alreadySubmitted }) {
 }
 
 // ── ContentPlayer — full-screen modal ─────────────────────────────────────────
-// mode="preview": teacher preview (Show Answers on quiz, games fully playable)
-// mode="student": student plays (Submit on quiz, games fully playable)
-// alreadySubmitted: existing submission object { score, completedAt } for student quiz
+// mode="preview": teacher preview — space-themed galaxy overlay
+// mode="student": student plays — original dark overlay
 export default function ContentPlayer({ content, mode = "preview", alreadySubmitted = null, onClose }) {
   const isGame = content.type === "game";
   const icon = isGame ? (content.template === "match-word-picture" ? "🔤" : "🃏") : "📝";
@@ -423,8 +699,165 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
     : "Quiz";
   const itemCount = isGame
     ? `${content.items?.length || 0} items`
-    : `${content.questions?.length || 0} questions`;
+    : `${content.questions?.length || 0} question${content.questions?.length !== 1 ? "s" : ""}`;
 
+  // ── Preview mode — space-galaxy themed ──────────────────────────────────────
+  if (mode === "preview") {
+    return (
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          background: "radial-gradient(ellipse at 28% 32%, rgba(88,28,135,0.85) 0%, rgba(20,8,52,0.97) 45%, rgba(0,0,14,0.99) 100%)",
+          backdropFilter: "blur(8px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "2vh 2vw",
+        }}
+      >
+        {/* Galaxy decoration layer */}
+        <GalaxyOverlay />
+
+        {/* Modal card */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "relative", zIndex: 1,
+            width: "min(980px, 96vw)",
+            maxHeight: "95vh", overflowY: "auto",
+            background: "linear-gradient(148deg, rgba(30,11,66,0.97) 0%, rgba(14,5,38,0.99) 100%)",
+            border: "1.5px solid rgba(168,85,247,0.55)",
+            borderRadius: 28,
+            padding: "2rem 2.5rem",
+            animation: "cpModalEntrance 0.38s cubic-bezier(0.34,1.15,0.64,1)",
+            boxShadow: [
+              "0 0 0 1px rgba(236,72,153,0.18)",
+              "0 0 50px rgba(168,85,247,0.38)",
+              "0 0 110px rgba(236,72,153,0.18)",
+              "0 40px 100px rgba(0,0,0,0.88)",
+            ].join(", "),
+          }}
+        >
+          {/* Subtle inner top glow */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0, height: 120,
+            background: "radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.12) 0%, transparent 70%)",
+            borderRadius: "28px 28px 0 0", pointerEvents: "none",
+          }} />
+
+          {/* ── Header ────────────────────────────────────────────────────────── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem", position: "relative", zIndex: 1 }}>
+            {/* Left: icon card + title stack */}
+            <div style={{ display: "flex", gap: "1.1rem", alignItems: "center" }}>
+              {/* Quiz icon card */}
+              <div style={{
+                width: 62, height: 62, flexShrink: 0,
+                borderRadius: 20,
+                background: "linear-gradient(140deg, rgba(124,58,237,0.7), rgba(236,72,153,0.6))",
+                border: "1.5px solid rgba(168,85,247,0.65)",
+                boxShadow: "0 0 28px rgba(168,85,247,0.55), 0 0 55px rgba(236,72,153,0.22)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "2rem",
+              }}>
+                {icon}
+              </div>
+
+              {/* Title stack */}
+              <div>
+                {/* TEACHER PREVIEW pill badge */}
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  background: "linear-gradient(90deg, rgba(236,72,153,0.88), rgba(168,85,247,0.88))",
+                  border: "1px solid rgba(236,72,153,0.55)",
+                  borderRadius: 99,
+                  padding: "0.2rem 0.8rem",
+                  fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+                  color: "#fff", textTransform: "uppercase",
+                  marginBottom: "0.4rem",
+                  display: "inline-flex",
+                  animation: "cpBadgePulse 2.5s ease-in-out infinite",
+                }}>
+                  🎓 TEACHER PREVIEW
+                </span>
+                <h2 style={{
+                  margin: 0,
+                  fontSize: "1.55rem", fontWeight: 900,
+                  color: "#f5eeff",
+                  lineHeight: 1.2,
+                  textShadow: "0 0 30px rgba(196,181,253,0.3)",
+                }}>
+                  {content.title}
+                </h2>
+                <p style={{ color: "#a78bfa", fontSize: 13, marginTop: "0.25rem", fontWeight: 500 }}>
+                  {typeLabel} · {itemCount}
+                  {content.description ? ` · ${content.description}` : ""}
+                </p>
+              </div>
+            </div>
+
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              style={{
+                flexShrink: 0, marginTop: "0.2rem",
+                width: 44, height: 44, borderRadius: "50%",
+                background: "rgba(255,255,255,0.07)",
+                border: "1.5px solid rgba(168,85,247,0.4)",
+                color: "#c4b5fd",
+                cursor: "pointer",
+                fontSize: 18, fontWeight: 800,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.2s",
+                boxShadow: "0 0 14px rgba(168,85,247,0.3)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(236,72,153,0.22)";
+                e.currentTarget.style.borderColor = "rgba(236,72,153,0.7)";
+                e.currentTarget.style.boxShadow = "0 0 22px rgba(236,72,153,0.55)";
+                e.currentTarget.style.color = "#f9a8d4";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                e.currentTarget.style.borderColor = "rgba(168,85,247,0.4)";
+                e.currentTarget.style.boxShadow = "0 0 14px rgba(168,85,247,0.3)";
+                e.currentTarget.style.color = "#c4b5fd";
+              }}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Gradient divider */}
+          <div style={{
+            height: 1.5, borderRadius: 2,
+            background: "linear-gradient(90deg, rgba(168,85,247,0.8), rgba(236,72,153,0.55), rgba(6,182,212,0.3), transparent)",
+            marginBottom: "1.85rem",
+            position: "relative", zIndex: 1,
+          }} />
+
+          {/* Content */}
+          <div style={{ position: "relative", zIndex: 1 }}>
+            {isGame ? (
+              !content.items?.length ? (
+                <p style={{ color: "#64748b", textAlign: "center", padding: "2.5rem 0", fontSize: 15 }}>No items added yet.</p>
+              ) : content.template === "match-word-picture" ? (
+                <MatchWordPictureGame items={content.items} />
+              ) : (
+                <MemoryCardGame items={content.items} />
+              )
+            ) : (
+              !content.questions?.length ? (
+                <p style={{ color: "#64748b", textAlign: "center", padding: "2.5rem 0", fontSize: 15 }}>No questions added yet.</p>
+              ) : (
+                <QuizGame content={content} mode={mode} alreadySubmitted={alreadySubmitted} />
+              )
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Student mode — original styling ──────────────────────────────────────────
   return (
     <div
       style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2vh 2vw" }}
@@ -439,11 +872,6 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
           <div style={{ display: "flex", gap: "0.85rem", alignItems: "center" }}>
             <span style={{ fontSize: "2.2rem", lineHeight: 1 }}>{icon}</span>
             <div>
-              {mode === "preview" && (
-                <span style={{ fontSize: 11, color: "#7c3aed", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "0.2rem" }}>
-                  Teacher Preview
-                </span>
-              )}
               <h2 style={{ margin: 0, fontSize: "1.35rem", color: "#e2e8f0" }}>{content.title}</h2>
               <p style={{ color: "#64748b", fontSize: 13, marginTop: "0.2rem" }}>
                 {typeLabel} · {itemCount}

@@ -4,6 +4,7 @@ import useMouseParticles from "./hooks/useMouseParticles";
 import useBgMusic from "./hooks/useBgMusic";
 const bgMusic = "/sounds/background_music.mp3";
 import HomePage from "./pages/HomePage";
+import DashboardPage from "./pages/DashboardPage";
 import GamePage from "./pages/GamePage";
 import AiChatPage from "./pages/AiChatPage";
 import StoryPlayerPage from "./pages/StoryPlayerPage";
@@ -21,6 +22,7 @@ import ClassroomPage from "./pages/teacher/ClassroomPage";
 import TeacherContentsPage from "./pages/teacher/TeacherContentsPage";
 import StudentContentsPage from "./pages/student/StudentContentsPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import ChildProfilePage from "./pages/child/ChildProfilePage";
 import CollectionPage from "./pages/CollectionPage";
 import ClassroomsPage from "./pages/ClassroomsPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -251,7 +253,15 @@ const App = () => {
             path="/dashboard"
             element={
               <ChildOnly>
-                <Navigate to="/" replace />
+                <DashboardPage />
+              </ChildOnly>
+            }
+          />
+          <Route
+            path="/child/profile"
+            element={
+              <ChildOnly>
+                <ChildProfilePage />
               </ChildOnly>
             }
           />
