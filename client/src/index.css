@@ -150,7 +150,12 @@ button {
   color: #fff;
   padding: 6px 18px;
   border-radius: 20px;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(123, 47, 247, 0.45);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .navbar-links .roadmap-btn {
@@ -2616,18 +2621,22 @@ body,
 .btn-completion,
 .kid-btn,
 .btn-stars,
-.btn-logout,
-.navbar-links .join-now {
+.btn-logout {
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .btn-completion:hover,
 .kid-btn:hover,
 .btn-stars:hover,
-.btn-logout:hover,
-.navbar-links .join-now:hover {
+.btn-logout:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.navbar-links .join-now:hover {
+  color: #fff;
+  transform: scale(1.06);
+  box-shadow: 0 0 20px rgba(123, 47, 247, 0.75), 0 4px 12px rgba(255, 107, 157, 0.4);
 }
 
 .option-card,

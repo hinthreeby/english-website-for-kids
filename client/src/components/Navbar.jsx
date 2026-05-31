@@ -26,9 +26,11 @@ const Navbar = () => {
         </Link>
 
         <div className="navbar-links" aria-label="Primary navigation">
-          <Link className="nav-link roadmap-btn" to="/roadmap" onClick={playPop}>
-            🚀 {t("nav.roadmap")}
-          </Link>
+          {user ? (
+            <Link className="nav-link roadmap-btn" to="/roadmap" onClick={playPop}>
+              🚀 {t("nav.roadmap")}
+            </Link>
+          ) : null}
 
           {isChild ? (
             <>

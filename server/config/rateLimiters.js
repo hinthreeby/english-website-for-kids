@@ -44,4 +44,18 @@ const viewLimiter = make(
   "Too many requests. Please slow down."
 );
 
-module.exports = { loginLimiter, registerLimiter, forgotLimiter, submitLimiter, viewLimiter };
+// 30 AI drawing checks per minute per IP
+const drawLimiter = make(
+  60 * 1000,
+  30,
+  "Too many drawing checks. Please slow down."
+);
+
+// 30 AI chat messages per minute per IP
+const chatLimiter = make(
+  60 * 1000,
+  30,
+  "Too many messages. Please slow down."
+);
+
+module.exports = { loginLimiter, registerLimiter, forgotLimiter, submitLimiter, viewLimiter, drawLimiter, chatLimiter };

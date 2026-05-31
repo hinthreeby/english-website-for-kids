@@ -14,6 +14,8 @@ import PictureWords from "../games/PictureWords";
 import SpacePronounce from "../games/SpacePronounce";
 import FamilyPhoto from "../games/FamilyPhoto";
 import SchoolFind  from "../games/SchoolFind";
+import DrawGuess   from "../games/DrawGuess";
+import AiChat      from "../games/AiChat";
 
 const componentMap = {
   "abc-letters":    ABCLetters,
@@ -27,6 +29,8 @@ const componentMap = {
   "clean-ocean-hero": CleanOceanHero,
   "family-photo":   FamilyPhoto,
   "school-find":    SchoolFind,
+  "draw-guess":     DrawGuess,
+  "ai-chat":        AiChat,
 };
 
 const GamePage = () => {

@@ -27,6 +27,10 @@ const VALID_GAME_IDS = [
   "family-photo",
   "school-find",
   "guest-merge",
+  // AI drawing game
+  "draw-guess",
+  // AI chat game
+  "ai-chat",
 ];
 
 router.post("/save", protect, isChild, async (req, res) => {

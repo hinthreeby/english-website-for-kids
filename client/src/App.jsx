@@ -5,6 +5,7 @@ import useBgMusic from "./hooks/useBgMusic";
 const bgMusic = "/sounds/background_music.mp3";
 import HomePage from "./pages/HomePage";
 import GamePage from "./pages/GamePage";
+import AiChatPage from "./pages/AiChatPage";
 import StoryPlayerPage from "./pages/StoryPlayerPage";
 import CompletionPage from "./pages/CompletionPage";
 import LoginPage from "./pages/LoginPage";
@@ -235,6 +236,7 @@ const App = () => {
             }
           />
 
+          <Route path="/chat-with-luna" element={<AiChatPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
           <Route
             path="/videos"

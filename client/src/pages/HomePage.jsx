@@ -157,6 +157,7 @@ const HomePage = () => {
   const { user, loading } = useAuth();
   const { playPop } = useSound();
 
+  const [gameTab, setGameTab] = useState("all");
   const [videoTab, setVideoTab] = useState("series");
   const [selectedSeries, setSelectedSeries] = useState(null);
   const [playerVideo, setPlayerVideo] = useState(null);
@@ -261,15 +262,40 @@ const HomePage = () => {
         <section className="games-section">
           <h2 className="section-title">✨ CHOOSE A GAME ✨</h2>
           <div className="section-divider" />
+
+          <div className="video-tabs">
+            <button
+              type="button"
+              className={`video-tab-btn${gameTab === "all" ? " active" : ""}`}
+              onClick={() => setGameTab("all")}
+            >
+              🌟 All
+            </button>
+            <button
+              type="button"
+              className={`video-tab-btn${gameTab === "basic" ? " active" : ""}`}
+              onClick={() => setGameTab("basic")}
+            >
+              🎮 Basic
+            </button>
+            <button
+              type="button"
+              className={`video-tab-btn${gameTab === "ai" ? " active" : ""}`}
+              onClick={() => setGameTab("ai")}
+            >
+              🤖 Fun AI
+            </button>
+          </div>
+
           <div className="game-grid home-game-grid">
-            {games.map((game, index) => (
+            {games.filter((g) => gameTab === "all" || g.category === gameTab).map((game, index) => (
               <GameCard
                 key={game.id}
                 game={game}
                 index={index}
                 onClick={() => {
                   playPop();
-                  navigate(`/game/${game.id}`);
+                  navigate(game.route || `/game/${game.id}`);
                 }}
               />
             ))}

@@ -51,6 +51,9 @@ const analyticsClassRoutes = require("./routes/analyticsClass");
 const roadmapRoutes    = require("./routes/roadmap");
 const autoSeedRoadmap  = require("./utils/autoSeedRoadmap");
 const testLogRoutes    = require("./routes/testLog");
+const drawGameRoutes   = require("./routes/drawGame");
+const chatGameRoutes   = require("./routes/chatGame");
+const transcribeRoutes = require("./routes/transcribe");
 
 // ── Initialize Express app ────────────────────────────────────────────────
 const app = express();
@@ -146,6 +149,9 @@ app.use("/api/children", analyticsChildRoutes);
 app.use("/api/classes", analyticsClassRoutes);
 app.use("/api/roadmaps", roadmapRoutes);
 app.use("/api/v1/test-log", testLogRoutes);
+app.use("/api/draw-game", drawGameRoutes);
+app.use("/api/chat-game", chatGameRoutes);
+app.use("/api/transcribe", transcribeRoutes);
 
 // ── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

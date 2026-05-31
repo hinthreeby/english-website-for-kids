@@ -8,6 +8,8 @@ import spaceSpeakThumb from "../assets/SpacePronounce/space_speak.png";
 import funnyAnimalAvatarThumb from "../assets/funny_animal_game/funny_animal_game_avatar.png";
 import oceanGameAvatarThumb from "../assets/ocean_game/ocean_game_avatar.png";
 import familyPhotoThumb from "../assets/games/unit1-family/dad.png";
+import drawGuessThumb from "../assets/DrawGuess/DrawGuess.png";
+import aiChatThumb from "../assets/AiChat/AiChat.png";
 
 export const games = [
   {
@@ -17,6 +19,7 @@ export const games = [
     thumbnail: abcLettersThumb,
     theme: "#B2EBF2",
     subtitle: "Find the starting sound",
+    category: "basic",
   },
   {
     id: "picture-words",
@@ -25,6 +28,7 @@ export const games = [
     thumbnail: pictureWordsThumb,
     theme: "#FFFDE7",
     subtitle: "Tap the right word",
+    category: "basic",
   },
   {
     id: "count-learn",
@@ -33,6 +37,7 @@ export const games = [
     thumbnail: countLearnThumb,
     theme: "#A8D8A8",
     subtitle: "Count and choose",
+    category: "basic",
   },
   {
     id: "color-fun",
@@ -41,6 +46,7 @@ export const games = [
     thumbnail: colorFunThumb,
     theme: "#FFD7A6",
     subtitle: "Name the color",
+    category: "basic",
   },
   {
     id: "animal-sounds",
@@ -49,6 +55,7 @@ export const games = [
     thumbnail: animalSoundsThumb,
     theme: "#FFD9D9",
     subtitle: "Guess the animal",
+    category: "basic",
   },
   {
     id: "match-it",
@@ -57,6 +64,7 @@ export const games = [
     thumbnail: matchItThumb,
     theme: "#D9F3FF",
     subtitle: "Pair emoji and words",
+    category: "basic",
   },
   {
     id: "space-pronounce",
@@ -66,6 +74,7 @@ export const games = [
     theme: "#7b2ff7",
     subtitle: "Say the word!",
     route: "/game/space-pronounce",
+    category: "basic",
   },
   {
     id: "funny-animals",
@@ -75,6 +84,7 @@ export const games = [
     theme: "#4fffb0",
     subtitle: "Touch the animal!",
     route: "/game/funny-animals",
+    category: "basic",
   },
   {
     id: "clean-ocean-hero",
@@ -84,6 +94,27 @@ export const games = [
     theme: "#42b8ff",
     subtitle: "Clean the sea and build sentences",
     route: "/game/clean-ocean-hero",
+    category: "basic",
+  },
+  {
+    id: "draw-guess",
+    name: "Draw & Guess",
+    emoji: "🎨",
+    thumbnail: drawGuessThumb,
+    theme: "#7b2ff7",
+    subtitle: "Draw a word, let AI check it!",
+    route: "/game/draw-guess",
+    category: "ai",
+  },
+  {
+    id: "ai-chat",
+    name: "Talk with Luna",
+    emoji: "🧑‍🚀",
+    thumbnail: aiChatThumb,
+    theme: "#ff6b9d",
+    subtitle: "Chat with an AI friend in English!",
+    route: "/chat-with-luna",
+    category: "ai",
   },
 ];
 
