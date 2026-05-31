@@ -3,6 +3,9 @@ import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
 import ContentPlayer from "../../components/ContentPlayer";
+import matchWithPicImg from "../../assets/teacher/matchwithpicture.png";
+import flashcardImg    from "../../assets/teacher/flashcard.png";
+import quizlogoImg     from "../../assets/teacher/quizlogo.png";
 
 if (typeof document !== "undefined" && !document.getElementById("tc-slide-kf")) {
   const s = document.createElement("style");
@@ -19,9 +22,9 @@ if (typeof document !== "undefined" && !document.getElementById("tc-slide-kf")) 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const TEMPLATES = [
-  { value: "match-word-picture", label: "Match Word with Picture", type: "game", icon: "🔤", desc: "Students match words to pictures" },
-  { value: "memory-card",        label: "Memory Card",             type: "game", icon: "🃏", desc: "Flip cards to find matching pairs" },
-  { value: "quiz",               label: "Quiz",                    type: "quiz", icon: "📝", desc: "Multiple-choice questions" },
+  { value: "match-word-picture", label: "Match Word with Picture", type: "game", icon: matchWithPicImg, desc: "Students match words to pictures" },
+  { value: "memory-card",        label: "Memory Card",             type: "game", icon: flashcardImg,    desc: "Flip cards to find matching pairs" },
+  { value: "quiz",               label: "Quiz",                    type: "quiz", icon: quizlogoImg,     desc: "Multiple-choice questions" },
 ];
 
 const BLANK_ITEM     = { word: "", imageUrl: "" };
@@ -62,7 +65,8 @@ function TypeTag({ template }) {
   const t = TEMPLATES.find((x) => x.value === template);
   return (
     <span style={chip({ background: "rgba(124,58,237,.2)", color: "#c4b5fd", border: "1px solid rgba(124,58,237,.4)" })}>
-      {t?.icon} {t?.label || template}
+      {t?.icon && <img src={t.icon} alt="" style={{ width: 14, height: 14, objectFit: "contain", verticalAlign: "middle" }} />}
+      {t?.label || template}
     </span>
   );
 }
@@ -308,7 +312,7 @@ function ContentForm({ initial, onSave, onCancel }) {
                     boxShadow: isSelected ? "0 0 0 3px rgba(124,58,237,0.25), 0 8px 24px rgba(124,58,237,0.2)" : "none",
                     display: "flex", alignItems: "center", gap: "0.85rem",
                   }}>
-                  <span style={{ fontSize: "2rem", flexShrink: 0 }}>{t.icon}</span>
+                  <img src={t.icon} alt={t.label} style={{ width: 52, height: 52, objectFit: "contain", flexShrink: 0 }} />
                   <span style={{ textAlign: "left" }}>
                     <span style={{ display: "block", color: isSelected ? "#c4b5fd" : "#e2e8f0", fontWeight: 700, fontSize: 14 }}>{t.label}</span>
                     <span style={{ display: "block", color: "#64748b", fontSize: 12, marginTop: "0.2rem" }}>{t.desc}</span>
@@ -342,7 +346,7 @@ function ContentForm({ initial, onSave, onCancel }) {
               {!isEdit && (
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
                   <span style={{ background: "rgba(124,58,237,0.3)", color: "#c4b5fd", fontSize: 10, fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: 20 }}>Step 2 of 2</span>
-                  <span style={{ fontSize: "1.1rem" }}>{tplMeta?.icon}</span>
+                  {tplMeta?.icon && <img src={tplMeta.icon} alt="" style={{ width: 20, height: 20, objectFit: "contain" }} />}
                   <span style={{ color: "#94a3b8", fontSize: 13 }}>{tplMeta?.label}</span>
                 </div>
               )}

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import useSound from "../hooks/useSound";
 import api from "../lib/api";
+import matchWithPicImg from "../assets/teacher/matchwithpicture.png";
+import flashcardImg    from "../assets/teacher/flashcard.png";
+import quizlogoImg     from "../assets/teacher/quizlogo.png";
 
 // ── Keyframes (injected once) ─────────────────────────────────────────────────
 if (typeof document !== "undefined" && !document.getElementById("cp-kf")) {
@@ -61,6 +64,15 @@ if (typeof document !== "undefined" && !document.getElementById("cp-kf")) {
       from { transform: translateY(0); }
       to   { transform: translateY(-2px); }
     }
+    @keyframes cpDotTwinkle {
+      from { opacity: 0.1; }
+      to   { opacity: 0.7; }
+    }
+    @keyframes cpStarScaleGlow {
+      0%   { opacity: 0.3; transform: scale(0.85); }
+      50%  { opacity: 0.9; transform: scale(1.15); }
+      100% { opacity: 0.3; transform: scale(0.85); }
+    }
   `;
   document.head.appendChild(s);
 }
@@ -84,27 +96,43 @@ const CARD_COLORS = [
 ];
 
 // ── Galaxy decoration data (static, computed once at module load) ──────────────
-const _STARS = Array.from({ length: 72 }, (_, i) => ({
-  x:     Number(((i * 131.17 + 7.3)  % 97).toFixed(1)),
-  y:     Number(((i * 167.33 + 11.9) % 93).toFixed(1)),
-  w:     1 + (i % 4 === 0 ? 2 : i % 3 === 0 ? 1.5 : 0.8),
-  opa:   0.2 + (i % 7) * 0.1,
-  dur:   2.0 + (i % 6) * 0.55,
-  delay: (i % 9) * 0.45,
-  color: ["#fff", "#c4b5fd", "#93c5fd", "#f9a8d4", "#fde68a", "#a5f3fc"][i % 6],
+// Layer 0: tiny white dot stars — same approach as RoadmapPage BG_DOTS
+const _BG_DOTS = Array.from({ length: 100 }, (_, i) => ({
+  id:  i,
+  x:   Math.random() * 100,
+  y:   Math.random() * 100,
+  s:   Math.random() > 0.75 ? 2 : 1,
+  dur: (Math.random() * 3 + 2).toFixed(2),
+  del: (Math.random() * 8).toFixed(2),
 }));
 
-const _EMOJI_STARS = [
-  { x: 7,  y: 7,  em: "✨", fs: "1.1rem", dur: 3.2, del: 0.0 },
-  { x: 82, y: 5,  em: "⭐", fs: "1.0rem", dur: 4.1, del: 1.2 },
-  { x: 94, y: 37, em: "💫", fs: "1.3rem", dur: 3.5, del: 0.4 },
-  { x: 3,  y: 55, em: "✨", fs: "0.9rem", dur: 2.9, del: 1.8 },
-  { x: 50, y: 3,  em: "⭐", fs: "1.0rem", dur: 3.7, del: 0.9 },
-  { x: 66, y: 92, em: "💫", fs: "1.2rem", dur: 4.3, del: 0.2 },
-  { x: 22, y: 89, em: "✨", fs: "1.1rem", dur: 2.6, del: 1.5 },
-  { x: 89, y: 77, em: "⭐", fs: "0.85rem",dur: 3.9, del: 0.7 },
-  { x: 42, y: 96, em: "💫", fs: "0.9rem", dur: 3.1, del: 2.0 },
-  { x: 76, y: 51, em: "✨", fs: "1.0rem", dur: 2.8, del: 0.3 },
+// Layer 1: colorful ★ icon stars — same data as RoadmapPage STAR_ICON_DECOS
+const _STAR_ICONS = [
+  { x:"6%",  y:"6%",  size:22, color:"#FFD700", dur:3.2, delay:0    },
+  { x:"14%", y:"18%", size:16, color:"#A78BFA", dur:4.1, delay:0.8  },
+  { x:"87%", y:"9%",  size:20, color:"#38BDF8", dur:2.9, delay:1.5  },
+  { x:"75%", y:"22%", size:14, color:"#FF6B9D", dur:3.7, delay:0.3  },
+  { x:"92%", y:"38%", size:18, color:"#34D399", dur:3.4, delay:1.1  },
+  { x:"3%",  y:"43%", size:24, color:"#FBBF24", dur:4.5, delay:2.0  },
+  { x:"83%", y:"55%", size:16, color:"#F472B6", dur:3.0, delay:0.6  },
+  { x:"8%",  y:"65%", size:20, color:"#FFD700", dur:3.9, delay:1.7  },
+  { x:"80%", y:"74%", size:18, color:"#A78BFA", dur:2.8, delay:0.4  },
+  { x:"32%", y:"4%",  size:14, color:"#38BDF8", dur:4.2, delay:1.2  },
+  { x:"57%", y:"13%", size:18, color:"#FF6B9D", dur:3.5, delay:0.9  },
+  { x:"44%", y:"46%", size:12, color:"#FFD700", dur:4.0, delay:1.6  },
+  { x:"64%", y:"62%", size:20, color:"#34D399", dur:3.1, delay:2.2  },
+  { x:"20%", y:"85%", size:16, color:"#FBBF24", dur:3.6, delay:0.7  },
+  { x:"51%", y:"78%", size:22, color:"#F472B6", dur:2.7, delay:1.3  },
+  { x:"2%",  y:"30%", size:14, color:"#A78BFA", dur:3.8, delay:0.5  },
+  { x:"95%", y:"20%", size:12, color:"#FFD700", dur:4.3, delay:1.8  },
+  { x:"47%", y:"91%", size:16, color:"#38BDF8", dur:3.3, delay:0.2  },
+  { x:"78%", y:"88%", size:14, color:"#FF6B9D", dur:4.6, delay:1.4  },
+  { x:"19%", y:"52%", size:22, color:"#34D399", dur:2.9, delay:0.8  },
+  { x:"60%", y:"35%", size:16, color:"#FBBF24", dur:3.7, delay:1.0  },
+  { x:"38%", y:"70%", size:18, color:"#FFD700", dur:4.0, delay:1.9  },
+  { x:"71%", y:"46%", size:14, color:"#F472B6", dur:3.2, delay:0.3  },
+  { x:"90%", y:"64%", size:20, color:"#A78BFA", dur:3.6, delay:2.1  },
+  { x:"25%", y:"96%", size:16, color:"#38BDF8", dur:2.8, delay:0.6  },
 ];
 
 const _SHOOTING = [
@@ -117,24 +145,17 @@ const _SHOOTING = [
 function GalaxyOverlay() {
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-      {/* Tiny dot stars */}
-      {_STARS.map((s, i) => (
-        <div key={i} style={{
-          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
-          width: s.w, height: s.w, borderRadius: "50%",
-          background: s.color, opacity: s.opa,
-          animation: `cpTwinkle ${s.dur}s ${s.delay}s infinite ease-in-out`,
+      {/* Layer 0: tiny white dot stars (same as RoadmapPage BG_DOTS) */}
+      {_BG_DOTS.map((d) => (
+        <span key={d.id} style={{
+          position: "absolute", left: `${d.x}%`, top: `${d.y}%`,
+          width: d.s, height: d.s, borderRadius: "50%",
+          background: "#fff", opacity: 0.45,
+          display: "block",
+          animation: `cpDotTwinkle ${d.dur}s ${d.del}s ease-in-out infinite alternate`,
         }} />
       ))}
 
-      {/* Emoji stars */}
-      {_EMOJI_STARS.map((s, i) => (
-        <div key={i} style={{
-          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
-          fontSize: s.fs, lineHeight: 1, userSelect: "none",
-          animation: `cpTwinkle ${s.dur}s ${s.del}s infinite ease-in-out`,
-        }}>{s.em}</div>
-      ))}
 
       {/* Shooting stars */}
       {_SHOOTING.map((s, i) => (
@@ -460,12 +481,15 @@ function QuizGame({ content, mode, alreadySubmitted }) {
     );
   }
 
-  // Submit handler
+  // Submit handler — convert stored indices back to text values for the API
   const handleSubmit = async () => {
     if (answers.some((a) => a === null)) { setError("Please answer all questions before submitting."); return; }
     setSubmitting(true); setError("");
     try {
-      const res = await api.post(`/api/student/contents/${content._id}/submit`, { answers });
+      const answerTexts = answers.map((idx, qi) =>
+        idx !== null ? content.questions[qi].options[idx] : null
+      );
+      const res = await api.post(`/api/student/contents/${content._id}/submit`, { answers: answerTexts });
       setFreshResult(res.data);
       if (res.data.score >= 70) playChime(); else playWhoosh();
     } catch (err) {
@@ -553,10 +577,10 @@ function QuizGame({ content, mode, alreadySubmitted }) {
             )}
 
             {/* Answer grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: isPreview ? "0.9rem" : "0.65rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: isPreview ? "1.1rem" : "0.65rem", columnGap: isPreview ? "1.1rem" : "0.65rem" }}>
               {q.options.map((opt, oi) => {
                 const col = QUIZ_COLORS[oi % QUIZ_COLORS.length];
-                const isSelected = answers[qi] === opt;
+                const isSelected = answers[qi] === oi;
                 const isCorrect = opt === q.correctAnswer;
 
                 let bgColor    = isSelected ? col.bg : (isPreview ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.04)");
@@ -576,7 +600,7 @@ function QuizGame({ content, mode, alreadySubmitted }) {
 
                 return (
                   <button key={oi} type="button"
-                    onClick={() => { if (revealed) return; playPop(); setAnswers((a) => a.map((x, i) => i === qi ? opt : x)); }}
+                    onClick={() => { if (revealed) return; playPop(); setAnswers((a) => a.map((x, i) => i === qi ? oi : x)); }}
                     style={{
                       background: bgColor,
                       border: `${isPreview ? "2.5px" : "2px"} solid ${borderColor}`,
@@ -590,6 +614,8 @@ function QuizGame({ content, mode, alreadySubmitted }) {
                       boxShadow,
                       minHeight: isPreview ? 88 : 64,
                       position: "relative", overflow: "hidden",
+                      boxSizing: "border-box",
+                      width: "100%",
                     }}
                   >
                     {/* Subtle radial glow behind selected/correct card */}
@@ -651,8 +677,9 @@ function QuizGame({ content, mode, alreadySubmitted }) {
             onClick={() => {
               setRevealed((r) => !r);
               if (!revealed) {
-                answers.forEach((a, qi) => {
-                  if (a === content.questions[qi]?.correctAnswer) playChime();
+                answers.forEach((idx, qi) => {
+                  const q = content.questions[qi];
+                  if (idx !== null && q?.options[idx] === q?.correctAnswer) playChime();
                 });
               }
             }}
@@ -669,14 +696,11 @@ function QuizGame({ content, mode, alreadySubmitted }) {
               boxShadow: revealed
                 ? "none"
                 : "0 4px 28px rgba(124,58,237,0.65), 0 0 60px rgba(236,72,153,0.25), 0 8px 32px rgba(0,0,0,0.45)",
-              display: "flex", alignItems: "center", gap: "0.6rem",
               transition: "all .2s",
               letterSpacing: "0.02em",
             }}
           >
-            <span style={{ fontSize: "1.15rem" }}>{revealed ? "🙈" : "✨"}</span>
             {revealed ? "Hide Answers" : "Show Answers"}
-            {!revealed && <span style={{ fontSize: "1.15rem" }}>🔮</span>}
           </button>
         ) : (
           <button className="btn-register" disabled={submitting} onClick={handleSubmit}>
@@ -693,7 +717,9 @@ function QuizGame({ content, mode, alreadySubmitted }) {
 // mode="student": student plays — original dark overlay
 export default function ContentPlayer({ content, mode = "preview", alreadySubmitted = null, onClose }) {
   const isGame = content.type === "game";
-  const icon = isGame ? (content.template === "match-word-picture" ? "🔤" : "🃏") : "📝";
+  const iconSrc = isGame
+    ? (content.template === "match-word-picture" ? matchWithPicImg : flashcardImg)
+    : quizlogoImg;
   const typeLabel = isGame
     ? (content.template === "match-word-picture" ? "Match Word with Picture" : "Memory Card")
     : "Quiz";
@@ -756,9 +782,8 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
                 border: "1.5px solid rgba(168,85,247,0.65)",
                 boxShadow: "0 0 28px rgba(168,85,247,0.55), 0 0 55px rgba(236,72,153,0.22)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "2rem",
               }}>
-                {icon}
+                <img src={iconSrc} alt={typeLabel} style={{ width: 44, height: 44, objectFit: "contain" }} />
               </div>
 
               {/* Title stack */}
@@ -870,7 +895,7 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
           <div style={{ display: "flex", gap: "0.85rem", alignItems: "center" }}>
-            <span style={{ fontSize: "2.2rem", lineHeight: 1 }}>{icon}</span>
+            <img src={iconSrc} alt={typeLabel} style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }} />
             <div>
               <h2 style={{ margin: 0, fontSize: "1.35rem", color: "#e2e8f0" }}>{content.title}</h2>
               <p style={{ color: "#64748b", fontSize: 13, marginTop: "0.2rem" }}>
