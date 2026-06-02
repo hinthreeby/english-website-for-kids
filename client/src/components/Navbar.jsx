@@ -83,8 +83,8 @@ const Navbar = () => {
         {/* ── CENTER: nav links (absolute center) ──────────── */}
         <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
 
-          {/* Roadmap — child and admin only */}
-          {(isChild || isAdmin) ? <NavLink to="/roadmap">🚀 {t("nav.roadmap")}</NavLink> : null}
+          {/* Roadmap — child only */}
+          {isChild ? <NavLink to="/roadmap">🚀 {t("nav.roadmap")}</NavLink> : null}
 
           {/* Child links */}
           {isChild ? <>
@@ -122,8 +122,8 @@ const Navbar = () => {
             <NavLink to="/login">{t("nav.logIn")}</NavLink>
           </> : null}
 
-          {/* Home — child and admin only */}
-          {(isChild || isAdmin) ? (
+          {/* Home — child only */}
+          {isChild ? (
             <Link
               to={getRoleHome(user.role)}
               onClick={playPop}

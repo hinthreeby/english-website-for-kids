@@ -249,6 +249,7 @@ function ContentForm({ initial, onSave, onCancel }) {
   const [questions, setQuestions] = useState(
     initial?.questions?.length ? initial.questions.map((q) => ({ ...q })) : [{ ...BLANK_QUESTION }]
   );
+  const [playLimit,   setPlayLimit]   = useState(initial?.playLimit ?? null);
   const [error,       setError]       = useState("");
   const [saving,      setSaving]      = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -279,7 +280,7 @@ function ContentForm({ initial, onSave, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError(""); setSaving(true);
     try {
-      const body = { title, description, ...(isEdit ? {} : { type: tplMeta.type, template }), ...(isGame ? { items } : { questions }) };
+      const body = { title, description, playLimit, ...(isEdit ? {} : { type: tplMeta.type, template }), ...(isGame ? { items } : { questions }) };
       await onSave(body);
     } catch (err) { setError(err?.response?.data?.error || "Failed to save."); }
     finally { setSaving(false); }
@@ -380,6 +381,39 @@ function ContentForm({ initial, onSave, onCancel }) {
                 <FormInput label="Title *" placeholder="e.g. Animals Vocabulary" value={title} onChange={(e) => setTitle(e.target.value)} required />
                 <FormInput label="Description" placeholder="Optional description" value={description} onChange={(e) => setDescription(e.target.value)} />
               </div>
+            </FieldBox>
+
+            {/* Play limit */}
+            <FieldBox>
+              <SectionLabel>Play / Attempt Limit</SectionLabel>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
+                {[
+                  { label: "Unlimited", value: null },
+                  { label: "1×", value: 1 },
+                  { label: "2×", value: 2 },
+                  { label: "3×", value: 3 },
+                  { label: "5×", value: 5 },
+                ].map((opt) => {
+                  const active = playLimit === opt.value;
+                  return (
+                    <button key={String(opt.value)} type="button"
+                      onClick={() => setPlayLimit(opt.value)}
+                      style={{
+                        padding: "0.35rem 0.9rem", borderRadius: 20, fontSize: 13, cursor: "pointer", fontWeight: active ? 700 : 400,
+                        background: active ? "rgba(124,58,237,0.35)" : "rgba(255,255,255,0.06)",
+                        border: `1.5px solid ${active ? "rgba(124,58,237,0.8)" : "rgba(255,255,255,0.12)"}`,
+                        color: active ? "#c4b5fd" : "#94a3b8",
+                      }}>
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p style={{ fontSize: 11, color: "#64748b", marginTop: "0.5rem" }}>
+                {playLimit === null
+                  ? "Students can play/attempt this content as many times as they want."
+                  : `Students can play/attempt this content up to ${playLimit} time${playLimit > 1 ? "s" : ""}.`}
+              </p>
             </FieldBox>
 
             {/* Game items */}
@@ -617,6 +651,7 @@ const TeacherContentsPage = () => {
                   <div style={{ fontSize: 12, color: "#64748b", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                     <span>{c.type === "game" ? `${c.items?.length || 0} items` : `${c.questions?.length || 0} questions`}</span>
                     <span>{c.assignedClassrooms?.length ? `Assigned to ${c.assignedClassrooms.length} classroom${c.assignedClassrooms.length > 1 ? "s" : ""}` : "Not assigned"}</span>
+                    <span>{c.playLimit ? `${c.playLimit}× limit` : "Unlimited plays"}</span>
                     {!c.isPublished && c.assignedClassrooms?.length > 0 && <span style={{ color: "#f59e0b" }}>⚠ Draft — students can't see this yet</span>}
                   </div>
                   <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>

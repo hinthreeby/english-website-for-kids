@@ -19,6 +19,40 @@
   box-sizing: border-box;
 }
 
+/* ══════════════════════════════════════════════════════════
+   GLOBAL SCROLLBAR — Space / Purple-Neon Theme
+   ══════════════════════════════════════════════════════════ */
+
+/* Chrome / Edge / Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(30, 8, 70, 0.55);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff5bd7 0%, #8b5cf6 50%, #38bdf8 100%);
+  border-radius: 99px;
+  border: 1.5px solid rgba(30, 8, 70, 0.6);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.55);
+  transition: box-shadow 0.2s, background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff80e8 0%, #a78bfa 50%, #67e8f9 100%);
+  box-shadow: 0 0 14px rgba(167, 139, 250, 0.85), 0 0 6px rgba(56, 189, 248, 0.5);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8b5cf6 rgba(30, 8, 70, 0.55);
+}
+
 html,
 body,
 #root {
@@ -5135,6 +5169,53 @@ body,
   text-transform: uppercase;
   color: rgba(196,181,253,0.75);
   font-family: "Baloo 2", sans-serif;
+}
+
+/* ── Custom Episode Number Spinner ───────────────────────────── */
+.ep-spinner-input::-webkit-outer-spin-button,
+.ep-spinner-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.ep-spinner-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.ep-spinner-wrap {
+  display: flex;
+  align-items: stretch;
+  border-radius: 10px;
+  border: 1.5px solid rgba(124, 58, 237, 0.35);
+  background: rgba(124, 58, 237, 0.1);
+  overflow: hidden;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.ep-spinner-wrap:focus-within {
+  border-color: rgba(167, 139, 250, 0.7);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+.ep-spinner-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: rgba(167, 139, 250, 0.55);
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+  transition: color 0.13s, background 0.13s;
+  user-select: none;
+  flex-shrink: 0;
+}
+.ep-spinner-btn:hover {
+  color: #c4b5fd;
+  background: rgba(124, 58, 237, 0.22);
+}
+.ep-spinner-btn:active {
+  background: rgba(124, 58, 237, 0.4);
 }
 
 /* ── Responsive register ──────────────────────────────────── */

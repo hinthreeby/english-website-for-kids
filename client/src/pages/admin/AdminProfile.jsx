@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 
 const AdminProfile = () => {
   const { user, setUser } = useAuth();
+  const initial = (user?.displayName || user?.username || "A")[0].toUpperCase();
 
   const [email, setEmail] = useState(user?.email || "");
   const [displayName, setDisplayName] = useState(user?.displayName || "");
@@ -17,6 +18,11 @@ const AdminProfile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwMsg, setPwMsg] = useState({ text: "", error: false });
   const [pwLoading, setPwLoading] = useState(false);
+
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarMsg, setAvatarMsg] = useState({ text: "", error: false });
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleProfileSave = async (e) => {
     e.preventDefault();
@@ -54,6 +60,41 @@ const AdminProfile = () => {
     }
   };
 
+  const uploadAvatarFile = async (file) => {
+    setAvatarMsg({ text: "", error: false });
+    setAvatarLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await api.post("/api/upload/avatar", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (setUser) setUser(res.data.user);
+      setAvatarMsg({ text: "Avatar updated!", error: false });
+    } catch (err) {
+      setAvatarMsg({ text: err?.response?.data?.error || "Upload failed", error: true });
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
+  const handleAvatarUrlSave = async (e) => {
+    e.preventDefault();
+    if (!avatarUrl.trim()) return;
+    setAvatarMsg({ text: "", error: false });
+    setAvatarLoading(true);
+    try {
+      const res = await api.post("/api/upload/avatar", { avatarUrl: avatarUrl.trim() });
+      if (setUser) setUser(res.data.user);
+      setAvatarMsg({ text: "Avatar updated!", error: false });
+      setAvatarUrl("");
+    } catch (err) {
+      setAvatarMsg({ text: err?.response?.data?.error || "Failed to set avatar", error: true });
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
   return (
     <div className="screen with-bg role-page">
       <StarBackground />
@@ -64,8 +105,81 @@ const AdminProfile = () => {
           <p>Manage your account credentials and display name.</p>
         </section>
 
+        {/* Avatar section */}
+        <section className="glass-card" style={{ textAlign: "center" }}>
+          <h2 style={{ marginBottom: "1.25rem" }}>🖼️ Profile Photo</h2>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
+
+            {/* Avatar circle — click to upload */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              title="Click to upload photo"
+              style={{
+                width: "110px", height: "110px", borderRadius: "50%",
+                border: "3px solid rgba(124,58,237,0.7)",
+                boxShadow: "0 0 24px rgba(124,58,237,0.35), 0 0 6px rgba(124,58,237,0.15)",
+                overflow: "hidden",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "linear-gradient(135deg,rgba(124,58,237,0.25),rgba(6,182,212,0.2))",
+                fontSize: "2.5rem", color: "#c4b5fd", fontWeight: 700,
+                cursor: "pointer", transition: "box-shadow 0.2s",
+                flexShrink: 0,
+              }}
+            >
+              {user?.avatar
+                ? <img src={user.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <span>{initial}</span>
+              }
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              style={{ display: "none" }}
+              onChange={(e) => { if (e.target.files[0]) uploadAvatarFile(e.target.files[0]); }}
+            />
+
+            <button
+              type="button"
+              className="btn-secondary-glass"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarLoading}
+              style={{ fontSize: "0.88rem" }}
+            >
+              {avatarLoading ? "Uploading…" : "📷 Upload Photo"}
+            </button>
+
+            <form
+              onSubmit={handleAvatarUrlSave}
+              style={{ display: "flex", gap: "0.5rem", width: "100%", maxWidth: "420px" }}
+            >
+              <input
+                className="profile-input"
+                type="url"
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                placeholder="Or paste an image URL…"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="submit"
+                className="btn-register"
+                disabled={avatarLoading || !avatarUrl.trim()}
+                style={{ flexShrink: 0 }}
+              >
+                Set URL
+              </button>
+            </form>
+
+            {avatarMsg.text
+              ? <p className={avatarMsg.error ? "error-msg" : "success-msg"} style={{ margin: 0 }}>{avatarMsg.text}</p>
+              : null}
+          </div>
+        </section>
+
         <section className="glass-card role-grid role-grid-2">
-          {/* Change Email / Display Name */}
+          {/* Account info */}
           <div>
             <h2>Account Info</h2>
             <form className="profile-form" onSubmit={handleProfileSave}>
@@ -89,9 +203,9 @@ const AdminProfile = () => {
                   placeholder="admin@example.com"
                 />
               </label>
-              {profileMsg.text ? (
-                <p className={profileMsg.error ? "error-msg" : "success-msg"}>{profileMsg.text}</p>
-              ) : null}
+              {profileMsg.text
+                ? <p className={profileMsg.error ? "error-msg" : "success-msg"}>{profileMsg.text}</p>
+                : null}
               <button className="btn-register" type="submit" disabled={profileLoading}>
                 {profileLoading ? "Saving…" : "Save Changes"}
               </button>
@@ -136,9 +250,9 @@ const AdminProfile = () => {
                   autoComplete="new-password"
                 />
               </label>
-              {pwMsg.text ? (
-                <p className={pwMsg.error ? "error-msg" : "success-msg"}>{pwMsg.text}</p>
-              ) : null}
+              {pwMsg.text
+                ? <p className={pwMsg.error ? "error-msg" : "success-msg"}>{pwMsg.text}</p>
+                : null}
               <button className="btn-register" type="submit" disabled={pwLoading}>
                 {pwLoading ? "Updating…" : "Change Password"}
               </button>

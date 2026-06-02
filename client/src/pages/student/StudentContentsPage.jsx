@@ -13,7 +13,7 @@ const GRADIENT_TITLE = {
 };
 
 // ── Content Modal — fetches full data, then renders ContentPlayer ─────────────
-function ContentModal({ contentId, onClose }) {
+function ContentModal({ contentId, onClose, onPlayed }) {
   const [data,  setData]  = useState(null);
   const [error, setError] = useState("");
 
@@ -22,6 +22,18 @@ function ContentModal({ contentId, onClose }) {
       .then((r) => setData(r.data))
       .catch(() => setError("Failed to load content."));
   }, [contentId]);
+
+  const handleClose = () => {
+    if (data?.content?.type === "game") onPlayed?.();
+    onClose();
+  };
+
+  const handleGameComplete = async () => {
+    try {
+      await api.post(`/api/student/contents/${contentId}/complete`);
+      onPlayed?.();
+    } catch { /* limit may already be reached */ }
+  };
 
   if (!data) {
     return (
@@ -42,7 +54,8 @@ function ContentModal({ contentId, onClose }) {
       content={data.content}
       mode="student"
       alreadySubmitted={data.submission || null}
-      onClose={onClose}
+      onClose={handleClose}
+      onGameComplete={handleGameComplete}
     />
   );
 }
@@ -54,12 +67,14 @@ const StudentContentsPage = () => {
   const [loading,  setLoading]  = useState(true);
   const [selected, setSelected] = useState(null);
 
-  useEffect(() => {
+  const loadContents = () => {
     api.get("/api/student/contents")
       .then((r) => setContents(r.data.contents || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadContents(); }, []);
 
   const games   = contents.filter((c) => c.type === "game");
   const quizzes = contents.filter((c) => c.type === "quiz");
@@ -102,31 +117,42 @@ const StudentContentsPage = () => {
               <section className="glass-card">
                 <h2 style={{ marginBottom: "1rem" }}>📝 Quizzes</h2>
                 <div className="role-list">
-                  {quizzes.map((c) => (
-                    <article key={c._id} className="role-item">
-                      <div>
-                        <strong>{c.title}</strong>
-                        <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>
-                          {c.questions?.length || 0} questions
-                          {c.description ? ` · ${c.description}` : ""}
-                        </p>
-                      </div>
-                      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                        {c.submission && (
-                          <span style={{ fontSize: 13, color: c.submission.score >= 70 ? "#10b981" : "#f59e0b", fontWeight: 700 }}>
-                            {c.submission.score}%
-                          </span>
-                        )}
-                        <button
-                          className={c.submission ? "btn-secondary-glass" : "btn-register"}
-                          style={{ fontSize: 13, padding: "0.3rem 0.75rem" }}
-                          onClick={() => setSelected(c)}
-                        >
-                          {c.submission ? "Review" : "Start"}
-                        </button>
-                      </div>
-                    </article>
-                  ))}
+                  {quizzes.map((c) => {
+                    const played = c.playCount || 0;
+                    const limit = c.playLimit ?? 1;
+                    const limitReached = played >= limit;
+                    return (
+                      <article key={c._id} className="role-item">
+                        <div>
+                          <strong>{c.title}</strong>
+                          <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>
+                            {c.questions?.length || 0} questions
+                            {c.description ? ` · ${c.description}` : ""}
+                          </p>
+                        </div>
+                        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                          {c.submission && (
+                            <span style={{ fontSize: 13, color: c.submission.score >= 70 ? "#10b981" : "#f59e0b", fontWeight: 700 }}>
+                              {c.submission.score}%
+                            </span>
+                          )}
+                          {limit > 1 && (
+                            <span style={{ fontSize: 12, color: limitReached ? "#f43f5e" : "#a78bfa", fontWeight: 600 }}>
+                              {played}/{limit}
+                            </span>
+                          )}
+                          <button
+                            className={limitReached && !c.submission ? "btn-cancel" : c.submission ? "btn-secondary-glass" : "btn-register"}
+                            style={{ fontSize: 13, padding: "0.3rem 0.75rem" }}
+                            disabled={limitReached && !c.submission}
+                            onClick={() => setSelected(c)}
+                          >
+                            {c.submission ? "Review" : limitReached ? "Limit Reached" : "Start"}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -135,25 +161,38 @@ const StudentContentsPage = () => {
               <section className="glass-card">
                 <h2 style={{ marginBottom: "1rem" }}>🎮 Games</h2>
                 <div className="role-list">
-                  {games.map((c) => (
-                    <article key={c._id} className="role-item">
-                      <div>
-                        <strong>{c.title}</strong>
-                        <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>
-                          {c.template === "match-word-picture" ? "🔤 Match Word with Picture" : "🃏 Memory Card"}
-                          {" · "}{c.items?.length || 0} items
-                          {c.description ? ` · ${c.description}` : ""}
-                        </p>
-                      </div>
-                      <button
-                        className="btn-register"
-                        style={{ fontSize: 13, padding: "0.3rem 0.75rem" }}
-                        onClick={() => setSelected(c)}
-                      >
-                        Play
-                      </button>
-                    </article>
-                  ))}
+                  {games.map((c) => {
+                    const played = c.playCount || 0;
+                    const limit = c.playLimit ?? null;
+                    const limitReached = limit !== null && played >= limit;
+                    return (
+                      <article key={c._id} className="role-item">
+                        <div>
+                          <strong>{c.title}</strong>
+                          <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>
+                            {c.template === "match-word-picture" ? "🔤 Match Word with Picture" : "🃏 Memory Card"}
+                            {" · "}{c.items?.length || 0} items
+                            {c.description ? ` · ${c.description}` : ""}
+                          </p>
+                        </div>
+                        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                          {limit !== null && (
+                            <span style={{ fontSize: 12, color: limitReached ? "#f43f5e" : "#a78bfa", fontWeight: 600 }}>
+                              {played}/{limit} plays
+                            </span>
+                          )}
+                          <button
+                            className={limitReached ? "btn-cancel" : "btn-register"}
+                            style={{ fontSize: 13, padding: "0.3rem 0.75rem" }}
+                            disabled={limitReached}
+                            onClick={() => !limitReached && setSelected(c)}
+                          >
+                            {limitReached ? "Limit Reached" : played > 0 ? "Play Again" : "Play"}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -165,6 +204,7 @@ const StudentContentsPage = () => {
         <ContentModal
           contentId={selected._id}
           onClose={() => setSelected(null)}
+          onPlayed={loadContents}
         />
       )}
     </div>

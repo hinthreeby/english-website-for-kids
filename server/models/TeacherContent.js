@@ -40,6 +40,7 @@ const teacherContentSchema = new mongoose.Schema(
     questions: [questionSchema],
     assignedClassrooms: [{ type: mongoose.Schema.Types.ObjectId, ref: "Classroom" }],
     isPublished: { type: Boolean, default: false },
+    playLimit: { type: Number, default: null }, // null = unlimited
   },
   { timestamps: true }
 );

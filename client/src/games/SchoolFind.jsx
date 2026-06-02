@@ -275,19 +275,6 @@ const SchoolFind = ({ onComplete }) => {
             </div>
           </div>
 
-          {/* Speaker button */}
-          <div className="sf-bottom-bar">
-            <button
-              type="button"
-              className="sf-speaker-btn"
-              onClick={playCurrentAudio}
-              aria-label="Play audio again"
-            >
-              <span className="sf-speaker-icon">🔊</span>
-              <span className="sf-speaker-ring" />
-            </button>
-            <p className="sf-tap-hint">Tap 🔊 to listen again!</p>
-          </div>
         </div>
       )}
 

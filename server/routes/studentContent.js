@@ -30,13 +30,17 @@ router.get("/", protect, isChild, async (req, res) => {
     }).lean();
 
     const submittedMap = {};
+    const playCountMap = {};
     for (const r of results) {
-      submittedMap[r.contentId.toString()] = { score: r.score, completedAt: r.completedAt };
+      const key = r.contentId.toString();
+      playCountMap[key] = (playCountMap[key] || 0) + 1;
+      if (!submittedMap[key]) submittedMap[key] = { score: r.score, completedAt: r.completedAt };
     }
 
     const enriched = contents.map((c) => ({
       ...c,
       submission: submittedMap[c._id.toString()] || null,
+      playCount: playCountMap[c._id.toString()] || 0,
     }));
 
     return res.json({ contents: enriched });
@@ -61,8 +65,48 @@ router.get("/:id", protect, isChild, validateObjectId("id"), async (req, res) =>
 
     if (!content) return res.status(404).json({ error: "Content not found or not available." });
 
-    const result = await ContentResult.findOne({ contentId: req.params.id, studentId: req.user._id }).lean();
-    return res.json({ content, submission: result || null });
+    const results = await ContentResult.find({ contentId: req.params.id, studentId: req.user._id }).lean();
+    const submission = results.length > 0 ? results[0] : null;
+    const playCount = results.length;
+    return res.json({ content, submission, playCount });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/student/contents/:id/complete  (record a game play)
+router.post("/:id/complete", protect, isChild, validateObjectId("id"), async (req, res) => {
+  try {
+    const student = await User.findById(req.user._id).select("classrooms").lean();
+    const studentClassroomIds = (student?.classrooms || []).map((id) => id.toString());
+
+    const content = await TeacherContent.findOne({
+      _id: req.params.id,
+      isPublished: true,
+      assignedClassrooms: { $in: studentClassroomIds },
+    }).lean();
+
+    if (!content) return res.status(404).json({ error: "Content not found or not available." });
+    if (content.type !== "game") return res.status(400).json({ error: "Only games use this endpoint." });
+
+    const playCount = await ContentResult.countDocuments({ contentId: req.params.id, studentId: req.user._id });
+    if (content.playLimit !== null && content.playLimit !== undefined && playCount >= content.playLimit)
+      return res.status(400).json({ error: "Play limit reached." });
+
+    const assignedIds = content.assignedClassrooms.map((id) => id.toString());
+    const classroomId = studentClassroomIds.find((id) => assignedIds.includes(id));
+
+    await ContentResult.create({
+      contentId: req.params.id,
+      studentId: req.user._id,
+      classroomId,
+      score: 100,
+      totalQuestions: 0,
+    });
+
+    const newPlayCount = playCount + 1;
+    const limitReached = content.playLimit !== null && content.playLimit !== undefined && newPlayCount >= content.playLimit;
+    return res.json({ playCount: newPlayCount, limitReached });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -87,8 +131,9 @@ router.post("/:id/submit", protect, isChild, validateObjectId("id"), submitLimit
     if (!content) return res.status(404).json({ error: "Content not found or not available." });
     if (content.type !== "quiz") return res.status(400).json({ error: "Only quizzes can be submitted." });
 
-    const existing = await ContentResult.findOne({ contentId: req.params.id, studentId: req.user._id });
-    if (existing) return res.status(400).json({ error: "You already submitted this quiz." });
+    const playCount = await ContentResult.countDocuments({ contentId: req.params.id, studentId: req.user._id });
+    const limit = content.playLimit ?? 1;
+    if (playCount >= limit) return res.status(400).json({ error: "You have reached the attempt limit for this quiz." });
 
     // Auto-determine classroomId: first intersection of student's classrooms and content's assignedClassrooms
     const assignedIds = content.assignedClassrooms.map((id) => id.toString());

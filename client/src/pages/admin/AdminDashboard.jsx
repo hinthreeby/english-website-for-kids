@@ -8,7 +8,12 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 
-const ROLE_BADGE = { child: "👦", parent: "👨‍👩‍👧", teacher: "👩‍🏫", admin: "🛡️" };
+const ROLE_META = {
+  child:   { label: "Child",   icon: "🧒", color: "#818cf8", bg: "rgba(99,102,241,0.18)",  border: "rgba(99,102,241,0.4)"  },
+  parent:  { label: "Parent",  icon: "👨‍👩‍👧", color: "#34d399", bg: "rgba(16,185,129,0.18)", border: "rgba(16,185,129,0.4)" },
+  teacher: { label: "Teacher", icon: "👩‍🏫", color: "#fbbf24", bg: "rgba(245,158,11,0.18)", border: "rgba(245,158,11,0.4)" },
+  admin:   { label: "Admin",   icon: "🛡️",  color: "#f87171", bg: "rgba(239,68,68,0.18)",  border: "rgba(239,68,68,0.4)"  },
+};
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -378,10 +383,43 @@ const AdminDashboard = () => {
 
         {/* Recent users */}
         <section className="glass-card">
-          <div className="role-section-header">
-            <h2>Recent Users</h2>
-            <Link to="/admin/users" className="btn-secondary-glass">Manage All</Link>
+          {/* Card header */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span style={{ fontSize: "1.65rem", filter: "drop-shadow(0 0 8px rgba(167,139,250,0.75))", lineHeight: 1 }}>👥</span>
+              <div>
+                <h2 style={{ margin: 0, fontWeight: 800, fontSize: "1.2rem", color: "#fff", lineHeight: 1.2 }}>Recent Users</h2>
+                <p style={{ margin: "3px 0 0", fontSize: "0.77rem", color: "rgba(196,181,253,0.6)", lineHeight: 1.4 }}>
+                  A quick look at the most recently joined learners and staff.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/admin/users"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "0.42rem",
+                padding: "0.45rem 1.1rem",
+                borderRadius: "10px",
+                background: "linear-gradient(135deg,rgba(124,58,237,0.55),rgba(6,182,212,0.38))",
+                border: "1px solid rgba(124,58,237,0.42)",
+                color: "#e2e8f0",
+                fontSize: "0.82rem", fontWeight: 600,
+                textDecoration: "none",
+                boxShadow: "0 2px 10px rgba(124,58,237,0.22)",
+                transition: "all 0.18s",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Manage All
+            </Link>
           </div>
+
           <div className="table-wrap">
             <table className="role-table">
               <thead>
@@ -393,14 +431,49 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {recentUsers.map((u) => (
-                  <tr key={u._id}>
-                    <td>{u.displayName || u.username}</td>
-                    <td>{ROLE_BADGE[u.role]} {u.role}</td>
-                    <td><span className={u.isActive ? "badge-ok" : "badge-pending"}>{u.isActive ? "Active" : "Disabled"}</span></td>
-                    <td>{new Date(u.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                ))}
+                {recentUsers.map((u) => {
+                  const rm = ROLE_META[u.role] || ROLE_META.child;
+                  return (
+                    <tr key={u._id}>
+                      <td>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.1rem" }}>
+                          <span style={{ fontWeight: 600, color: "#e2e8f0" }}>{u.displayName || u.username}</span>
+                          {u.displayName ? <span style={{ fontSize: "0.73rem", color: "#64748b" }}>@{u.username}</span> : null}
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: "0.32rem",
+                          padding: "0.22rem 0.55rem 0.22rem 0.42rem",
+                          borderRadius: "6px",
+                          border: `1.5px solid ${rm.border}`,
+                          background: rm.bg,
+                          color: rm.color,
+                          fontSize: "0.78rem", fontWeight: 700,
+                          whiteSpace: "nowrap",
+                        }}>
+                          <span style={{ fontSize: "0.88rem" }}>{rm.icon}</span>
+                          <span>{rm.label}</span>
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                          padding: "0.2rem 0.55rem", borderRadius: "5px", fontSize: "0.75rem", fontWeight: 600,
+                          background: u.isActive ? "rgba(16,185,129,0.15)" : "rgba(100,116,139,0.15)",
+                          border: `1px solid ${u.isActive ? "rgba(16,185,129,0.35)" : "rgba(100,116,139,0.3)"}`,
+                          color: u.isActive ? "#34d399" : "#64748b",
+                        }}>
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor", display: "inline-block" }} />
+                          {u.isActive ? "Active" : "Disabled"}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: "0.82rem", color: "rgba(148,163,184,0.85)" }}>
+                        {new Date(u.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

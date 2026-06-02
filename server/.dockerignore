@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log*
+.env
+.env.development
+.env.local
+uploads/
+logs/
+.git
+.gitignore
+nodemon.json
+filebeat.yml
+seed/
+scripts/
+tmp/

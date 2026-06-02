@@ -1,0 +1,62 @@
+services:
+
+  # ── Backend: Express API ───────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: funenglish-api
+    restart: unless-stopped
+    env_file:
+      - ./server/.env.production
+    volumes:
+      - uploads_data:/app/uploads   # ảnh/video persist qua restarts
+      - logs_data:/app/logs         # Pino logs cho monitoring
+    networks:
+      - funenglish-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ── Frontend: React SPA + Nginx reverse proxy ──────────────────────────────
+  nginx:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        # URL frontend dùng để gọi API (baked vào bundle lúc build)
+        VITE_API_URL: https://funenglish.id.vn
+    container_name: funenglish-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # nginx config:
+      #   Lần đầu deploy (chưa có SSL): dùng nginx.http.conf
+      #   Sau khi lấy cert xong: đổi thành nginx/nginx.conf rồi `docker compose up -d nginx`
+      - ./nginx/nginx.http.conf:/etc/nginx/conf.d/default.conf:ro
+      # SSL certs từ Certbot trên host
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Webroot cho Certbot renewal
+      - /var/www/certbot:/var/www/certbot:ro
+    networks:
+      - funenglish-net
+    depends_on:
+      backend:
+        condition: service_healthy
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  uploads_data:
+    driver: local
+  logs_data:
+    driver: local
+
+# ── Networks ───────────────────────────────────────────────────────────────────
+networks:
+  funenglish-net:
+    driver: bridge

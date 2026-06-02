@@ -55,6 +55,22 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET /api/admin/videos/fields — distinct series/category field values
+router.get("/fields", async (req, res) => {
+  try {
+    const { type } = req.query;
+    const filter = { field: { $nin: ["", null] } };
+    if (type) {
+      const types = type.split(",").map((t) => t.trim()).filter(Boolean);
+      filter.type = types.length === 1 ? types[0] : { $in: types };
+    }
+    const fields = await Video.distinct("field", filter);
+    res.json({ fields: fields.filter(Boolean).sort() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/admin/videos/:id
 router.get("/:id", validateObjectId("id"), async (req, res) => {
   try {

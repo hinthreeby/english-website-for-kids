@@ -276,60 +276,6 @@
   pointer-events: none;
 }
 
-/* ── Bottom bar ── */
-.sf-bottom-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
-  padding-bottom: 2px;
-}
-
-.sf-speaker-btn {
-  position: relative;
-  background: linear-gradient(135deg, #7c3aed, #be185d);
-  border: none;
-  border-radius: 50%;
-  width: clamp(52px, 10vw, 72px);
-  height: clamp(52px, 10vw, 72px);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 24px rgba(124, 58, 237, 0.45);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.sf-speaker-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.65);
-}
-
-.sf-speaker-btn:active {
-  transform: scale(0.92);
-}
-
-.sf-speaker-icon {
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  line-height: 1;
-}
-
-.sf-speaker-ring {
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  border: 3px solid rgba(124, 58, 237, 0.45);
-  animation: sf-ring-pulse 1.7s ease-out infinite;
-  pointer-events: none;
-}
-
-.sf-tap-hint {
-  font-size: clamp(0.66rem, 1.8vw, 0.78rem);
-  color: #a78bfa;
-  font-weight: 700;
-  margin: 0;
-}
 
 /* ── Complete card ── */
 .sf-complete-card {
@@ -436,10 +382,6 @@
   to   { transform: scale(1);    opacity: 1; }
 }
 
-@keyframes sf-ring-pulse {
-  0%   { transform: scale(1);    opacity: 0.7; }
-  100% { transform: scale(1.65); opacity: 0;   }
-}
 
 @keyframes sf-heartbeat {
   0%, 100% { transform: scale(1); }

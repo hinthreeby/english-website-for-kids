@@ -10,6 +10,24 @@ if (typeof document !== "undefined" && !document.getElementById("cp-kf")) {
   const s = document.createElement("style");
   s.id = "cp-kf";
   s.textContent = `
+    /* ── Scoped scrollbar for preview/student modal ── */
+    .cp-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .cp-scroll::-webkit-scrollbar-track {
+      background: rgba(20, 5, 55, 0.7);
+      border-radius: 99px;
+    }
+    .cp-scroll::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #ff5bd7 0%, #8b5cf6 50%, #38bdf8 100%);
+      border-radius: 99px;
+      border: 1.5px solid rgba(14, 4, 42, 0.75);
+      box-shadow: 0 0 10px rgba(139,92,246,0.7), 0 0 4px rgba(56,189,248,0.4);
+    }
+    .cp-scroll::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #ff80e8 0%, #a78bfa 50%, #67e8f9 100%);
+      box-shadow: 0 0 18px rgba(167,139,250,0.95), 0 0 8px rgba(56,189,248,0.65);
+    }
+    .cp-scroll { scrollbar-width: thin; scrollbar-color: #8b5cf6 rgba(20,5,55,0.7); }
+
     @keyframes cpStarFloat {
       0%   { opacity: 1; transform: translateY(0) scale(1.5) rotate(0deg); }
       100% { opacity: 0; transform: translateY(-90px) scale(0.2) rotate(40deg); }
@@ -219,7 +237,7 @@ function useStarBurst() {
 }
 
 // ── MatchWordPictureGame ───────────────────────────────────────────────────────
-function MatchWordPictureGame({ items }) {
+function MatchWordPictureGame({ items, onComplete }) {
   const { playPop, playChime, playWhoosh } = useSound();
   const { stars, burst } = useStarBurst();
   const [selected, setSelected] = useState(null);
@@ -251,6 +269,11 @@ function MatchWordPictureGame({ items }) {
   };
 
   const allDone = matched.size === items.length;
+
+  useEffect(() => {
+    if (allDone && matched.size > 0) onComplete?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDone]);
 
   return (
     <div style={{ position: "relative" }}>
@@ -330,7 +353,7 @@ function MatchWordPictureGame({ items }) {
 }
 
 // ── MemoryCardGame ────────────────────────────────────────────────────────────
-function MemoryCardGame({ items }) {
+function MemoryCardGame({ items, onComplete }) {
   const { playPop, playChime, playWhoosh } = useSound();
   const { stars, burst } = useStarBurst();
   const [flipped, setFlipped] = useState([]);
@@ -365,6 +388,11 @@ function MemoryCardGame({ items }) {
 
   const allDone = matched.size === items.length;
   const cols = Math.min(Math.ceil(Math.sqrt(cards.length * 1.3)), 6);
+
+  useEffect(() => {
+    if (allDone && matched.size > 0) onComplete?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allDone]);
 
   return (
     <div style={{ position: "relative" }}>
@@ -497,7 +525,7 @@ function QuizGame({ content, mode, alreadySubmitted }) {
     } finally { setSubmitting(false); }
   };
 
-  // ── Quiz answering screen ───────────────────────────────────────────────────
+  // ── Quiz answering screen — unified style for both preview and student ────────
   return (
     <div>
       {error && (
@@ -506,9 +534,8 @@ function QuizGame({ content, mode, alreadySubmitted }) {
         </div>
       )}
 
-      {content.questions.map((q, qi) => {
-        // ── Question card ────────────────────────────────────────────────────
-        const qCardStyle = isPreview ? {
+      {content.questions.map((q, qi) => (
+        <div key={qi} style={{
           background: "linear-gradient(145deg, rgba(30,12,65,0.92), rgba(18,7,42,0.96))",
           border: "2px solid rgba(168,85,247,0.45)",
           borderRadius: 24,
@@ -518,186 +545,116 @@ function QuizGame({ content, mode, alreadySubmitted }) {
           boxShadow: "0 0 32px rgba(168,85,247,0.2), 0 10px 40px rgba(0,0,0,0.55)",
           position: "relative",
           overflow: "hidden",
-        } : {
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 14,
-          padding: "1.25rem",
-          marginBottom: "1.1rem",
-          animation: "cpSlideIn 0.3s ease",
-        };
+        }}>
+          {/* Inner aurora */}
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse at 8% 8%, rgba(168,85,247,0.1) 0%, transparent 60%)" }} />
 
-        return (
-          <div key={qi} style={qCardStyle}>
-            {/* Subtle inner aurora for preview mode */}
-            {isPreview && (
-              <div style={{
-                position: "absolute", inset: 0, pointerEvents: "none",
-                background: "radial-gradient(ellipse at 8% 8%, rgba(168,85,247,0.1) 0%, transparent 60%)",
-              }} />
-            )}
-
-            {/* Question number + text */}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: isPreview ? "1rem" : "0.5rem", marginBottom: q.imageUrl ? "1rem" : "1.3rem" }}>
-              {/* Number badge */}
-              {isPreview ? (
-                <div style={{
-                  width: 44, height: 44, flexShrink: 0, borderRadius: "50%",
-                  background: "linear-gradient(135deg, #7c3aed, #ec4899)",
-                  border: "2px solid rgba(196,181,253,0.35)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 15, fontWeight: 900, color: "#fff",
-                  boxShadow: "0 0 18px rgba(124,58,237,0.65), 0 4px 14px rgba(0,0,0,0.45)",
-                  position: "relative", zIndex: 1, flexShrink: 0,
-                }}>
-                  {qi + 1}
-                </div>
-              ) : null}
-              <p style={{
-                color: isPreview ? "#f0e6ff" : "#e2e8f0",
-                fontWeight: 700,
-                marginBottom: 0,
-                fontSize: isPreview ? 19 : 17,
-                lineHeight: 1.5,
-                position: "relative", zIndex: 1,
-                ...(isPreview ? {} : {}),
-              }}>
-                {!isPreview && `${qi + 1}. `}{q.questionText}
-              </p>
+          {/* Question number + text */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", marginBottom: q.imageUrl ? "1rem" : "1.3rem" }}>
+            <div style={{
+              width: 44, height: 44, flexShrink: 0, borderRadius: "50%",
+              background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+              border: "2px solid rgba(196,181,253,0.35)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 15, fontWeight: 900, color: "#fff",
+              boxShadow: "0 0 18px rgba(124,58,237,0.65), 0 4px 14px rgba(0,0,0,0.45)",
+              position: "relative", zIndex: 1,
+            }}>
+              {qi + 1}
             </div>
-
-            {/* Optional image */}
-            {q.imageUrl && (
-              <img src={q.imageUrl} alt="" style={{
-                maxWidth: "100%", maxHeight: 240, borderRadius: isPreview ? 14 : 10,
-                marginBottom: "1.25rem", display: "block", margin: "0 auto 1.25rem",
-                boxShadow: isPreview ? "0 4px 24px rgba(0,0,0,0.55)" : "none",
-                border: isPreview ? "1px solid rgba(168,85,247,0.3)" : "none",
-              }} />
-            )}
-
-            {/* Answer grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: isPreview ? "1.1rem" : "0.65rem", columnGap: isPreview ? "1.1rem" : "0.65rem" }}>
-              {q.options.map((opt, oi) => {
-                const col = QUIZ_COLORS[oi % QUIZ_COLORS.length];
-                const isSelected = answers[qi] === oi;
-                const isCorrect = opt === q.correctAnswer;
-
-                let bgColor    = isSelected ? col.bg : (isPreview ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.04)");
-                let borderColor = isSelected ? col.border : (isPreview ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.1)");
-
-                if (revealed) {
-                  if (isCorrect)       { bgColor = col.bg;                        borderColor = col.border; }
-                  else if (isSelected) { bgColor = "rgba(239,68,68,0.18)";        borderColor = "rgba(239,68,68,0.6)"; }
-                  else                 { bgColor = "rgba(255,255,255,0.02)";      borderColor = "rgba(255,255,255,0.07)"; }
-                }
-
-                const boxShadow = isSelected && !revealed
-                  ? `0 0 0 3px ${col.glow}, 0 ${isPreview ? 10 : 4}px ${isPreview ? 22 : 14}px ${col.glow}`
-                  : revealed && isCorrect
-                    ? `0 0 ${isPreview ? 22 : 12}px ${col.glow}`
-                    : "none";
-
-                return (
-                  <button key={oi} type="button"
-                    onClick={() => { if (revealed) return; playPop(); setAnswers((a) => a.map((x, i) => i === qi ? oi : x)); }}
-                    style={{
-                      background: bgColor,
-                      border: `${isPreview ? "2.5px" : "2px"} solid ${borderColor}`,
-                      borderRadius: isPreview ? 18 : 12,
-                      padding: isPreview ? "1.1rem 1.3rem" : "1rem 1.1rem",
-                      textAlign: "left",
-                      cursor: revealed ? "default" : "pointer",
-                      transition: "all .18s",
-                      display: "flex", alignItems: "center",
-                      gap: isPreview ? "0.9rem" : "0.75rem",
-                      boxShadow,
-                      minHeight: isPreview ? 88 : 64,
-                      position: "relative", overflow: "hidden",
-                      boxSizing: "border-box",
-                      width: "100%",
-                    }}
-                  >
-                    {/* Subtle radial glow behind selected/correct card */}
-                    {isPreview && (isSelected || (revealed && isCorrect)) && (
-                      <div style={{
-                        position: "absolute", inset: 0, pointerEvents: "none",
-                        background: `radial-gradient(circle at 20% 50%, ${col.glow} 0%, transparent 70%)`,
-                        opacity: 0.25,
-                      }} />
-                    )}
-
-                    {/* Shape icon */}
-                    <span style={{
-                      width: isPreview ? 44 : 34,
-                      height: isPreview ? 44 : 34,
-                      borderRadius: isPreview ? 13 : 8,
-                      background: col.bg,
-                      border: `${isPreview ? "2px" : "1px"} solid ${col.border}`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: isPreview ? 20 : 17,
-                      flexShrink: 0,
-                      color: col.text, fontWeight: 900,
-                      boxShadow: isPreview ? `0 0 12px ${col.glow}` : "none",
-                      position: "relative", zIndex: 1,
-                    }}>
-                      {col.icon}
-                    </span>
-
-                    {/* Answer text */}
-                    <span style={{
-                      color: revealed
-                        ? (isCorrect ? col.text : isSelected ? "#f87171" : (isPreview ? "#374151" : "#475569"))
-                        : (isSelected ? col.text : "#e2e8f0"),
-                      fontWeight: isSelected || (revealed && isCorrect) ? 700 : isPreview ? 500 : 400,
-                      fontSize: isPreview ? 15 : 15,
-                      lineHeight: 1.4,
-                      flex: 1,
-                      position: "relative", zIndex: 1,
-                    }}>
-                      {revealed && isCorrect ? "✓ " : ""}{opt}
-                    </span>
-
-                    {/* Sparkle on correct reveal */}
-                    {revealed && isCorrect && isPreview && (
-                      <span style={{ fontSize: "1.2rem", flexShrink: 0, position: "relative", zIndex: 1 }}>✨</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <p style={{ color: "#f0e6ff", fontWeight: 700, marginBottom: 0, fontSize: 19, lineHeight: 1.5, position: "relative", zIndex: 1 }}>
+              {q.questionText}
+            </p>
           </div>
-        );
-      })}
+
+          {/* Optional image */}
+          {q.imageUrl && (
+            <img src={q.imageUrl} alt="" style={{
+              maxWidth: "100%", maxHeight: 240, borderRadius: 14,
+              marginBottom: "1.25rem", display: "block", margin: "0 auto 1.25rem",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.55)",
+              border: "1px solid rgba(168,85,247,0.3)",
+            }} />
+          )}
+
+          {/* Answer grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "1.1rem", columnGap: "1.1rem" }}>
+            {q.options.map((opt, oi) => {
+              const col = QUIZ_COLORS[oi % QUIZ_COLORS.length];
+              const isSelected = answers[qi] === oi;
+              const isCorrect = opt === q.correctAnswer;
+
+              let bgColor = isSelected ? col.bg : "rgba(255,255,255,0.04)";
+              let borderColor = isSelected ? col.border : "rgba(255,255,255,0.14)";
+              if (revealed) {
+                if (isCorrect)       { bgColor = col.bg; borderColor = col.border; }
+                else if (isSelected) { bgColor = "rgba(239,68,68,0.18)"; borderColor = "rgba(239,68,68,0.6)"; }
+                else                 { bgColor = "rgba(255,255,255,0.02)"; borderColor = "rgba(255,255,255,0.07)"; }
+              }
+
+              const boxShadow = isSelected && !revealed
+                ? `0 0 0 3px ${col.glow}, 0 10px 22px ${col.glow}`
+                : revealed && isCorrect ? `0 0 22px ${col.glow}` : "none";
+
+              return (
+                <button key={oi} type="button"
+                  onClick={() => { if (revealed) return; playPop(); setAnswers((a) => a.map((x, i) => i === qi ? oi : x)); }}
+                  style={{
+                    background: bgColor, border: `2.5px solid ${borderColor}`,
+                    borderRadius: 18, padding: "1.1rem 1.3rem",
+                    textAlign: "left", cursor: revealed ? "default" : "pointer",
+                    transition: "all .18s", display: "flex", alignItems: "center",
+                    gap: "0.9rem", boxShadow, minHeight: 88,
+                    position: "relative", overflow: "hidden", boxSizing: "border-box", width: "100%",
+                  }}
+                >
+                  {(isSelected || (revealed && isCorrect)) && (
+                    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: `radial-gradient(circle at 20% 50%, ${col.glow} 0%, transparent 70%)`, opacity: 0.25 }} />
+                  )}
+                  <span style={{
+                    width: 44, height: 44, borderRadius: 13,
+                    background: col.bg, border: `2px solid ${col.border}`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 20, flexShrink: 0, color: col.text, fontWeight: 900,
+                    boxShadow: `0 0 12px ${col.glow}`, position: "relative", zIndex: 1,
+                  }}>
+                    {col.icon}
+                  </span>
+                  <span style={{
+                    color: revealed ? (isCorrect ? col.text : isSelected ? "#f87171" : "#475569") : (isSelected ? col.text : "#e2e8f0"),
+                    fontWeight: isSelected || (revealed && isCorrect) ? 700 : 500,
+                    fontSize: 15, lineHeight: 1.4, flex: 1, position: "relative", zIndex: 1,
+                  }}>
+                    {revealed && isCorrect ? "✓ " : ""}{opt}
+                  </span>
+                  {revealed && isCorrect && (
+                    <span style={{ fontSize: "1.2rem", flexShrink: 0, position: "relative", zIndex: 1 }}>✨</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
 
       {/* Action button */}
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: isPreview ? "0.5rem" : "1rem" }}>
+      <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
         {mode === "preview" ? (
           <button
             onClick={() => {
               setRevealed((r) => !r);
-              if (!revealed) {
-                answers.forEach((idx, qi) => {
-                  const q = content.questions[qi];
-                  if (idx !== null && q?.options[idx] === q?.correctAnswer) playChime();
-                });
-              }
+              if (!revealed) answers.forEach((idx, qi) => {
+                const q = content.questions[qi];
+                if (idx !== null && q?.options[idx] === q?.correctAnswer) playChime();
+              });
             }}
             style={{
-              background: revealed
-                ? "rgba(255,255,255,0.08)"
-                : "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)",
+              background: revealed ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%)",
               border: revealed ? "1.5px solid rgba(255,255,255,0.18)" : "none",
-              borderRadius: 16,
-              padding: "0.9rem 2.4rem",
-              color: "#fff",
-              fontSize: 16, fontWeight: 800,
-              cursor: "pointer",
-              boxShadow: revealed
-                ? "none"
-                : "0 4px 28px rgba(124,58,237,0.65), 0 0 60px rgba(236,72,153,0.25), 0 8px 32px rgba(0,0,0,0.45)",
-              transition: "all .2s",
-              letterSpacing: "0.02em",
+              borderRadius: 16, padding: "0.9rem 2.4rem",
+              color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer",
+              boxShadow: revealed ? "none" : "0 4px 28px rgba(124,58,237,0.65), 0 0 60px rgba(236,72,153,0.25), 0 8px 32px rgba(0,0,0,0.45)",
+              transition: "all .2s", letterSpacing: "0.02em",
             }}
           >
             {revealed ? "Hide Answers" : "Show Answers"}
@@ -715,7 +672,7 @@ function QuizGame({ content, mode, alreadySubmitted }) {
 // ── ContentPlayer — full-screen modal ─────────────────────────────────────────
 // mode="preview": teacher preview — space-themed galaxy overlay
 // mode="student": student plays — original dark overlay
-export default function ContentPlayer({ content, mode = "preview", alreadySubmitted = null, onClose }) {
+export default function ContentPlayer({ content, mode = "preview", alreadySubmitted = null, onClose, onGameComplete }) {
   const isGame = content.type === "game";
   const iconSrc = isGame
     ? (content.template === "match-word-picture" ? matchWithPicImg : flashcardImg)
@@ -746,6 +703,7 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
         {/* Modal card */}
         <div
           onClick={(e) => e.stopPropagation()}
+          className="cp-scroll"
           style={{
             position: "relative", zIndex: 1,
             width: "min(980px, 96vw)",
@@ -865,9 +823,9 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
               !content.items?.length ? (
                 <p style={{ color: "#64748b", textAlign: "center", padding: "2.5rem 0", fontSize: 15 }}>No items added yet.</p>
               ) : content.template === "match-word-picture" ? (
-                <MatchWordPictureGame items={content.items} />
+                <MatchWordPictureGame items={content.items} onComplete={mode === "student" ? onGameComplete : undefined} />
               ) : (
-                <MemoryCardGame items={content.items} />
+                <MemoryCardGame items={content.items} onComplete={mode === "student" ? onGameComplete : undefined} />
               )
             ) : (
               !content.questions?.length ? (
@@ -882,50 +840,92 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
     );
   }
 
-  // ── Student mode — original styling ──────────────────────────────────────────
+  // ── Student mode — same galaxy theme, no preview badge ──────────────────────
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2vh 2vw" }}
       onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 1000,
+        background: "radial-gradient(ellipse at 28% 32%, rgba(88,28,135,0.85) 0%, rgba(20,8,52,0.97) 45%, rgba(0,0,14,0.99) 100%)",
+        backdropFilter: "blur(8px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "2vh 2vw",
+      }}
     >
+      <GalaxyOverlay />
       <div
-        style={{ width: "min(980px, 96vw)", maxHeight: "95vh", overflowY: "auto", background: "rgba(13,13,28,0.98)", border: "1px solid rgba(124,58,237,0.35)", borderRadius: 20, padding: "2rem 2.5rem", boxShadow: "0 24px 80px rgba(0,0,0,0.7)", animation: "cpSlideIn 0.25s ease" }}
+        className="cp-scroll"
         onClick={(e) => e.stopPropagation()}
+        style={{
+          position: "relative", zIndex: 1,
+          width: "min(980px, 96vw)", maxHeight: "95vh", overflowY: "auto",
+          background: "linear-gradient(148deg, rgba(30,11,66,0.97) 0%, rgba(14,5,38,0.99) 100%)",
+          border: "1.5px solid rgba(168,85,247,0.55)",
+          borderRadius: 28, padding: "2rem 2.5rem",
+          animation: "cpModalEntrance 0.38s cubic-bezier(0.34,1.15,0.64,1)",
+          boxShadow: "0 0 0 1px rgba(236,72,153,0.18), 0 0 50px rgba(168,85,247,0.38), 0 40px 100px rgba(0,0,0,0.88)",
+        }}
       >
+        {/* Inner top glow */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 120, background: "radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.12) 0%, transparent 70%)", borderRadius: "28px 28px 0 0", pointerEvents: "none" }} />
+
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
-          <div style={{ display: "flex", gap: "0.85rem", alignItems: "center" }}>
-            <img src={iconSrc} alt={typeLabel} style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem", position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", gap: "1.1rem", alignItems: "center" }}>
+            <div style={{
+              width: 62, height: 62, flexShrink: 0, borderRadius: 20,
+              background: "linear-gradient(140deg, rgba(124,58,237,0.7), rgba(236,72,153,0.6))",
+              border: "1.5px solid rgba(168,85,247,0.65)",
+              boxShadow: "0 0 28px rgba(168,85,247,0.55), 0 0 55px rgba(236,72,153,0.22)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <img src={iconSrc} alt={typeLabel} style={{ width: 44, height: 44, objectFit: "contain" }} />
+            </div>
             <div>
-              <h2 style={{ margin: 0, fontSize: "1.35rem", color: "#e2e8f0" }}>{content.title}</h2>
-              <p style={{ color: "#64748b", fontSize: 13, marginTop: "0.2rem" }}>
-                {typeLabel} · {itemCount}
-                {content.description ? ` · ${content.description}` : ""}
+              <h2 style={{ margin: 0, fontSize: "1.55rem", fontWeight: 900, color: "#f5eeff", lineHeight: 1.2, textShadow: "0 0 30px rgba(196,181,253,0.3)" }}>
+                {content.title}
+              </h2>
+              <p style={{ color: "#a78bfa", fontSize: 13, marginTop: "0.25rem", fontWeight: 500 }}>
+                {typeLabel} · {itemCount}{content.description ? ` · ${content.description}` : ""}
               </p>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, color: "#94a3b8", cursor: "pointer", padding: "0.4rem 0.9rem", fontSize: 14, flexShrink: 0, transition: "all .15s" }}>
-            ✕ Close
+          <button
+            onClick={onClose}
+            style={{
+              flexShrink: 0, marginTop: "0.2rem",
+              width: 44, height: 44, borderRadius: "50%",
+              background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(168,85,247,0.4)",
+              color: "#c4b5fd", cursor: "pointer", fontSize: 18, fontWeight: 800,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s", boxShadow: "0 0 14px rgba(168,85,247,0.3)",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(236,72,153,0.22)"; e.currentTarget.style.borderColor = "rgba(236,72,153,0.7)"; e.currentTarget.style.color = "#f9a8d4"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.4)"; e.currentTarget.style.color = "#c4b5fd"; }}
+          >
+            ✕
           </button>
         </div>
 
-        <div style={{ height: 1, background: "linear-gradient(90deg, rgba(124,58,237,0.5), rgba(6,182,212,0.3), transparent)", marginBottom: "1.75rem" }} />
+        <div style={{ height: 1.5, borderRadius: 2, background: "linear-gradient(90deg, rgba(168,85,247,0.8), rgba(236,72,153,0.55), rgba(6,182,212,0.3), transparent)", marginBottom: "1.85rem", position: "relative", zIndex: 1 }} />
 
-        {isGame ? (
-          !content.items?.length ? (
-            <p style={{ color: "#64748b", textAlign: "center", padding: "2.5rem 0", fontSize: 15 }}>No items added yet.</p>
-          ) : content.template === "match-word-picture" ? (
-            <MatchWordPictureGame items={content.items} />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          {isGame ? (
+            !content.items?.length ? (
+              <p style={{ color: "#64748b", textAlign: "center", padding: "2.5rem 0", fontSize: 15 }}>No items added yet.</p>
+            ) : content.template === "match-word-picture" ? (
+              <MatchWordPictureGame items={content.items} onComplete={onGameComplete} />
+            ) : (
+              <MemoryCardGame items={content.items} onComplete={onGameComplete} />
+            )
           ) : (
-            <MemoryCardGame items={content.items} />
-          )
-        ) : (
-          !content.questions?.length ? (
-            <p style={{ color: "#64748b", textAlign: "center", padding: "2.5rem 0", fontSize: 15 }}>No questions added yet.</p>
-          ) : (
-            <QuizGame content={content} mode={mode} alreadySubmitted={alreadySubmitted} />
-          )
-        )}
+            !content.questions?.length ? (
+              <p style={{ color: "#64748b", textAlign: "center", padding: "2.5rem 0", fontSize: 15 }}>No questions added yet.</p>
+            ) : (
+              <QuizGame content={content} mode={mode} alreadySubmitted={alreadySubmitted} />
+            )
+          )}
+        </div>
       </div>
     </div>
   );

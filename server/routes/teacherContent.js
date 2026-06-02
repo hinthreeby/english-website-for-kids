@@ -66,6 +66,11 @@ router.post("/", protect, isTeacher, async (req, res) => {
     if (err) return res.status(400).json({ error: err });
   }
 
+  const { playLimit } = req.body;
+  const parsedLimit = playLimit != null ? Number(playLimit) : null;
+  if (parsedLimit !== null && (!Number.isInteger(parsedLimit) || parsedLimit < 1))
+    return res.status(400).json({ error: "playLimit must be a positive integer or null." });
+
   try {
     const content = await TeacherContent.create({
       teacherId: req.user._id,
@@ -75,6 +80,7 @@ router.post("/", protect, isTeacher, async (req, res) => {
       template,
       items: type === "game" ? items : [],
       questions: type === "quiz" ? questions : [],
+      playLimit: parsedLimit,
     });
     return res.status(201).json({ content });
   } catch (err) {
@@ -95,13 +101,19 @@ router.get("/:id", protect, isTeacher, validateObjectId("id"), async (req, res) 
 
 // ── PUT /api/teacher/contents/:id ─────────────────────────────────────────────
 router.put("/:id", protect, isTeacher, validateObjectId("id"), async (req, res) => {
-  const { title, description, items, questions } = req.body;
+  const { title, description, items, questions, playLimit } = req.body;
   try {
     const content = await TeacherContent.findOne({ _id: req.params.id, teacherId: req.user._id });
     if (!content) return res.status(404).json({ error: "Content not found." });
 
     if (title !== undefined) content.title = title.trim();
     if (description !== undefined) content.description = description.trim();
+    if (playLimit !== undefined) {
+      const pl = playLimit != null ? Number(playLimit) : null;
+      if (pl !== null && (!Number.isInteger(pl) || pl < 1))
+        return res.status(400).json({ error: "playLimit must be a positive integer or null." });
+      content.playLimit = pl;
+    }
 
     if (content.type === "game" && items !== undefined) {
       const err = validateItems(items);

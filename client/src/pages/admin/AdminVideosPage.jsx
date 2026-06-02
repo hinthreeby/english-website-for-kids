@@ -16,6 +16,16 @@ const TYPE_META = {
   "song":         { label: "Song",         icon: "🎵", color: "#b45309" },
 };
 
+const DEFAULT_CATEGORIES = [
+  "Alphabet", "Animals", "Colors", "Planets",
+  "Numbers", "Shapes", "Food", "Family",
+];
+
+const FIELD_EMOJIS = {
+  Alphabet: "🔤", Animals: "🐾", Colors: "🌈", Planets: "🪐",
+  Numbers: "🔢", Shapes: "🔷", Food: "🍎", Family: "👨‍👩‍👧",
+};
+
 const EMPTY_FORM = {
   type: "",
   title: "",
@@ -23,9 +33,7 @@ const EMPTY_FORM = {
   videoUrl: "",
   thumbnailUrl: "",
   field: "",
-  characterName: "",
   episodeNumber: 1,
-  unit: 1,
   isPublished: false,
 };
 
@@ -43,6 +51,85 @@ const getEmbedUrl = (url) => {
 };
 const displayThumb = (v) => v.thumbnailUrl || getYouTubeThumbnail(v.videoUrl) || null;
 const isLocalUrl = (url) => url?.startsWith("/uploads/");
+
+// ── Custom Episode Number Spinner ───────────────────────────
+const ChevronUp = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="2,7 5,3 8,7" />
+  </svg>
+);
+const ChevronDown = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="2,3 5,7 8,3" />
+  </svg>
+);
+
+const NumberSpinner = ({ value, min = 1, onChange }) => (
+  <div className="ep-spinner-wrap">
+    <input
+      className="ep-spinner-input"
+      type="number"
+      value={value}
+      min={min}
+      onChange={(e) => {
+        const v = parseInt(e.target.value, 10);
+        if (!isNaN(v) && v >= min) onChange(v);
+      }}
+      required
+      style={{
+        flex: 1, width: 0,
+        background: "transparent", border: "none", outline: "none",
+        color: "#e2e8f0", fontSize: "1rem", fontWeight: 700,
+        padding: "0.5rem 0.75rem", fontFamily: "inherit", textAlign: "center",
+      }}
+    />
+    <div style={{
+      display: "flex", flexDirection: "column",
+      borderLeft: "1px solid rgba(124,58,237,0.25)",
+    }}>
+      <button
+        type="button"
+        className="ep-spinner-btn"
+        style={{ flex: 1, borderBottom: "1px solid rgba(124,58,237,0.2)" }}
+        onClick={() => onChange(value + 1)}
+        tabIndex={-1}
+        aria-label="Increase"
+      >
+        <ChevronUp />
+      </button>
+      <button
+        type="button"
+        className="ep-spinner-btn"
+        style={{ flex: 1 }}
+        onClick={() => { if (value > min) onChange(value - 1); }}
+        tabIndex={-1}
+        aria-label="Decrease"
+      >
+        <ChevronDown />
+      </button>
+    </div>
+  </div>
+);
+
+// ── Chip button ──────────────────────────────────────────────
+const Chip = ({ label, active, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    style={{
+      padding: "0.22rem 0.65rem",
+      borderRadius: "20px",
+      fontSize: "0.78rem", fontWeight: 600,
+      border: active ? "1.5px solid #a78bfa" : "1.5px solid rgba(255,255,255,0.12)",
+      background: active ? "rgba(124,58,237,0.3)" : "rgba(255,255,255,0.04)",
+      color: active ? "#c4b5fd" : "rgba(255,255,255,0.55)",
+      cursor: "pointer", fontFamily: "inherit",
+      transition: "all 0.14s",
+    }}
+  >
+    {label}
+  </button>
+);
 
 // ── Media Mode Toggle ────────────────────────────────────────
 const ModeToggle = ({ mode, onChange }) => (
@@ -106,7 +193,6 @@ const FilePicker = ({ accept, progress, fileName, onFile, hint }) => {
         {progress === null && <span style={{ opacity: 0.5, fontSize: "0.72rem", flexShrink: 0 }}>Browse</span>}
       </button>
 
-      {/* Progress bar */}
       {progress !== null && (
         <div style={{ marginTop: "0.4rem" }}>
           <div style={{ height: "6px", borderRadius: "3px", background: "rgba(255,255,255,0.1)", overflow: "hidden" }}>
@@ -134,9 +220,9 @@ const AdminVideosPage = () => {
   const [saving, setSaving] = useState(false);
 
   // Upload state
-  const [videoMode, setVideoMode] = useState("url");   // "url" | "file"
-  const [thumbMode, setThumbMode] = useState("url");   // "url" | "file"
-  const [videoProgress, setVideoProgress] = useState(null);  // null or 0-100
+  const [videoMode, setVideoMode] = useState("url");
+  const [thumbMode, setThumbMode] = useState("url");
+  const [videoProgress, setVideoProgress] = useState(null);
   const [thumbProgress, setThumbProgress] = useState(null);
   const [videoFileName, setVideoFileName] = useState("");
   const [thumbFileName, setThumbFileName] = useState("");
@@ -144,6 +230,15 @@ const AdminVideosPage = () => {
   const [previewVideo, setPreviewVideo] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Series & category meta
+  const [seriesList, setSeriesList] = useState([]);
+  const [categoryList, setCategoryList] = useState([]);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+
+  // Merged category chips: defaults + any in DB
+  const allCategories = [...new Set([...DEFAULT_CATEGORIES, ...categoryList])];
+
+  // Load videos
   const load = async () => {
     try {
       setLoading(true);
@@ -162,6 +257,23 @@ const AdminVideosPage = () => {
 
   useEffect(() => { load(); }, [filterType]);
 
+  // Load series names and existing categories from DB
+  useEffect(() => {
+    const loadMeta = async () => {
+      try {
+        const [seriesRes, catRes] = await Promise.all([
+          api.get("/api/admin/videos/fields?type=story-series"),
+          api.get("/api/admin/videos/fields?type=quick-video,song"),
+        ]);
+        setSeriesList(seriesRes.data.fields || []);
+        setCategoryList(catRes.data.fields || []);
+      } catch {
+        // non-critical
+      }
+    };
+    loadMeta();
+  }, []);
+
   const resetUploadState = () => {
     setVideoMode("url");
     setThumbMode("url");
@@ -175,6 +287,7 @@ const AdminVideosPage = () => {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setFormError("");
+    setNewCategoryInput("");
     resetUploadState();
     setShowForm(true);
   };
@@ -188,19 +301,23 @@ const AdminVideosPage = () => {
       videoUrl: v.videoUrl,
       thumbnailUrl: v.thumbnailUrl || "",
       field: v.field || "",
-      characterName: v.characterName || "",
       episodeNumber: v.episodeNumber ?? 1,
-      unit: v.unit ?? 1,
       isPublished: v.isPublished,
     });
     setFormError("");
-    // Auto-detect mode from existing URLs
     setVideoMode(isLocalUrl(v.videoUrl) ? "file" : "url");
     setThumbMode(isLocalUrl(v.thumbnailUrl) ? "file" : "url");
     setVideoFileName(isLocalUrl(v.videoUrl) ? v.videoUrl.split("/").pop() : "");
     setThumbFileName(isLocalUrl(v.thumbnailUrl) ? v.thumbnailUrl.split("/").pop() : "");
     setVideoProgress(null);
     setThumbProgress(null);
+    // For non-series: pre-fill custom input if field isn't a known chip
+    if (v.type !== "story-series") {
+      const inKnown = DEFAULT_CATEGORIES.includes(v.field) || categoryList.includes(v.field);
+      setNewCategoryInput(inKnown ? "" : (v.field || ""));
+    } else {
+      setNewCategoryInput("");
+    }
     setShowForm(true);
   };
 
@@ -208,6 +325,7 @@ const AdminVideosPage = () => {
     setShowForm(false);
     setEditingId(null);
     setFormError("");
+    setNewCategoryInput("");
     resetUploadState();
   };
 
@@ -262,6 +380,13 @@ const AdminVideosPage = () => {
       } else {
         await api.post("/api/admin/videos", form);
       }
+      // Refresh series/category meta in case a new one was added
+      const [seriesRes, catRes] = await Promise.all([
+        api.get("/api/admin/videos/fields?type=story-series"),
+        api.get("/api/admin/videos/fields?type=quick-video,song"),
+      ]).catch(() => [{ data: { fields: seriesList } }, { data: { fields: categoryList } }]);
+      setSeriesList(seriesRes.data?.fields || seriesList);
+      setCategoryList(catRes.data?.fields || categoryList);
       closeForm();
       load();
     } catch (err) {
@@ -291,8 +416,6 @@ const AdminVideosPage = () => {
   };
 
   const displayedVideos = filterType ? videos.filter((v) => v.type === filterType) : videos;
-
-  // Effective thumbnail preview inside form
   const formThumbPreview = form.thumbnailUrl || (videoMode === "url" ? getYouTubeThumbnail(form.videoUrl) : null);
 
   return (
@@ -368,7 +491,6 @@ const AdminVideosPage = () => {
                         {v.views > 0 ? <span>👁 {v.views}</span> : null}
                         {isLocalUrl(v.videoUrl) ? <span title="Uploaded file" style={{ opacity: 0.6 }}>📁</span> : null}
                       </div>
-                      {v.characterName ? <div style={{ fontSize: "0.76rem", color: "var(--color-accent,#a78bfa)", marginTop: "0.2rem" }}>🧸 {v.characterName}</div> : null}
                     </div>
                     <div className="admin-video-actions">
                       <button type="button" className="btn-secondary-glass" style={{ fontSize: "0.76rem", padding: "0.28rem 0.65rem" }} onClick={() => setPreviewVideo(v)}>Preview</button>
@@ -416,7 +538,7 @@ const AdminVideosPage = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "1.2rem" }}>
                   {!editingId && (
                     <button type="button" className="btn-secondary-glass" style={{ padding: "0.28rem 0.65rem", fontSize: "0.82rem" }}
-                      onClick={() => setForm((p) => ({ ...p, type: "" }))}>←</button>
+                      onClick={() => { setForm((p) => ({ ...p, type: "", field: "" })); setNewCategoryInput(""); }}>←</button>
                   )}
                   <h2 style={{ margin: 0, display: "flex", alignItems: "center", gap: "0.45rem" }}>
                     <span>{TYPE_META[form.type]?.icon}</span>
@@ -437,31 +559,63 @@ const AdminVideosPage = () => {
                       required />
                   </label>
 
-                  {/* Series-specific: field + episode */}
+                  {/* ── Story Series: series picker + episode number ── */}
                   {form.type === "story-series" && (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-                      <label className="form-label">
-                        Series Name *
-                        <input className="form-input" value={form.field}
+                      <div>
+                        <span className="form-label" style={{ display: "block", marginBottom: "0.35rem" }}>Series *</span>
+                        {seriesList.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginBottom: "0.5rem" }}>
+                            {seriesList.map((s) => (
+                              <Chip key={s} label={`📺 ${s}`} active={form.field === s}
+                                onClick={() => setForm((p) => ({ ...p, field: s }))} />
+                            ))}
+                          </div>
+                        )}
+                        <input className="form-input"
+                          value={form.field}
                           onChange={(e) => setForm({ ...form, field: e.target.value })}
-                          placeholder="e.g. Sea Adventure" required />
-                      </label>
+                          placeholder={seriesList.length > 0 ? "Or type a new series name…" : "e.g. Sea Adventure"}
+                          required
+                        />
+                      </div>
                       <label className="form-label">
                         Episode Number *
-                        <input className="form-input" type="number" min={1} value={form.episodeNumber}
-                          onChange={(e) => setForm({ ...form, episodeNumber: Number(e.target.value) })} required />
+                        <NumberSpinner
+                          value={form.episodeNumber}
+                          min={1}
+                          onChange={(v) => setForm({ ...form, episodeNumber: v })}
+                        />
                       </label>
                     </div>
                   )}
 
-                  {/* Topic for non-series */}
+                  {/* ── Quick Video / Song: category chips ── */}
                   {form.type !== "story-series" && (
-                    <label className="form-label">
-                      Topic / Theme
-                      <input className="form-input" value={form.field}
-                        onChange={(e) => setForm({ ...form, field: e.target.value })}
-                        placeholder="e.g. Animals, Alphabet, Colors" />
-                    </label>
+                    <div>
+                      <span className="form-label" style={{ display: "block", marginBottom: "0.35rem" }}>Category / Theme</span>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginBottom: "0.5rem" }}>
+                        {allCategories.map((cat) => (
+                          <Chip
+                            key={cat}
+                            label={`${FIELD_EMOJIS[cat] || "🏷️"} ${cat}`}
+                            active={form.field === cat && !newCategoryInput}
+                            onClick={() => {
+                              setForm((p) => ({ ...p, field: p.field === cat && !newCategoryInput ? "" : cat }));
+                              setNewCategoryInput("");
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <input className="form-input"
+                        value={newCategoryInput}
+                        onChange={(e) => {
+                          setNewCategoryInput(e.target.value);
+                          setForm((p) => ({ ...p, field: e.target.value }));
+                        }}
+                        placeholder="Or type a custom category…"
+                      />
+                    </div>
                   )}
 
                   {/* Description */}
@@ -496,7 +650,6 @@ const AdminVideosPage = () => {
                           fileName={videoFileName}
                           onFile={uploadVideoFile}
                         />
-                        {/* Require a URL from upload before submit */}
                         <input type="text" style={{ display: "none" }} value={form.videoUrl} readOnly required={videoMode === "file"} />
                         {form.videoUrl && videoMode === "file" && (
                           <p style={{ fontSize: "0.75rem", marginTop: "0.3rem", color: "#34d399", display: "flex", alignItems: "center", gap: "0.3rem" }}>
@@ -525,7 +678,6 @@ const AdminVideosPage = () => {
                           onChange={(e) => setForm({ ...form, thumbnailUrl: e.target.value })}
                           placeholder="https://… (leave blank to auto-detect from YouTube)"
                         />
-                        {/* Auto-preview from YouTube when URL mode */}
                         {!form.thumbnailUrl && videoMode === "url" && getYouTubeThumbnail(form.videoUrl) && (
                           <p style={{ fontSize: "0.72rem", marginTop: "0.3rem", opacity: 0.6 }}>
                             Auto-preview from YouTube will be used.
@@ -542,7 +694,6 @@ const AdminVideosPage = () => {
                       />
                     )}
 
-                    {/* Thumbnail preview */}
                     {formThumbPreview && (
                       <img
                         src={formThumbPreview}
@@ -551,21 +702,6 @@ const AdminVideosPage = () => {
                         style={{ marginTop: "0.5rem", height: "80px", borderRadius: "0.5rem", objectFit: "cover", display: "block" }}
                       />
                     )}
-                  </div>
-
-                  {/* Character + Unit */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-                    <label className="form-label">
-                      Character Name
-                      <input className="form-input" value={form.characterName}
-                        onChange={(e) => setForm({ ...form, characterName: e.target.value })}
-                        placeholder="e.g. Mia, Cosmo" />
-                    </label>
-                    <label className="form-label">
-                      Unit / Level
-                      <input className="form-input" type="number" min={1} value={form.unit}
-                        onChange={(e) => setForm({ ...form, unit: Number(e.target.value) })} />
-                    </label>
                   </div>
 
                   {/* Publish */}
@@ -594,10 +730,8 @@ const AdminVideosPage = () => {
         <div className="vp-overlay" onClick={() => setPreviewVideo(null)} style={{ zIndex: 800 }}>
           <div className="vp-modal" onClick={(e) => e.stopPropagation()}>
 
-            {/* Accent line */}
             <div className="vp-accent-bar" style={{ background: TYPE_META[previewVideo.type]?.color || "#7c3aed" }} />
 
-            {/* Header: badges | centered title | close X */}
             <div className="vp-header">
               <div className="vp-header-left">
                 <span className="vp-type-badge" style={{ background: TYPE_META[previewVideo.type]?.color || "#7c3aed" }}>
@@ -608,9 +742,6 @@ const AdminVideosPage = () => {
                 ) : null}
                 {previewVideo.field ? (
                   <span className="vp-field-badge">📚 {previewVideo.field}</span>
-                ) : null}
-                {previewVideo.characterName ? (
-                  <span className="vp-header-char">🧸 {previewVideo.characterName}</span>
                 ) : null}
                 {previewVideo.views > 0 ? (
                   <span className="vp-ep-badge">👁 {previewVideo.views}</span>
@@ -624,7 +755,6 @@ const AdminVideosPage = () => {
               </div>
             </div>
 
-            {/* Video */}
             <div className="vp-screen">
               {isLocalUrl(previewVideo.videoUrl) ? (
                 <video src={previewVideo.videoUrl} controls autoPlay className="vp-video-el" />
