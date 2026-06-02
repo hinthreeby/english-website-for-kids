@@ -26,118 +26,234 @@ Tech stack:
 
 ## 2. Sơ đồ cấu trúc thư mục
 
-Đây là cấu trúc quan trọng, đã lược bớt asset ảnh/audio/video quá chi tiết:
+Đây là cây thư mục đã chú thích theo vai trò từng phần. Khi học project, bạn nên đọc từ root config, sang `client`, rồi sang `server`.
 
 ```text
 english-website-for-kids/
-├── README.md
-├── DEPLOYMENT.md
-├── package.json                 # Script root: dev/build/start
-├── docker-compose.yml           # Topology production: redis + backend + nginx
+├── README.md                         # Giới thiệu project, tech stack, cách chạy local
+├── DEPLOYMENT.md                     # Ghi chú triển khai production
+├── package.json                      # Script cấp root: chạy cả client + server
+├── package-lock.json                 # Lock dependency cấp root
+├── docker-compose.yml                # Chạy production bằng Docker: redis + backend + nginx
+│
 ├── nginx/
-│   ├── nginx.http.conf           # HTTP trước khi cấp SSL
-│   └── nginx.conf                # HTTPS + reverse proxy + cache static
+│   ├── nginx.http.conf               # Nginx HTTP, dùng giai đoạn lấy SSL cert ban đầu
+│   └── nginx.conf                    # Nginx HTTPS, reverse proxy /api /auth /uploads
+│
 ├── public/
-│   └── roadmap/games/...         # Audio public dùng cho roadmap/game
+│   └── roadmap/
+│       └── games/
+│           ├── unit1/                # Audio game roadmap unit 1
+│           └── unit2/                # Audio game roadmap unit 2
+│
 ├── client/
-│   ├── package.json
-│   ├── Dockerfile                # Build React, serve bằng Nginx image
-│   ├── vite.config.js
+│   ├── package.json                  # Dependency frontend: React, Vite, Router, Axios...
+│   ├── package-lock.json
+│   ├── Dockerfile                    # Build React SPA rồi serve bằng Nginx container
+│   ├── vite.config.js                # Cấu hình Vite + plugin React/Tailwind
+│   ├── vercel.json                   # Cấu hình nếu deploy frontend lên Vercel
+│   ├── index.html                    # HTML shell cho React mount vào
+│   │
 │   ├── public/
-│   │   ├── sounds/
-│   │   ├── story/
-│   │   └── icons.svg
+│   │   ├── sounds/                   # Nhạc nền, âm thanh mascot, hiệu ứng UI
+│   │   ├── story/                    # Video/thumbnail story public
+│   │   ├── roadmap/                  # Asset public cho roadmap nếu gọi bằng URL trực tiếp
+│   │   ├── icons.svg                 # Sprite/icon public
+│   │   └── favicon.svg
+│   │
 │   └── src/
-│       ├── App.jsx               # Khai báo route frontend
-│       ├── main.jsx
-│       ├── lib/
-│       │   ├── api.js            # Axios instance + CSRF interceptor
-│       │   └── roleHome.js
+│       ├── main.jsx                  # Điểm mount React vào DOM
+│       ├── App.jsx                   # Bản đồ route frontend theo role
+│       ├── App.css
+│       ├── index.css                 # Global CSS/Tailwind entry
+│       │
+│       ├── lib/                      # Helper logic không phụ thuộc UI
+│       │   ├── api.js                # Axios baseURL, withCredentials, CSRF interceptor
+│       │   ├── roleHome.js           # Chọn trang home tương ứng role
+│       │   └── mouseParticles.js
+│       │
 │       ├── context/
-│       │   └── AuthContext.jsx   # State login/user toàn app
-│       ├── components/
-│       │   ├── ProtectedRoute.jsx
-│       │   └── guards/RoleRoute.jsx
+│       │   └── AuthContext.jsx       # Global auth state: user, login, logout, refreshUser
+│       │
+│       ├── components/               # Component dùng lại nhiều nơi
+│       │   ├── Navbar.jsx
+│       │   ├── LoginModal.jsx
+│       │   ├── ProtectedRoute.jsx    # Guard đăng nhập cơ bản
+│       │   ├── LanguageSwitcher.jsx  # Đổi ngôn ngữ vi/en
+│       │   ├── ContentPlayer.jsx     # Render nội dung học/video/game
+│       │   ├── GameCard.jsx
+│       │   ├── StoryCard.jsx
+│       │   ├── SongCard.jsx
+│       │   ├── SeriesCard.jsx
+│       │   ├── PlanetCollection.jsx
+│       │   ├── StreakBanner.jsx
+│       │   ├── LoadingDots.jsx
+│       │   └── guards/
+│       │       └── RoleRoute.jsx     # Guard theo role: child/parent/teacher/admin
+│       │
 │       ├── pages/
-│       │   ├── admin/
-│       │   ├── parent/
-│       │   ├── teacher/
-│       │   ├── student/
-│       │   └── child/
-│       ├── games/                # Các game React riêng
-│       ├── hooks/                # useProgress, useSound, music, particles
-│       ├── data/                 # Data tĩnh: games, stories, planets
-│       ├── i18n/                 # Ngôn ngữ vi/en
-│       └── assets/               # Ảnh, icon, audio asset cho UI/game/shop
+│       │   ├── HomePage.jsx          # Trang chính cho guest/child
+│       │   ├── LoginPage.jsx
+│       │   ├── RegisterPage.jsx
+│       │   ├── ForgotPasswordPage.jsx
+│       │   ├── OAuthCallbackPage.jsx
+│       │   ├── OAuthVerifyPage.jsx
+│       │   ├── DashboardPage.jsx     # Dashboard child
+│       │   ├── GamePage.jsx          # Wrapper chọn game theo gameId
+│       │   ├── AiChatPage.jsx
+│       │   ├── RoadmapPage.jsx
+│       │   ├── VideosPage.jsx
+│       │   ├── StoryPlayerPage.jsx
+│       │   ├── CompletionPage.jsx
+│       │   ├── CollectionPage.jsx
+│       │   ├── ShopPage.jsx
+│       │   ├── MyHomePage.jsx
+│       │   ├── RoomPage.jsx
+│       │   ├── UserProfilePage.jsx
+│       │   ├── admin/                # Dashboard, users, approvals, videos, profile
+│       │   ├── parent/               # Parent dashboard, child progress
+│       │   ├── teacher/              # Teacher dashboard, classroom, content editor
+│       │   ├── student/              # Học sinh xem/làm nội dung teacher giao
+│       │   └── child/                # Profile riêng của child
+│       │
+│       ├── games/                    # Mỗi file là một mini game React
+│       │   ├── ABCLetters.jsx
+│       │   ├── AnimalSounds.jsx
+│       │   ├── CleanOceanHero.jsx
+│       │   ├── ColorFun.jsx
+│       │   ├── CountLearn.jsx
+│       │   ├── MatchIt.jsx
+│       │   ├── PictureWords.jsx
+│       │   ├── SpacePronounce.jsx
+│       │   ├── DrawGuess.jsx         # Game dùng AI vision backend
+│       │   └── AiChat.jsx            # Game chat với AI backend
+│       │
+│       ├── hooks/                    # React hooks dùng lại
+│       │   ├── useProgress.js        # Gọi API lưu/lấy progress
+│       │   ├── useSound.js           # Phát sound effect
+│       │   ├── useBgMusic.js         # Nhạc nền
+│       │   └── useMouseParticles.js
+│       │
+│       ├── data/                     # Data tĩnh phía client
+│       │   ├── games.js              # Danh sách game hiển thị
+│       │   ├── stories.js            # Danh sách story local/public
+│       │   └── planets.js            # Data planet hiển thị
+│       │
+│       ├── i18n/
+│       │   ├── index.js              # Setup react-i18next
+│       │   └── locales/
+│       │       ├── vi.json
+│       │       └── en.json
+│       │
+│       ├── styles/                   # CSS theo page/component lớn
+│       └── assets/                   # Ảnh/audio import trực tiếp trong React
+│           ├── general/              # Logo, astronaut, star, planet dùng chung
+│           ├── shop/                 # Nhà, xe, phòng, item shop
+│           ├── roadmap/              # Planet/unit/decorations cho roadmap
+│           ├── games/                # Asset theo unit/game
+│           └── <game-name>/          # Asset riêng từng game
+│
 └── server/
-    ├── server.js                 # Entry point Express
-    ├── Dockerfile
-    ├── package.json
-    ├── config/
-    │   ├── env.js                # Load/validate biến môi trường
-    │   ├── cors.js               # CORS allowlist + credentials
-    │   ├── cookies.js            # Cookie JWT/session options
-    │   ├── passport.js           # Google OAuth strategy
-    │   ├── rateLimiters.js       # Giới hạn login/OTP/AI/view...
-    │   ├── upload.js             # Multer upload ảnh/video/avatar
-    │   └── logger/loggers.js     # Pino logging
-    ├── middleware/
-    │   ├── authMiddleware.js     # protect + requireRole
-    │   ├── csrf.js               # CSRF token HMAC
-    │   ├── securityLogger.js
-    │   ├── adminLogger.js
-    │   └── validateObjectId.js
-    ├── models/
-    │   ├── User.js
-    │   ├── GameResult.js
-    │   ├── UserInventory.js
-    │   ├── Classroom.js
-    │   ├── WordList.js
-    │   ├── TeacherContent.js
-    │   ├── ContentResult.js
-    │   ├── Video.js
-    │   ├── VideoView.js
-    │   ├── Roadmap.js
-    │   ├── RoadmapUnit.js
-    │   └── RoadmapProgress.js
-    ├── routes/
-    │   ├── auth.js
-    │   ├── googleAuth.js
-    │   ├── progress.js
-    │   ├── shop.js
-    │   ├── parent.js
-    │   ├── teacher.js
-    │   ├── teacherContent.js
-    │   ├── studentContent.js
-    │   ├── admin.js
-    │   ├── adminVideos.js
-    │   ├── videos.js
-    │   ├── upload.js
-    │   ├── roadmap.js
-    │   ├── analyticsChild.js
-    │   ├── analyticsClass.js
-    │   ├── drawGame.js
-    │   ├── chatGame.js
-    │   └── transcribe.js
-    ├── services/
-    │   ├── emailService.js       # Gửi OTP qua Resend
-    │   ├── otpService.js         # OTP/reset token memory store
-    │   ├── streakService.js      # Streak + unlock planet
-    │   └── aiVisionService.js
-    ├── utils/
-    │   ├── autoSeedRoadmap.js
-    │   ├── passwordPolicy.js
-    │   └── cache.js
-    ├── scripts/
-    │   ├── createAdmin.js
-    │   └── createTeacher.js
+    ├── server.js                     # Entry point Express: middleware, routes, MongoDB, listen
+    ├── package.json                  # Dependency backend: Express, Mongoose, JWT, bcrypt...
+    ├── package-lock.json
+    ├── Dockerfile                    # Build backend container, chạy node server.js
+    ├── nodemon.json                  # Cấu hình dev reload cho nodemon
+    ├── filebeat.yml                  # Cấu hình ship log nếu dùng Filebeat
+    │
+    ├── config/                       # Cấu hình hạ tầng và security
+    │   ├── env.js                    # Load .env.production/.env.development, validate secrets
+    │   ├── cors.js                   # Origin allowlist + credentials cookie
+    │   ├── cookies.js                # Cookie JWT/session: httpOnly, secure, sameSite
+    │   ├── passport.js               # Google OAuth strategy
+    │   ├── rateLimiters.js           # Rate limit login, OTP, AI, submit, view
+    │   ├── upload.js                 # Multer storage/filter/size limit
+    │   ├── email.js                  # Email config nếu dùng service gửi mail
+    │   ├── logger.js                 # Logger gốc Pino
+    │   └── loggers.js                # Logger theo domain: auth/security/activity...
+    │
+    ├── middleware/                   # Lớp chặn request trước khi vào route
+    │   ├── authMiddleware.js         # protect, requireRole, isAdmin/isTeacher/isParent/isChild
+    │   ├── csrf.js                   # Tạo/verify CSRF token bằng HMAC
+    │   ├── securityLogger.js         # Log request đáng ngờ, 404 probing, CSRF fail
+    │   ├── adminLogger.js            # Log thao tác admin
+    │   └── validateObjectId.js       # Chặn param Mongo ObjectId sai format
+    │
+    ├── models/                       # Mongoose schema, ánh xạ collection MongoDB
+    │   ├── User.js                   # Model trung tâm: auth, role, parent/child, stars, streak
+    │   ├── GameResult.js             # Kết quả mỗi lần child chơi game
+    │   ├── UserInventory.js          # Đồ child đã mua/equip trong shop
+    │   ├── Classroom.js              # Lớp học, teacher, joinCode, students
+    │   ├── WordList.js               # Danh sách từ vựng teacher/admin
+    │   ├── TeacherContent.js         # Game/quiz teacher tự tạo và giao cho lớp
+    │   ├── ContentResult.js          # Kết quả student làm TeacherContent
+    │   ├── Video.js                  # Video/story/song admin quản lý
+    │   ├── VideoView.js              # Lượt xem video
+    │   ├── Roadmap.js                # Lộ trình học tổng
+    │   ├── RoadmapUnit.js            # Unit/lesson trong roadmap, có question
+    │   └── RoadmapProgress.js        # Tiến độ roadmap theo từng child
+    │
+    ├── routes/                       # API controllers theo domain nghiệp vụ
+    │   ├── auth.js                   # Register, login, 2FA OTP, reset password, logout, me
+    │   ├── googleAuth.js             # Google OAuth redirect/callback/verify
+    │   ├── progress.js               # Save game result, stars, streak, planets, classroom join
+    │   ├── shop.js                   # Inventory, buy item, equip item
+    │   ├── parent.js                 # Parent quản lý child và xem progress
+    │   ├── teacher.js                # Teacher stats, classroom CRUD, profile
+    │   ├── teacherContent.js         # Teacher tạo/publish/assign game hoặc quiz
+    │   ├── studentContent.js         # Student xem/làm content được giao
+    │   ├── admin.js                  # Admin users, approvals, stats, profile
+    │   ├── adminVideos.js            # Admin CRUD video
+    │   ├── videos.js                 # Public/published video list/detail/view count
+    │   ├── upload.js                 # Upload thumbnail, video, avatar
+    │   ├── roadmap.js                # Roadmap list/detail/progress/unit complete
+    │   ├── analyticsChild.js         # Chart dữ liệu child cho parent
+    │   ├── analyticsClass.js         # Chart dữ liệu lớp cho teacher
+    │   ├── drawGame.js               # API kiểm tra hình vẽ bằng AI vision
+    │   ├── chatGame.js               # API chat AI
+    │   ├── transcribe.js             # Upload audio và chuyển giọng nói thành text
+    │   └── testLog.js                # Endpoint test logging
+    │
+    ├── services/                     # Logic dùng lại, không trực tiếp là route
+    │   ├── emailService.js           # Gửi OTP email qua Resend
+    │   ├── otpService.js             # Tạo/verify OTP và reset token trong memory Map
+    │   ├── streakService.js          # Tính streak, unlock planet, bonus stars
+    │   └── aiVisionService.js        # Gọi AI vision cho game vẽ
+    │
+    ├── utils/                        # Helper backend
+    │   ├── autoSeedRoadmap.js        # Tự seed roadmap khi server start
+    │   ├── passwordPolicy.js         # Rule độ mạnh mật khẩu
+    │   └── cache.js                  # Cache helper
+    │
     ├── seed/
-    │   └── seedRoadmap.js
-    └── uploads/
-        ├── avatars/
-        ├── thumbnails/
-        └── videos/
+    │   └── seedRoadmap.js            # Dữ liệu seed roadmap/unit
+    │
+    ├── scripts/
+    │   ├── createAdmin.js            # Tạo admin đầu tiên
+    │   └── createTeacher.js          # Tạo teacher bằng script
+    │
+    ├── uploads/                      # File user/admin upload, backend serve qua /uploads
+    │   ├── avatars/                  # Ảnh đại diện user
+    │   ├── thumbnails/               # Thumbnail video/story
+    │   └── videos/                   # Video upload
+    │
+    └── logs/                         # Log runtime nếu app ghi ra file
 ```
+
+Nhìn theo chức năng:
+
+| Muốn hiểu phần nào | Đọc thư mục/file nào trước |
+|---|---|
+| App mở route nào, role nào được vào | `client/src/App.jsx`, `client/src/components/guards/RoleRoute.jsx` |
+| Frontend gọi API ra sao | `client/src/lib/api.js` |
+| Login/logout/user state | `client/src/context/AuthContext.jsx`, `server/routes/auth.js` |
+| Backend boot và middleware order | `server/server.js` |
+| Phân quyền backend | `server/middleware/authMiddleware.js` |
+| Database có collection nào | `server/models/` |
+| Game cộng sao/streak/planet | `server/routes/progress.js`, `server/services/streakService.js` |
+| Parent/teacher/admin workflow | `server/routes/parent.js`, `teacher.js`, `teacherContent.js`, `studentContent.js`, `admin.js` |
+| Upload ảnh/video | `server/config/upload.js`, `server/routes/upload.js`, `server/uploads/` |
+| Deploy production | `docker-compose.yml`, `nginx/nginx.conf`, `server/Dockerfile`, `client/Dockerfile` |
 
 ## 3. Backend hoạt động như thế nào
 
