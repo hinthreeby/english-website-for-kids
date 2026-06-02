@@ -56,7 +56,7 @@
     "usernamePlaceholder": "Tên đăng nhập của bạn",
     "email": "Email",
     "password": "Mật khẩu",
-    "passwordPlaceholder": "Ít nhất 4 ký tự",
+    "passwordPlaceholder": "Ít nhất 8 ký tự",
     "confirmPassword": "Xác nhận mật khẩu",
     "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
     "continue": "🚀 Tiếp tục",
@@ -105,19 +105,38 @@
     "reset": {
       "title": "🔑 Đặt Mật Khẩu Mới",
       "subtitle": "Chọn mật khẩu mới mạnh.",
-      "newPasswordPlaceholder": "Mật khẩu mới (ít nhất 4 ký tự)",
+      "newPasswordPlaceholder": "Mật khẩu mới (ít nhất 8 ký tự)",
       "confirmPasswordPlaceholder": "Xác nhận mật khẩu mới",
       "submit": "✅ Đặt lại mật khẩu",
       "saving": "Đang lưu...",
       "backToLogin": "← Quay lại đăng nhập",
       "passwordMismatch": "Mật khẩu không khớp.",
-      "tooShort": "Mật khẩu phải có ít nhất 4 ký tự.",
+      "tooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
       "failed": "Không thể đặt lại mật khẩu. Vui lòng thử lại."
     },
     "done": {
       "title": "Đặt lại mật khẩu thành công!",
       "subtitle": "Mật khẩu của bạn đã được cập nhật.",
       "goToLogin": "🔐 Đến trang đăng nhập"
+    }
+  },
+  "parent": {
+    "createChild": {
+      "usernameTaken": "Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.",
+      "failed": "Không thể tạo tài khoản trẻ. Vui lòng thử lại.",
+      "success": "Tuyệt vời! Tài khoản của bé {{name}} đã được tạo."
+    },
+    "deleteChild": {
+      "button": "Xóa",
+      "modalTitleFirst": "Xóa tài khoản trẻ?",
+      "modalTitleSecond": "Xác nhận lần cuối",
+      "confirmFirst": "Bạn muốn xóa tài khoản của bé {{name}}?",
+      "confirmSecond": "Vui lòng xác nhận thêm một lần nữa. Thao tác này sẽ xóa vĩnh viễn {{name}} và dữ liệu học tập của bé.",
+      "cancel": "Hủy",
+      "continue": "Tiếp tục",
+      "confirmDelete": "Xóa vĩnh viễn",
+      "success": "Tài khoản của bé {{name}} đã được xóa.",
+      "failed": "Không thể xóa tài khoản trẻ. Vui lòng thử lại."
     }
   }
 }

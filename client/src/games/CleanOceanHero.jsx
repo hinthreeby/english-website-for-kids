@@ -9,6 +9,7 @@ import waste5Img from "../assets/ocean_game/waste_5.png";
 import waste6Img from "../assets/ocean_game/waste_6.png";
 import waste7Img from "../assets/ocean_game/waste_7.png";
 import waste8Img from "../assets/ocean_game/waste_8.png";
+import { playCorrectEffect, playErrorEffect } from "../utils/gameEffects";
 import "./CleanOceanHero.css";
 
 const TOTAL_QUESTIONS = 9;
@@ -39,6 +40,18 @@ const TRASH_IMAGES = [
 ];
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+const TRASH_POSITIONS = [
+  { top: 13, left: 18 },
+  { top: 19, left: 49 },
+  { top: 14, left: 78 },
+  { top: 34, left: 28 },
+  { top: 32, left: 66 },
+  { top: 48, left: 42 },
+  { top: 52, left: 83 },
+  { top: 65, left: 19 },
+  { top: 70, left: 58 },
+];
 
 const shuffle = (items) => {
   const next = [...items];
@@ -72,21 +85,24 @@ const makeQuestion = () => {
 };
 
 const generateTrashItems = () => {
-  const items = [];
+  const positions = shuffle(TRASH_POSITIONS);
 
-  for (let i = 0; i < TOTAL_QUESTIONS; i += 1) {
+  return Array.from({ length: TOTAL_QUESTIONS }).map((_, i) => {
     const image = TRASH_IMAGES[randomInt(0, TRASH_IMAGES.length - 1)];
+    const position = positions[i % positions.length];
 
-    items.push({
+    return {
       id: `trash-${i + 1}`,
       image,
+      top: Math.min(76, Math.max(10, position.top + randomInt(-6, 6))),
+      left: Math.min(86, Math.max(10, position.left + randomInt(-7, 7))),
+      size: randomInt(72, 104),
+      rotate: randomInt(-22, 22),
       floatDuration: randomInt(3, 6),
       floatDelay: randomInt(0, 25) / 10,
       removed: false,
-    });
-  }
-
-  return items;
+    };
+  });
 };
 
 const playSound = (type) => {
@@ -275,6 +291,7 @@ const CleanOceanHero = ({ onComplete }) => {
     const answer = selectedWords.join(" ").trim();
 
     if (!answer) {
+      playErrorEffect();
       setFeedbackType("wrong");
       setFeedbackText("Pick words first!");
       return;
@@ -283,7 +300,7 @@ const CleanOceanHero = ({ onComplete }) => {
     const isCorrect = answer === question.sentence;
 
     if (isCorrect) {
-      playSound("correct");
+      playCorrectEffect();
       setFeedbackType("correct");
       setFeedbackText("⭐ Good job!");
       setResolving(true);
@@ -291,7 +308,7 @@ const CleanOceanHero = ({ onComplete }) => {
       return;
     }
 
-    playSound("wrong");
+    playErrorEffect();
 
     if (finalAttempt) {
       setFeedbackType("wrong");
@@ -355,9 +372,18 @@ const CleanOceanHero = ({ onComplete }) => {
         </div>
 
         <div className={`trash-layer ${modalOpen ? "locked" : ""}`}>
-          <div className="trash-grid">
+          <div className="trash-field">
             {trashList.map((item) => (
-              <div key={item.id} className="trash-cell">
+              <div
+                key={item.id}
+                className="trash-cell"
+                style={{
+                  "--trash-top": `${item.top}%`,
+                  "--trash-left": `${item.left}%`,
+                  "--trash-size": `${item.size}px`,
+                  "--trash-rotate": `${item.rotate}deg`,
+                }}
+              >
                 <img
                   src={item.image}
                   className={`trash-item ${item.removed ? "removed" : ""}`}

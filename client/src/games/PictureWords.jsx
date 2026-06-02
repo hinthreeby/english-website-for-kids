@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import useSound from "../hooks/useSound";
+import { playCorrectEffect, playErrorEffect } from "../utils/gameEffects";
 
 const words = [
   { id: "apple", emoji: "🍎", word: "Apple" },
@@ -54,6 +55,7 @@ const PictureWords = ({ onComplete }) => {
 
     if (option.id === current.answer.id) {
       playChime();
+      playCorrectEffect();
       setFeedback({ id: option.id, type: "correct" });
       const isLast = roundIndex === rounds.length - 1;
       setTimeout(() => {
@@ -68,6 +70,7 @@ const PictureWords = ({ onComplete }) => {
     }
 
     playWhoosh();
+    playErrorEffect();
     speakText("Try again! 💪");
     setMistakes((m) => m + 1);
     setFeedback({ id: option.id, type: "wrong" });

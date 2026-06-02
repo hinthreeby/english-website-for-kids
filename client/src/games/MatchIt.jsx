@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import useSound from "../hooks/useSound";
+import { playCorrectEffect, playErrorEffect } from "../utils/gameEffects";
 
 const pairPool = [
   { id: "apple", emoji: "🍎", word: "Apple" },
@@ -77,6 +78,7 @@ const MatchIt = ({ onComplete }) => {
 
     if (firstCard.pairId === card.pairId && firstCard.type !== card.type) {
       playChime();
+      playCorrectEffect();
       setTimeout(() => {
         setMatched((prev) => new Set([...prev, card.pairId]));
         setFlipped([]);
@@ -86,6 +88,7 @@ const MatchIt = ({ onComplete }) => {
     }
 
     playWhoosh();
+    playErrorEffect();
     speakText("Try again! 💪");
     setMistakes((m) => m + 1);
     setTimeout(() => {
@@ -117,7 +120,7 @@ const MatchIt = ({ onComplete }) => {
                 .join(" ")}
               onClick={() => onCardClick(card)}
             >
-              <span style={{ fontSize: "0.5em", display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+              <span className={`match-card-content ${card.type === "emoji" ? "match-card-emoji" : "match-card-word"}`}>
                 {isOpen ? card.text : "⭐"}
               </span>
             </button>

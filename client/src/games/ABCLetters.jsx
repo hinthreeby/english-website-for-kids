@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import confetti from "canvas-confetti";
 import useSound from "../hooks/useSound";
+import { playErrorEffect } from "../utils/gameEffects";
 
 const letterBank = {
   A: { word: "Apple", emoji: "🍎" },
@@ -32,6 +34,7 @@ const letterBank = {
 
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
 const TOTAL_QUESTIONS = 10;
+const correctSound = "/sounds/count-learn/correct.mp3";
 
 const ABCLetters = ({ onComplete }) => {
   const { playPop, playChime, playWhoosh, speakText } = useSound();
@@ -79,14 +82,34 @@ const ABCLetters = ({ onComplete }) => {
     onComplete({ stars, mistakes: nextMistakes });
   };
 
+  const playEffectSound = (src, volume = 0.65) => {
+    const audio = new Audio(src);
+    audio.volume = volume;
+    audio.play().catch(() => {
+      // Browser may block audio if the user gesture window has expired.
+    });
+  };
+
+  const celebrateCorrect = () => {
+    playChime();
+    playEffectSound(correctSound, 0.72);
+    speakText("Correct!");
+    confetti({
+      particleCount: 120,
+      spread: 72,
+      origin: { y: 0.66 },
+      colors: ["#34d399", "#bbf7d0", "#ffd700", "#b2ebf2", "#c9b8ff"],
+    });
+  };
+
   const handleChoice = (option) => {
     playPop();
     setInteractionTick((n) => n + 1);
     setHint("");
 
     if (option.letter === current.letter) {
-      playChime();
       setFeedback({ type: "correct", key: option.id });
+      celebrateCorrect();
       const lastRound = roundIndex === rounds.length - 1;
       setTimeout(() => {
         setFeedback({ type: "", key: "" });
@@ -100,6 +123,7 @@ const ABCLetters = ({ onComplete }) => {
     }
 
     playWhoosh();
+    playErrorEffect();
     speakText("Try again! You can do it!");
     setMistakes((m) => m + 1);
     setFeedback({ type: "wrong", key: option.id });
@@ -116,9 +140,9 @@ const ABCLetters = ({ onComplete }) => {
         {current.options.map((option) => {
           const isCorrect = option.letter === current.letter;
           const className = [
-            "kid-btn option-card",
-            feedback.key === option.id && feedback.type === "wrong" ? "shake" : "",
-            feedback.key === option.id && feedback.type === "correct" ? "flash-good" : "",
+            "kid-btn option-card abc-option-card",
+            feedback.key === option.id && feedback.type === "wrong" ? "shake abc-wrong" : "",
+            feedback.key === option.id && feedback.type === "correct" ? "flash-good abc-correct" : "",
             hint && isCorrect ? "wiggle" : "",
           ]
             .filter(Boolean)
@@ -131,7 +155,7 @@ const ABCLetters = ({ onComplete }) => {
               className={className}
               onClick={() => handleChoice(option)}
             >
-              <span className="big-emoji">{option.emoji}</span>
+              <span className="big-emoji abc-option-emoji">{option.emoji}</span>
               <span>{option.word}</span>
             </button>
           );

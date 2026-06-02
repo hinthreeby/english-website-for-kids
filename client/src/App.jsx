@@ -2,7 +2,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import useMouseParticles from "./hooks/useMouseParticles";
 import useBgMusic from "./hooks/useBgMusic";
+import useClickSound from "./hooks/useClickSound";
 const bgMusic = "/sounds/background_music.mp3";
+const clickSound = "/sounds/ui/pop.mp3";
 import HomePage from "./pages/HomePage";
 import DashboardPage from "./pages/DashboardPage";
 import GamePage from "./pages/GamePage";
@@ -38,6 +40,7 @@ import RoadmapPage from "./pages/RoadmapPage";
 
 const App = () => {
   useMouseParticles();
+  useClickSound(clickSound);
   const { muted, toggle: toggleMusic } = useBgMusic(bgMusic);
 
   return (
@@ -143,7 +146,7 @@ const App = () => {
             path="/parent/children"
             element={
               <ParentOnly>
-                <ParentDashboard />
+                <Navigate to="/parent/dashboard" replace />
               </ParentOnly>
             }
           />
@@ -271,6 +274,7 @@ const App = () => {
         <button
           type="button"
           className="music-toggle-btn"
+          data-no-click-sound
           onClick={toggleMusic}
           aria-label={muted ? "Unmute background music" : "Mute background music"}
           title={muted ? "Unmute music" : "Mute music"}

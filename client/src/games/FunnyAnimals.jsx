@@ -14,6 +14,7 @@ import sheepImg from "../assets/funny_animal_game/sheep.png";
 import snakeImg from "../assets/funny_animal_game/snake.png";
 import squirrelImg from "../assets/funny_animal_game/squirrel.png";
 import tigerImg from "../assets/funny_animal_game/tiger.png";
+import { playCorrectEffect, playErrorEffect } from "../utils/gameEffects";
 import "./FunnyAnimals.css";
 
 const TOTAL_QUESTIONS = 9;
@@ -204,6 +205,7 @@ const FunnyAnimals = ({ onComplete }) => {
 
     if (animal.id === target.id) {
       playSound("correct");
+      playCorrectEffect();
       const nextCorrectCount = correctCount + 1;
       setCorrectCount(nextCorrectCount);
       showCelebration(animal, "correct", nextCorrectCount);
@@ -211,6 +213,7 @@ const FunnyAnimals = ({ onComplete }) => {
     }
 
     playSound("wrong");
+    playErrorEffect();
     showCelebration(target, "skip", correctCount);
   };
 

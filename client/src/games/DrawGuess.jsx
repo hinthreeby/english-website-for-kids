@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import api from "../lib/api";
 import useSound from "../hooks/useSound";
+import { playCorrectEffect, playErrorEffect } from "../utils/gameEffects";
 import "./DrawGuess.css";
 
 const KEYWORDS = [
@@ -187,6 +188,7 @@ const DrawGuess = ({ onComplete }) => {
     if (status !== "idle") return;
     if (timeLeft <= 0) {
       playWhoosh();
+      playErrorEffect();
       setStatus("wrong");
       return;
     }
@@ -212,13 +214,16 @@ const DrawGuess = ({ onComplete }) => {
       });
       if (data.correct) {
         playChime();
+        playCorrectEffect();
         setCorrectCount((c) => c + 1);
         setStatus("correct");
       } else {
         playWhoosh();
+        playErrorEffect();
         setStatus("wrong");
       }
     } catch {
+      playErrorEffect();
       setStatus("error");
     }
   };

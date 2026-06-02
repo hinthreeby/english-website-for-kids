@@ -5,6 +5,9 @@ const validateObjectId = require("../middleware/validateObjectId");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
 const Classroom = require("../models/Classroom");
+const UserInventory = require("../models/UserInventory");
+const ContentResult = require("../models/ContentResult");
+const RoadmapProgress = require("../models/RoadmapProgress");
 const { validatePassword } = require("../utils/passwordPolicy");
 
 router.get("/children", protect, isParent, async (req, res) => {
@@ -41,16 +44,48 @@ router.get("/child/:childId/progress", protect, isParent, validateObjectId("chil
   }
 });
 
+router.delete("/child/:childId", protect, isParent, validateObjectId("childId"), async (req, res) => {
+  try {
+    const child = await User.findById(req.params.childId);
+    if (!child || child.role !== "child" || child.parentId?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "That child does not belong to your account." });
+    }
+
+    await Promise.all([
+      User.findByIdAndUpdate(req.user._id, { $pull: { children: child._id } }),
+      Classroom.updateMany({ students: child._id }, { $pull: { students: child._id } }),
+      GameResult.deleteMany({ userId: child._id }),
+      UserInventory.deleteOne({ userId: child._id }),
+      ContentResult.deleteMany({ studentId: child._id }),
+      RoadmapProgress.deleteMany({ userId: child._id }),
+      User.findByIdAndDelete(child._id),
+    ]);
+
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 router.post("/create-child", protect, isParent, async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
+  const trimmedUsername = username?.trim();
+  if (!trimmedUsername || !password) {
     return res.status(400).json({ error: "Username and password are required" });
   }
   try {
+    const existingUser = await User.findOne({ username: trimmedUsername }).select("_id").lean();
+    if (existingUser) {
+      return res.status(409).json({
+        code: "USERNAME_TAKEN",
+        error: "This child username is already used. Please choose another name.",
+      });
+    }
+
     const child = await User.create({
-      username: username.trim(),
+      username: trimmedUsername,
       password,
-      displayName: username.trim(),
+      displayName: trimmedUsername,
       role: "child",
       parentId: req.user._id,
       isApproved: true,
@@ -62,6 +97,12 @@ router.post("/create-child", protect, isParent, async (req, res) => {
 
     return res.status(201).json({ child });
   } catch (err) {
+    if (err?.code === 11000 && err?.keyPattern?.username) {
+      return res.status(409).json({
+        code: "USERNAME_TAKEN",
+        error: "This child username is already used. Please choose another name.",
+      });
+    }
     return res.status(400).json({ error: err.message });
   }
 });

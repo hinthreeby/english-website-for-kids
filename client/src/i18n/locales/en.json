@@ -56,7 +56,7 @@
     "usernamePlaceholder": "Your username",
     "email": "Email",
     "password": "Password",
-    "passwordPlaceholder": "At least 4 characters",
+    "passwordPlaceholder": "At least 8 characters",
     "confirmPassword": "Confirm Password",
     "confirmPasswordPlaceholder": "Repeat password",
     "continue": "🚀 Continue",
@@ -105,19 +105,38 @@
     "reset": {
       "title": "🔑 Set New Password",
       "subtitle": "Choose a strong new password.",
-      "newPasswordPlaceholder": "New password (min 4 characters)",
+      "newPasswordPlaceholder": "New password (min 8 characters)",
       "confirmPasswordPlaceholder": "Confirm new password",
       "submit": "✅ Reset Password",
       "saving": "Saving...",
       "backToLogin": "← Back to Login",
       "passwordMismatch": "Passwords do not match.",
-      "tooShort": "Password must be at least 4 characters.",
+      "tooShort": "Password must be at least 8 characters.",
       "failed": "Failed to reset password. Please try again."
     },
     "done": {
       "title": "Password Reset!",
       "subtitle": "Your password has been updated successfully.",
       "goToLogin": "🔐 Go to Login"
+    }
+  },
+  "parent": {
+    "createChild": {
+      "usernameTaken": "This child username is already used. Please choose another name.",
+      "failed": "Failed to create child. Please try again.",
+      "success": "Great! {{name}}'s child account has been created."
+    },
+    "deleteChild": {
+      "button": "Delete",
+      "modalTitleFirst": "Delete child account?",
+      "modalTitleSecond": "Final confirmation",
+      "confirmFirst": "Delete {{name}}'s child account?",
+      "confirmSecond": "Please confirm one more time. This will permanently delete {{name}} and their learning data.",
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "confirmDelete": "Delete permanently",
+      "success": "{{name}}'s child account has been deleted.",
+      "failed": "Failed to delete child account. Please try again."
     }
   }
 }

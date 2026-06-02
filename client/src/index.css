@@ -230,13 +230,19 @@ button {
 
 /* ── Language switcher ───────────────────────────────────── */
 .nav-lang-group {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 2px;
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 999px;
   padding: 2px;
+}
+
+@media (min-width: 640px) {
+  .nav-lang-group {
+    display: flex;
+  }
 }
 
 .nav-lang-btn {
@@ -1265,6 +1271,52 @@ button {
   font-size: 3rem;
 }
 
+.abc-option-card {
+  min-height: clamp(150px, 18vw, 210px);
+  gap: 0.35rem;
+  padding: clamp(0.65rem, 1.4vw, 1rem);
+}
+
+.abc-option-emoji {
+  font-size: clamp(4.6rem, 9vw, 7.4rem);
+  line-height: 1;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25));
+}
+
+.abc-option-card.abc-correct {
+  background: rgba(52, 211, 153, 0.24);
+  border-color: rgba(187, 247, 208, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(52, 211, 153, 0.28),
+    0 0 30px rgba(52, 211, 153, 0.56),
+    0 12px 28px rgba(0, 0, 0, 0.35);
+  animation: abcCorrectPop 0.72s ease;
+}
+
+.abc-option-card.abc-correct .abc-option-emoji {
+  animation: abcEmojiPop 0.72s ease;
+  filter:
+    drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25))
+    drop-shadow(0 0 20px rgba(187, 247, 208, 0.75));
+}
+
+.abc-option-card.abc-wrong {
+  background: rgba(248, 113, 113, 0.22);
+  border-color: rgba(254, 202, 202, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(248, 113, 113, 0.24),
+    0 0 24px rgba(248, 113, 113, 0.52),
+    0 12px 28px rgba(0, 0, 0, 0.35);
+  animation: abcWrongShake 0.48s ease;
+}
+
+.abc-option-card.abc-wrong .abc-option-emoji {
+  animation: abcEmojiWrong 0.48s ease;
+  filter:
+    drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25))
+    drop-shadow(0 0 16px rgba(254, 202, 202, 0.7));
+}
+
 .picture-target {
   width: min(220px, 38vw);
   aspect-ratio: 1;
@@ -1279,17 +1331,138 @@ button {
 }
 
 .count-items {
-  min-height: 170px;
+  min-height: clamp(260px, 38vh, 390px);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0.35rem;
-  margin: 0.6rem 0 0.9rem;
+  align-content: center;
+  gap: clamp(0.75rem, 2vw, 1.35rem);
+  margin: 0.6rem auto 1.15rem;
+  max-width: min(780px, 92%);
+}
+
+.count-correct-badge {
+  position: absolute;
+  left: 50%;
+  top: 4.25rem;
+  z-index: 4;
+  transform: translateX(-50%);
+  padding: 0.55rem 1.15rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(187, 247, 208, 0.76);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.34), rgba(45, 212, 191, 0.22));
+  color: #ecfdf5;
+  font-family: "Fredoka One", "Baloo 2", sans-serif;
+  font-size: clamp(1rem, 2.4vw, 1.45rem);
+  letter-spacing: 0;
+  box-shadow:
+    0 0 0 4px rgba(52, 211, 153, 0.12),
+    0 0 28px rgba(52, 211, 153, 0.42),
+    0 12px 32px rgba(0, 0, 0, 0.28);
+  animation: countCorrectBadgePop 1s ease both;
 }
 
 .count-emoji {
-  font-size: 2.2rem;
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  isolation: isolate;
+  width: clamp(3.4rem, 8vw, 5.4rem);
+  height: clamp(3.4rem, 8vw, 5.4rem);
+  font-size: clamp(3.1rem, 7vw, 4.9rem);
+  line-height: 1;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28));
+}
+
+.count-emoji::before {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  z-index: -1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255, 245, 157, 0.95) 0%, rgba(255, 215, 0, 0.58) 42%, rgba(178, 235, 242, 0.18) 68%, transparent 78%);
+  opacity: 0;
+  transform: scale(0.62);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.count-emoji.count-lit {
+  filter:
+    drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28))
+    drop-shadow(0 0 16px rgba(255, 215, 0, 0.72))
+    drop-shadow(0 0 22px rgba(178, 235, 242, 0.44));
+}
+
+.count-emoji.count-lit::before {
+  opacity: 0.55;
+  transform: scale(0.9);
+}
+
+.count-emoji.count-current {
+  animation:
+    floaty 2.2s ease-in-out infinite,
+    countItemGlow 0.54s ease;
+}
+
+.count-emoji.count-current::before {
+  opacity: 1;
+  transform: scale(1.15);
+  animation: countHaloPulse 0.85s ease;
+}
+
+.count-number-btn {
+  min-height: clamp(118px, 15vw, 172px);
+  padding: clamp(0.15rem, 0.45vw, 0.3rem);
+}
+
+.count-number-btn:disabled {
+  cursor: wait;
+}
+
+.count-number-img {
+  display: block;
+  width: min(100%, 188px);
+  height: clamp(98px, 13vw, 154px);
+  object-fit: contain;
+  margin: 0 auto;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.22));
+}
+
+.count-number-btn.count-correct {
+  background: rgba(52, 211, 153, 0.24);
+  border-color: rgba(187, 247, 208, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(52, 211, 153, 0.28),
+    0 0 28px rgba(52, 211, 153, 0.58),
+    0 12px 28px rgba(0, 0, 0, 0.35);
+  animation: countCorrectPop 0.72s ease;
+}
+
+.count-number-btn.count-correct .count-number-img {
+  animation: countNumberPop 0.72s ease;
+  filter:
+    drop-shadow(0 10px 16px rgba(0, 0, 0, 0.28))
+    drop-shadow(0 0 18px rgba(187, 247, 208, 0.75));
+}
+
+.count-number-btn.count-wrong {
+  background: rgba(248, 113, 113, 0.22);
+  border-color: rgba(254, 202, 202, 0.95);
+  box-shadow:
+    0 0 0 4px rgba(248, 113, 113, 0.24),
+    0 0 24px rgba(248, 113, 113, 0.52),
+    0 12px 28px rgba(0, 0, 0, 0.35);
+  animation: countWrongShake 0.48s ease;
+}
+
+.count-number-btn.count-wrong .count-number-img {
+  animation: countNumberWrong 0.48s ease;
+  filter:
+    drop-shadow(0 10px 16px rgba(0, 0, 0, 0.28))
+    drop-shadow(0 0 16px rgba(254, 202, 202, 0.7));
 }
 
 .shape-wrap {
@@ -2089,6 +2262,184 @@ button {
   }
 }
 
+@keyframes countCorrectPop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.12) rotate(-1deg);
+  }
+  70% {
+    transform: scale(1.04) rotate(1deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes abcCorrectPop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.08) rotate(-1deg);
+  }
+  70% {
+    transform: scale(1.03) rotate(1deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes abcEmojiPop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.18);
+  }
+  70% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes abcWrongShake {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  20% {
+    transform: translateX(-9px) scale(1.03) rotate(-1.5deg);
+  }
+  40% {
+    transform: translateX(8px) scale(1.03) rotate(1.5deg);
+  }
+  60% {
+    transform: translateX(-6px) scale(1.02) rotate(-1deg);
+  }
+  80% {
+    transform: translateX(5px) scale(1.01) rotate(1deg);
+  }
+}
+
+@keyframes abcEmojiWrong {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.88) rotate(-4deg);
+  }
+  70% {
+    transform: scale(1.05) rotate(3deg);
+  }
+}
+
+@keyframes countCorrectBadgePop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px) scale(0.82);
+  }
+  28% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.08);
+  }
+  72% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px) scale(0.96);
+  }
+}
+
+@keyframes countNumberPop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.18);
+  }
+  70% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes countWrongShake {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  20% {
+    transform: translateX(-9px) scale(1.03) rotate(-1.5deg);
+  }
+  40% {
+    transform: translateX(8px) scale(1.03) rotate(1.5deg);
+  }
+  60% {
+    transform: translateX(-6px) scale(1.02) rotate(-1deg);
+  }
+  80% {
+    transform: translateX(5px) scale(1.01) rotate(1deg);
+  }
+}
+
+@keyframes countNumberWrong {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.88) rotate(-4deg);
+  }
+  70% {
+    transform: scale(1.05) rotate(3deg);
+  }
+}
+
+@keyframes countItemGlow {
+  0% {
+    filter:
+      drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28))
+      drop-shadow(0 0 0 rgba(255, 215, 0, 0));
+  }
+  45% {
+    filter:
+      drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28))
+      drop-shadow(0 0 24px rgba(255, 215, 0, 0.95))
+      drop-shadow(0 0 34px rgba(178, 235, 242, 0.72));
+  }
+  100% {
+    filter:
+      drop-shadow(0 10px 18px rgba(0, 0, 0, 0.28))
+      drop-shadow(0 0 16px rgba(255, 215, 0, 0.72))
+      drop-shadow(0 0 22px rgba(178, 235, 242, 0.44));
+  }
+}
+
+@keyframes countHaloPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.58);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.82;
+    transform: scale(1.06);
+  }
+}
+
 @keyframes wiggle {
   0%,
   100% {
@@ -2736,6 +3087,29 @@ body,
 .match-card.open {
   background: rgba(123, 47, 247, 0.3);
   color: #ffffff;
+}
+
+.match-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+  text-align: center;
+}
+
+.match-card-emoji {
+  font-size: clamp(58px, 7vw, 94px);
+}
+
+.match-card-word {
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 900;
+}
+
+.match-card:not(.open) .match-card-content {
+  font-size: clamp(42px, 5vw, 68px);
 }
 
 .kid-input {
@@ -3486,6 +3860,28 @@ body,
   border-color: rgba(123, 47, 247, 0.7);
 }
 
+.form-alert {
+  border-radius: 10px;
+  font-family: "Baloo 2", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 10px 14px;
+}
+
+.form-alert-error {
+  background: rgba(248, 113, 113, 0.14);
+  border: 1px solid rgba(248, 113, 113, 0.38);
+  color: #fecaca;
+}
+
+.form-alert-success {
+  background: rgba(52, 211, 153, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.38);
+  color: #bbf7d0;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.12);
+}
+
 .role-inline-form {
   flex-direction: row;
   align-items: center;
@@ -3865,6 +4261,48 @@ body,
   color: #34d399;
   padding: 10px 14px;
   font-size: 0.88rem;
+}
+
+.parent-delete-modal {
+  max-width: 430px;
+  width: min(95vw, 430px);
+  text-align: center;
+  border-color: rgba(248, 113, 113, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.10) inset,
+    0 18px 50px rgba(0, 0, 0, 0.45),
+    0 0 36px rgba(239, 68, 68, 0.16);
+}
+
+.parent-delete-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 0.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(248, 113, 113, 0.14);
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  font-size: 1.5rem;
+  box-shadow: 0 0 22px rgba(248, 113, 113, 0.22);
+}
+
+.parent-delete-modal h2 {
+  margin: 0;
+  color: #fff7ed;
+}
+
+.parent-delete-modal p {
+  margin: 0.75rem 0 1.5rem;
+  color: #e9d5ff;
+  line-height: 1.45;
+}
+
+.parent-delete-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .profile-form {

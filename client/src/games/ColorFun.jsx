@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import useSound from "../hooks/useSound";
+import { playCorrectEffect, playErrorEffect } from "../utils/gameEffects";
 
 const colors = [
   { name: "Red", value: "#ff7b7b" },
@@ -58,6 +59,7 @@ const ColorFun = ({ onComplete }) => {
 
     if (option.name === current.color.name) {
       playChime();
+      playCorrectEffect();
       setFeedback({ name: option.name, type: "correct" });
       const isLast = roundIndex === rounds.length - 1;
       setTimeout(() => {
@@ -72,6 +74,7 @@ const ColorFun = ({ onComplete }) => {
     }
 
     playWhoosh();
+    playErrorEffect();
     speakText("Try again! 💪");
     setMistakes((m) => m + 1);
     setFeedback({ name: option.name, type: "wrong" });

@@ -90,30 +90,25 @@
 .trash-layer {
   position: relative;
   flex: 1;
-  padding: 6px 12px 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  min-height: 0;
 }
 
-.trash-grid {
-  position: relative;
+.trash-field {
+  position: absolute;
+  inset: 18px 34px 92px;
   z-index: 10;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: clamp(7px, 1.8vw, 16px);
-  width: min(620px, 90%);
-  height: 50%;
-  padding: 10px 12px 0;
   box-sizing: border-box;
 }
 
 .trash-cell {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  left: var(--trash-left, 50%);
+  top: var(--trash-top, 35%);
+  transform: translate(-50%, -50%);
+  width: var(--trash-size, 84px);
+  height: var(--trash-size, 84px);
+  display: grid;
+  place-items: center;
 }
 
 .trash-layer.locked {
@@ -122,19 +117,21 @@
 
 .trash-item {
   position: relative;
-  width: clamp(25px, 3.8vw, 47px);
+  width: min(100%, clamp(58px, 8.5vw, 106px));
   cursor: pointer;
   transition: transform 0.2s, opacity 0.4s;
   animation: trashFloat var(--float-duration, 4s) ease-in-out var(--float-delay, 0s) infinite;
+  filter: drop-shadow(0 8px 10px rgba(8, 33, 57, 0.22));
 }
 
 .trash-item:hover {
-  transform: scale(1.1);
+  transform: rotate(var(--trash-rotate, 0deg)) scale(1.14);
 }
 
 .trash-item.removed {
   opacity: 0;
-  transform: scale(0.7);
+  transform: rotate(var(--trash-rotate, 0deg)) scale(0.7);
+  animation: none;
   pointer-events: none;
 }
 
@@ -168,10 +165,10 @@
 @keyframes trashFloat {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(var(--trash-rotate, 0deg));
   }
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-10px) rotate(var(--trash-rotate, 0deg));
   }
 }
 
@@ -409,14 +406,11 @@
   }
 
   .trash-item {
-    width: clamp(24px, 5.5vw, 40px);
+    width: min(100%, clamp(54px, 12vw, 88px));
   }
 
-  .trash-grid {
-    width: min(460px, 94%);
-    height: 46%;
-    padding: 8px 8px 0;
-    gap: clamp(6px, 2.2vw, 12px);
+  .trash-field {
+    inset: 16px 18px 80px;
   }
 
   .ocean-topbar {

@@ -97,7 +97,6 @@ const Navbar = () => {
           {/* Parent links */}
           {isParent ? <>
             <NavLink to="/parent/dashboard">{t("nav.dashboard")}</NavLink>
-            <NavLink to="/parent/children">{t("nav.myChildren")}</NavLink>
             <NavLink to="/parent/profile">{t("nav.profile")}</NavLink>
           </> : null}
 
@@ -167,7 +166,7 @@ const Navbar = () => {
             </Link>
           ) : (
             <span
-              className="text-sm px-3 py-1.5 rounded-full"
+              className="hidden lg:inline text-sm px-3 py-1.5 rounded-full"
               style={{
                 color: "rgba(196,181,253,0.7)",
                 background: "rgba(255,255,255,0.05)",
@@ -178,7 +177,27 @@ const Navbar = () => {
             </span>
           )}
 
-          {/* Language switcher — compact pill group */}
+          {/* Register / Login — chỉ hiện khi chưa đăng nhập, ẩn ở lg vì đã có ở center */}
+          {!user && (
+            <div className="flex lg:hidden items-center gap-1.5">
+              <Link
+                to="/register"
+                onClick={playPop}
+                className="nav-pill nav-pill-active text-xs px-3 py-1.5"
+              >
+                {t("nav.registerNow")}
+              </Link>
+              <Link
+                to="/login"
+                onClick={playPop}
+                className="nav-pill nav-pill-inactive text-xs px-3 py-1.5"
+              >
+                {t("nav.logIn")}
+              </Link>
+            </div>
+          )}
+
+          {/* Language switcher — ẩn mobile qua CSS media query */}
           <div className="nav-lang-group">
             {LANGS.map((lang) => (
               <button
