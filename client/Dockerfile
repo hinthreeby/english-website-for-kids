@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm cigit add client/package-lock.json client/Dockerfile
+RUN npm install
 
 COPY . .
 
