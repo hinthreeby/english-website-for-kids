@@ -1,6 +1,6 @@
 # Hướng dẫn Deploy Fun English lên VPS
 
-> Stack: Docker · VPS (Ubuntu 22.04) · Cloudinary · MongoDB Atlas · DNS `funenglish.id.vn`
+> Stack: Docker · VPS (Ubuntu 22.04) · Redis · Cloudinary · MongoDB Atlas · DNS `funenglish.id.vn`
 
 ---
 
@@ -19,6 +19,7 @@
 11. [Quản lý & Monitoring](#11-quản-lý--monitoring)
 12. [Quy trình cập nhật code](#12-quy-trình-cập-nhật-code)
 13. [Xử lý sự cố](#13-xử-lý-sự-cố)
+14. [Bảo mật — ghi chú vận hành](#14-bảo-mật--ghi-chú-vận-hành)
 
 ---
 
@@ -27,7 +28,7 @@
 | Thành phần | Tối thiểu | Khuyến nghị |
 |---|---|---|
 | OS | Ubuntu 22.04 LTS | Ubuntu 22.04 LTS |
-| RAM | 1 GB | 2 GB |
+| RAM | 1 GB | 2 GB+ (Redis cần thêm ~50 MB) |
 | CPU | 1 vCPU | 2 vCPU |
 | Disk | 20 GB SSD | 40 GB SSD |
 | Băng thông | Unlimited | Unlimited |
@@ -189,6 +190,9 @@ MONGODB_URI=mongodb+srv://funenglish_prod:PASSWORD@funenglish-prod.xxxxx.mongodb
 JWT_SECRET=<random-64-chars>
 SESSION_SECRET=<random-64-chars>
 
+# ── Redis session store (tự động được inject bởi docker-compose, không cần sửa)
+# REDIS_URL=redis://funenglish-redis:6379
+
 # ── Frontend URL ───────────────────────────────────────────────────────────────
 CLIENT_URL=https://funenglish.id.vn
 
@@ -215,6 +219,8 @@ GROQ_DRAW_API_KEY=your_groq_draw_api_key
 # CLOUDINARY_API_SECRET=
 ```
 
+> **Ghi chú `REDIS_URL`:** `docker-compose.yml` inject biến `REDIS_URL=redis://funenglish-redis:6379` trực tiếp qua `environment:`, nên **không cần** khai báo lại trong `.env.production`. Biến này chỉ cần thiết khi chạy backend **ngoài Docker** (dev trực tiếp với Redis local).
+
 > **Tạo secret ngẫu nhiên:**
 > ```bash
 > node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
@@ -237,10 +243,12 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
+> **Lần đầu sau khi thêm Redis:** `docker-compose.yml` khai báo Redis là dependency của backend (`depends_on: redis: condition: service_healthy`). Backend chỉ start sau khi Redis sẵn sàng — không cần làm gì thêm.
+
 ### 7.3 Kiểm tra
 
 ```bash
-# Xem trạng thái containers
+# Xem trạng thái containers (phải thấy cả funenglish-redis)
 docker compose ps
 
 # Xem logs
@@ -248,6 +256,9 @@ docker compose logs -f
 
 # Test API health
 curl http://funenglish.id.vn/api/health
+
+# Kiểm tra Redis kết nối (trong log backend phải có dòng "Redis session store connected")
+docker compose logs backend | grep -i redis
 ```
 
 Nếu thấy `{"ok":true,"environment":"production",...}` thì backend đã chạy.
@@ -351,6 +362,7 @@ Sau khi có domain và SSL, cập nhật Google Cloud Console:
 docker compose logs -f
 docker compose logs -f backend    # chỉ backend
 docker compose logs -f nginx      # chỉ nginx
+docker compose logs -f redis      # chỉ Redis
 
 # Restart một service
 docker compose restart backend
@@ -367,6 +379,10 @@ docker exec -it funenglish-api ls -la uploads/
 
 # Kiểm tra health
 curl https://funenglish.id.vn/api/health
+
+# Kiểm tra Redis
+docker exec -it funenglish-redis redis-cli ping   # → PONG
+docker exec -it funenglish-redis redis-cli info server | grep redis_version
 ```
 
 ### Backup uploads
@@ -411,6 +427,8 @@ docker compose up -d --no-deps nginx
 docker compose logs -f --tail=50
 ```
 
+> **Khi `server/package.json` có thay đổi dependencies** (ví dụ thêm `connect-redis`, `redis`), lệnh `docker compose build --no-cache backend` đã tự chạy `npm install` bên trong image — không cần chạy thủ công trên VPS.
+
 ---
 
 ## 13. Xử lý sự cố
@@ -445,6 +463,26 @@ docker compose ps
 # Logs backend có lỗi không?
 docker compose logs backend --tail=30
 ```
+
+### Redis không kết nối được
+
+```bash
+# Kiểm tra container Redis có chạy không
+docker compose ps redis
+
+# Xem logs Redis
+docker compose logs redis --tail=30
+
+# Test ping từ trong container backend
+docker exec -it funenglish-api sh -c "wget -qO- redis://funenglish-redis:6379" || \
+docker exec -it funenglish-redis redis-cli ping
+
+# Restart Redis
+docker compose restart redis
+docker compose restart backend
+```
+
+Nếu Redis vẫn không kết nối được, backend sẽ tự động fallback về MemoryStore (xem log `"Redis unavailable, falling back to MemoryStore"`). OAuth vẫn hoạt động nhưng session không bền qua restarts.
 
 ### SSL cert hết hạn
 
@@ -489,12 +527,76 @@ Internet
 │   Container: funenglish-api         │
 │   Image: node:20-alpine             │
 │   Express.js + Passport + Mongoose  │
+│   Security: Helmet · CORS · CSRF    │
 │   Volumes:                          │
 │     uploads_data → /app/uploads     │
 │     logs_data    → /app/logs        │
 └─────────────────────────────────────┘
-    │                │
-    ▼                ▼
-MongoDB Atlas    Cloudinary / Docker Volume
-(Singapore)      (media storage)
+    │         │              │
+    ▼ :6379   ▼              ▼
+┌──────────┐ MongoDB Atlas  Cloudinary / Docker Volume
+│  Redis   │ (Singapore)    (media storage)
+│ 7-alpine │
+│ sessions │
+│ volume:  │
+│ redis_data│
+└──────────┘
+```
+
+---
+
+## 14. Bảo mật — ghi chú vận hành
+
+### CSRF Protection
+
+Backend phát token tại `GET /api/csrf-token` (stateless, ký bằng `JWT_SECRET`, hết hạn sau 2 giờ). Frontend tự động lấy token khi cần và gửi qua header `X-CSRF-Token` cho mọi request POST/PUT/PATCH/DELETE trên phiên đã đăng nhập.
+
+Nếu thấy lỗi `403 Invalid or missing CSRF token` trong log:
+```bash
+# Xem log CSRF failed
+docker compose logs backend --no-log-prefix | grep csrf_failed
+```
+
+### Password Policy
+
+Mật khẩu phải đáp ứng **đồng thời** 3 yêu cầu:
+- Tối thiểu **8 ký tự**
+- Có ít nhất một **chữ hoa** (A–Z)
+- Có ít nhất một **chữ thường** (a–z) **và** một **chữ số hoặc ký tự đặc biệt**
+
+Áp dụng cho: đăng ký, đặt lại mật khẩu, đổi mật khẩu (parent/teacher/admin).
+
+### OTP Brute-force
+
+OTP bị khóa sau **5 lần nhập sai liên tiếp** — cần yêu cầu OTP mới. Rate limit bổ sung theo IP:
+- Verify OTP: tối đa 10 lần / 15 phút
+- Resend OTP: tối đa 3 lần / 10 phút
+
+### Upload ảnh
+
+Chỉ chấp nhận: `jpg`, `jpeg`, `png`, `webp`, `gif`. SVG bị từ chối (nguy cơ XSS). Kiểm tra cả MIME type lẫn extension file.
+
+### Endpoint `/api/v1/test-log`
+
+Trong production chỉ admin mới gọi được. Dùng để kiểm tra ELK pipeline — không để public.
+
+### Security logs
+
+Các sự kiện bảo mật được ghi structured log và có thể lọc:
+```bash
+# Xem tất cả sự kiện bảo mật (CSRF failed, rate limit, suspicious request)
+docker compose logs backend --no-log-prefix | \
+  node -e "
+    const rl = require('readline').createInterface({ input: process.stdin });
+    rl.on('line', l => { try { const j=JSON.parse(l); if(j.event && ['csrf_failed','rate_limit_exceeded','suspicious_request','otp_failed'].includes(j.event)) console.log(JSON.stringify(j)); } catch{} });
+  "
+```
+
+### Backup Redis
+
+Session data trong Redis là transient (OAuth handshake, max vài phút). Không cần backup riêng — nếu Redis restart, user chỉ cần login lại qua Google OAuth.
+
+```bash
+# Nếu muốn flush toàn bộ session (ví dụ sau sự cố bảo mật)
+docker exec -it funenglish-redis redis-cli FLUSHDB
 ```
