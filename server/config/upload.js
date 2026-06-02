@@ -30,9 +30,20 @@ const videoStorage = multer.diskStorage({
   },
 });
 
+// Explicit whitelist — intentionally excludes image/svg+xml (XSS risk)
+const ALLOWED_IMAGE_MIMES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
+const ALLOWED_IMAGE_EXTS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+
 const imageFilter = (_req, file, cb) => {
-  if (!file.mimetype.startsWith("image/")) {
-    return cb(new Error("Only image files are allowed (jpg, png, webp, gif)"), false);
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!ALLOWED_IMAGE_MIMES.has(file.mimetype) || !ALLOWED_IMAGE_EXTS.has(ext)) {
+    return cb(new Error("Only jpg, jpeg, png, webp, gif images are allowed."), false);
   }
   cb(null, true);
 };

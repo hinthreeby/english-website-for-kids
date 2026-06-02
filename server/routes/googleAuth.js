@@ -4,19 +4,15 @@ const passport = require("../config/passport");
 const { createPending, verifyOtp, getPending } = require("../services/otpService");
 const { sendOtpEmail } = require("../services/emailService");
 const User = require("../models/User");
+const { cookieOptions } = require("../config/cookies");
+const { otpVerifyLimiter, otpResendLimiter } = require("../config/rateLimiters");
+const { auth } = require("../config/loggers");
 
 const router = express.Router();
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-const buildCookieOptions = () => ({
-  httpOnly: true,
-  sameSite: "lax",
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
 
 // Step 1: redirect to Google consent screen
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -41,7 +37,6 @@ router.get(
 
       return res.redirect(`${CLIENT_URL}/oauth/verify?token=${pendingToken}`);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("OTP send error:", err.message);
       return res.redirect(`${CLIENT_URL}/login?error=email_failed`);
     }
@@ -49,7 +44,7 @@ router.get(
 );
 
 // Step 3: Verify OTP code submitted by user
-router.post("/verify-code", async (req, res) => {
+router.post("/verify-code", otpVerifyLimiter, async (req, res) => {
   const { pendingToken, code } = req.body;
 
   if (!pendingToken || !code) {
@@ -58,6 +53,13 @@ router.post("/verify-code", async (req, res) => {
 
   const result = verifyOtp(pendingToken, code.trim());
   if (!result.valid) {
+    auth("warn", "otp_failed", {
+      purpose: "google-oauth",
+      reason: result.locked ? "otp_locked" : "otp_incorrect",
+      ip: req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message: result.reason,
+    });
     return res.status(400).json({ error: result.reason });
   }
 
@@ -69,8 +71,17 @@ router.post("/verify-code", async (req, res) => {
       return res.status(403).json({ error: "Your account has been disabled." });
     }
 
+    auth("info", "login_success", {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      ip: req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message: `User ${user.username} logged in (Google OAuth + OTP)`,
+    });
+
     const token = signToken(user._id);
-    res.cookie("token", token, buildCookieOptions());
+    res.cookie("token", token, cookieOptions);
 
     return res.json({
       user: {
@@ -88,7 +99,7 @@ router.post("/verify-code", async (req, res) => {
 });
 
 // Resend OTP for Google OAuth verify page
-router.post("/resend-code", async (req, res) => {
+router.post("/resend-code", otpResendLimiter, async (req, res) => {
   const { pendingToken } = req.body;
 
   if (!pendingToken) {
@@ -105,7 +116,6 @@ router.post("/resend-code", async (req, res) => {
     await sendOtpEmail(record.email, otp, "login-2fa");
     return res.json({ pendingToken: newToken });
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error("Resend OTP error:", err.message);
     return res.status(500).json({ error: "Failed to send email. Please try again." });
   }

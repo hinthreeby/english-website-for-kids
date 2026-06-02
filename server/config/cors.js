@@ -70,6 +70,7 @@ const corsConfig = {
     "Authorization",
     "Cookie",
     "X-Requested-With",
+    "X-CSRF-Token",
   ],
 
   // Headers that client can access in response

@@ -55,6 +55,9 @@ const env = {
   COOKIE_SECURE: process.env.COOKIE_SECURE === "true" || NODE_ENV === "production",
   COOKIE_SAMESITE: process.env.COOKIE_SAMESITE || (NODE_ENV === "production" ? "none" : "lax"),
 
+  // Redis (session store in production)
+  REDIS_URL: process.env.REDIS_URL,
+
   // Groq (AI chat game)
   GROQ_API_KEY: process.env.GROQ_API_KEY,
 

@@ -8,7 +8,8 @@ const { createPending, verifyOtp, getPending, createResetToken, consumeResetToke
 const { sendOtpEmail } = require("../services/emailService");
 const env = require("../config/env");
 const { cookieOptions } = require("../config/cookies");
-const { loginLimiter, registerLimiter, forgotLimiter } = require("../config/rateLimiters");
+const { loginLimiter, registerLimiter, forgotLimiter, otpVerifyLimiter, otpResendLimiter } = require("../config/rateLimiters");
+const { validatePassword } = require("../utils/passwordPolicy");
 const { auth } = require("../config/loggers");
 
 const router = express.Router();
@@ -59,8 +60,8 @@ router.post("/register-init", registerLimiter, async (req, res) => {
     return res.status(400).json({ error: "Email is required." });
   if (!password)
     return res.status(400).json({ error: "Password is required." });
-  if (password.length < 6)
-    return res.status(400).json({ error: "Password must be at least 6 characters." });
+  const pwErr = validatePassword(password);
+  if (pwErr) return res.status(400).json({ error: pwErr });
   if (password !== confirmPassword)
     return res.status(400).json({ error: "Passwords do not match." });
 
@@ -101,13 +102,22 @@ router.post("/register-init", registerLimiter, async (req, res) => {
   }
 });
 
-router.post("/register-verify", async (req, res) => {
+router.post("/register-verify", otpVerifyLimiter, async (req, res) => {
   const { pendingToken, code } = req.body;
   if (!pendingToken || !code)
     return res.status(400).json({ error: "Missing verification data." });
 
   const result = verifyOtp(pendingToken, code.trim());
-  if (!result.valid) return res.status(400).json({ error: result.reason });
+  if (!result.valid) {
+    auth("warn", "otp_failed", {
+      purpose: "register",
+      reason: result.locked ? "otp_locked" : "otp_incorrect",
+      ip: req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message: result.reason,
+    });
+    return res.status(400).json({ error: result.reason });
+  }
   if (result.purpose !== "register")
     return res.status(400).json({ error: "Invalid token type." });
 
@@ -164,8 +174,8 @@ router.post("/register", registerLimiter, async (req, res) => {
     return res.status(400).json({ error: "Email is required." });
   if (!password)
     return res.status(400).json({ error: "Password is required." });
-  if (password.length < 6)
-    return res.status(400).json({ error: "Password must be at least 6 characters." });
+  const pwErrLegacy = validatePassword(password);
+  if (pwErrLegacy) return res.status(400).json({ error: pwErrLegacy });
   if (confirmPassword !== undefined && password !== confirmPassword)
     return res.status(400).json({ error: "Passwords do not match." });
 
@@ -321,13 +331,22 @@ async function doDirectLogin(user, req, res, checkStreak) {
   return res.json({ user: buildUserPayload(updatedUser), streakReset });
 }
 
-router.post("/login-verify", async (req, res) => {
+router.post("/login-verify", otpVerifyLimiter, async (req, res) => {
   const { pendingToken, code, deviceId } = req.body;
   if (!pendingToken || !code)
     return res.status(400).json({ error: "Missing verification data." });
 
   const result = verifyOtp(pendingToken, code.trim());
-  if (!result.valid) return res.status(400).json({ error: result.reason });
+  if (!result.valid) {
+    auth("warn", "otp_failed", {
+      purpose: "login-2fa",
+      reason: result.locked ? "otp_locked" : "otp_incorrect",
+      ip: req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message: result.reason,
+    });
+    return res.status(400).json({ error: result.reason });
+  }
   if (result.purpose !== "login-2fa")
     return res.status(400).json({ error: "Invalid token type." });
 
@@ -376,7 +395,7 @@ router.post("/login-verify", async (req, res) => {
 
 // ── Resend OTP (for register / login-2fa / reset flows) ──────────────────────
 
-router.post("/resend-otp", forgotLimiter, async (req, res) => {
+router.post("/resend-otp", otpResendLimiter, async (req, res) => {
   const { pendingToken } = req.body;
   if (!pendingToken)
     return res.status(400).json({ error: "Missing pending token." });
@@ -445,13 +464,22 @@ router.post("/forgot-password", forgotLimiter, async (req, res) => {
   }
 });
 
-router.post("/verify-reset-otp", async (req, res) => {
+router.post("/verify-reset-otp", otpVerifyLimiter, async (req, res) => {
   const { pendingToken, code } = req.body;
   if (!pendingToken || !code)
     return res.status(400).json({ error: "Missing verification data." });
 
   const result = verifyOtp(pendingToken, code.trim());
-  if (!result.valid) return res.status(400).json({ error: result.reason });
+  if (!result.valid) {
+    auth("warn", "otp_failed", {
+      purpose: "reset",
+      reason: result.locked ? "otp_locked" : "otp_incorrect",
+      ip: req.ip || req.socket?.remoteAddress,
+      userAgent: req.headers?.["user-agent"],
+      message: result.reason,
+    });
+    return res.status(400).json({ error: result.reason });
+  }
   if (result.purpose !== "reset")
     return res.status(400).json({ error: "Invalid token type." });
 
@@ -465,8 +493,8 @@ router.post("/reset-password", async (req, res) => {
     return res.status(400).json({ error: "Missing reset token." });
   if (!newPassword)
     return res.status(400).json({ error: "Password is required." });
-  if (newPassword.length < 6)
-    return res.status(400).json({ error: "Password must be at least 6 characters." });
+  const pwErrReset = validatePassword(newPassword);
+  if (pwErrReset) return res.status(400).json({ error: pwErrReset });
   if (newPassword !== confirmNewPassword)
     return res.status(400).json({ error: "Passwords do not match." });
 

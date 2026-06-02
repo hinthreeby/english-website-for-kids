@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 
-// pendingToken -> { userId, email, otpHash, expiresAt, purpose, ...extraData }
+// pendingToken -> { userId, email, otpHash, expiresAt, purpose, attempts, ...extraData }
 const pendingStore = new Map();
 
 // resetToken -> { userId, expiresAt }
@@ -8,6 +8,7 @@ const resetTokenStore = new Map();
 
 const OTP_TTL_MS = 5 * 60 * 1000;       // 5 minutes
 const RESET_TOKEN_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_OTP_ATTEMPTS = 5;
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -21,7 +22,7 @@ function hashOtp(otp) {
  * @param {string|null} userId
  * @param {string} email
  * @param {"register"|"login-2fa"|"reset"} purpose
- * @param {object} extraData  additional fields stored with the record (e.g. username, passwordPlain, deviceId)
+ * @param {object} extraData  additional fields stored with the record
  */
 function createPending(userId, email, purpose = "login-2fa", extraData = {}) {
   const otp = generateOtp();
@@ -34,6 +35,7 @@ function createPending(userId, email, purpose = "login-2fa", extraData = {}) {
     otpHash: hashOtp(otp),
     expiresAt,
     purpose,
+    attempts: 0,
     ...extraData,
   });
 
@@ -41,7 +43,10 @@ function createPending(userId, email, purpose = "login-2fa", extraData = {}) {
 }
 
 /**
- * Verify an OTP.  On success, removes the record and returns the stored data.
+ * Verify an OTP.
+ * - Increments attempt counter on wrong code.
+ * - Deletes the record (locks out) after MAX_OTP_ATTEMPTS failures.
+ * - On success, removes the record and returns the stored data.
  */
 function verifyOtp(pendingToken, otp) {
   const record = pendingStore.get(pendingToken);
@@ -53,10 +58,25 @@ function verifyOtp(pendingToken, otp) {
   }
 
   if (record.otpHash !== hashOtp(otp)) {
-    return { valid: false, reason: "Incorrect verification code." };
+    record.attempts = (record.attempts || 0) + 1;
+
+    if (record.attempts >= MAX_OTP_ATTEMPTS) {
+      pendingStore.delete(pendingToken);
+      return {
+        valid: false,
+        reason: "Too many incorrect attempts. Please request a new verification code.",
+        locked: true,
+      };
+    }
+
+    const remaining = MAX_OTP_ATTEMPTS - record.attempts;
+    return {
+      valid: false,
+      reason: `Incorrect verification code. ${remaining} attempt${remaining === 1 ? "" : "s"} remaining.`,
+    };
   }
 
-  const { otpHash, expiresAt, ...rest } = record;
+  const { otpHash, expiresAt, attempts, ...rest } = record;
   pendingStore.delete(pendingToken);
   return { valid: true, ...rest };
 }

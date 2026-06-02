@@ -8,6 +8,7 @@ const User = require("../models/User");
 const WordList = require("../models/WordList");
 const GameResult = require("../models/GameResult");
 const Video = require("../models/Video");
+const { validatePassword } = require("../utils/passwordPolicy");
 
 router.get("/users", protect, isAdmin, async (req, res) => {
   try {
@@ -176,9 +177,8 @@ router.patch("/change-password", protect, isAdmin, async (req, res) => {
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: "Current and new password are required" });
     }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: "New password must be at least 8 characters" });
-    }
+    const pwErr = validatePassword(newPassword);
+    if (pwErr) return res.status(400).json({ error: pwErr });
 
     const user = await User.findById(req.user._id);
     const ok = await user.comparePassword(currentPassword);

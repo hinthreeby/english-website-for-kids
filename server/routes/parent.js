@@ -5,6 +5,7 @@ const validateObjectId = require("../middleware/validateObjectId");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
 const Classroom = require("../models/Classroom");
+const { validatePassword } = require("../utils/passwordPolicy");
 
 router.get("/children", protect, isParent, async (req, res) => {
   try {
@@ -121,8 +122,8 @@ router.patch("/change-password", protect, isParent, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword)
       return res.status(400).json({ error: "Current and new password are required" });
-    if (newPassword.length < 6)
-      return res.status(400).json({ error: "New password must be at least 6 characters" });
+    const pwErr = validatePassword(newPassword);
+    if (pwErr) return res.status(400).json({ error: pwErr });
     const user = await User.findById(req.user._id);
     const ok = await user.comparePassword(currentPassword);
     if (!ok) return res.status(401).json({ error: "Current password is incorrect" });

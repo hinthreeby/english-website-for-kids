@@ -1,5 +1,21 @@
 services:
 
+  # ── Redis: Session store ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: funenglish-redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    networks:
+      - funenglish-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ── Backend: Express API ───────────────────────────────────────────────────
   backend:
     build:
@@ -9,11 +25,16 @@ services:
     restart: unless-stopped
     env_file:
       - ./server/.env.production
+    environment:
+      - REDIS_URL=redis://funenglish-redis:6379
     volumes:
       - uploads_data:/app/uploads   # ảnh/video persist qua restarts
       - logs_data:/app/logs         # Pino logs cho monitoring
     networks:
       - funenglish-net
+    depends_on:
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:5001/api/health"]
       interval: 30s
@@ -54,6 +75,8 @@ volumes:
   uploads_data:
     driver: local
   logs_data:
+    driver: local
+  redis_data:
     driver: local
 
 # ── Networks ───────────────────────────────────────────────────────────────────
