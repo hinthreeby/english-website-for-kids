@@ -217,10 +217,21 @@ const VideosPage = () => {
             </section>
 
             {/* Video sections */}
-            {visibleFields.length === 0 && noField.length === 0 ? (
+            {filtered.length === 0 ? (
               <div className="glass-card" style={{ textAlign: "center", padding: "3rem", opacity: 0.7 }}>
                 No videos match your filter.
               </div>
+            ) : !activeField ? (
+              /* All section — flat list of every matching video */
+              <section className="glass-card">
+                <FieldSection
+                  field="all"
+                  videos={filtered}
+                  character={null}
+                  onPlay={setPlaying}
+                  displayThumb={displayThumb}
+                />
+              </section>
             ) : (
               <>
                 {visibleFields.map((field) => (
@@ -259,13 +270,18 @@ const VideosPage = () => {
 };
 
 // ── Field Section ────────────────────────────────────────────
-const FieldSection = ({ field, videos, character, onPlay, displayThumb }) => (
+const FieldSection = ({ field, videos, character, onPlay, displayThumb }) => {
+  const isAll = field === "all";
+  const icon  = isAll ? "🎬" : (FIELD_EMOJIS[field] || (field ? "📚" : "🎬"));
+  const title = isAll ? "All Videos" : (field || "More Videos");
+
+  return (
   <div>
     <div className="role-section-header" style={{ marginBottom: "1.1rem" }}>
       <div>
         <h2 style={{ margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontSize: "1.5rem" }}>{FIELD_EMOJIS[field] || (field ? "📚" : "🎬")}</span>
-          {field || "More Videos"}
+          <span style={{ fontSize: "1.5rem" }}>{icon}</span>
+          {title}
         </h2>
         <p style={{ margin: "0.15rem 0 0", fontSize: "0.82rem", opacity: 0.5 }}>
           {character ? `🧸 ${character} · ` : ""}
@@ -328,6 +344,7 @@ const FieldSection = ({ field, videos, character, onPlay, displayThumb }) => (
       })}
     </div>
   </div>
-);
+  );
+};
 
 export default VideosPage;
