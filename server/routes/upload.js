@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect, isAdmin } = require("../middleware/authMiddleware");
-const { uploadThumbnail, uploadVideo, uploadAvatar } = require("../config/upload");
+const { uploadThumbnail, uploadVideo, uploadAvatar, checkMagicBytes, deleteUploadedFile } = require("../config/upload");
 const User = require("../models/User");
 
 // Multer error → clean JSON response
@@ -14,9 +14,16 @@ const handleMulterError = (err, res) => {
 
 // POST /api/upload/thumbnail  — admin only, image files up to 10 MB
 router.post("/thumbnail", protect, isAdmin, (req, res) => {
-  uploadThumbnail.single("file")(req, res, (err) => {
+  uploadThumbnail.single("file")(req, res, async (err) => {
     if (err) return handleMulterError(err, res);
     if (!req.file) return res.status(400).json({ error: "No file received" });
+
+    const valid = await checkMagicBytes(req.file.path, req.file.mimetype);
+    if (!valid) {
+      await deleteUploadedFile(req.file.path);
+      return res.status(400).json({ error: "File content does not match its declared type. Upload rejected." });
+    }
+
     res.json({ url: `/uploads/thumbnails/${req.file.filename}` });
   });
 });
@@ -38,6 +45,11 @@ router.post("/avatar", protect, (req, res) => {
     try {
       let avatarUrl;
       if (req.file) {
+        const valid = await checkMagicBytes(req.file.path, req.file.mimetype);
+        if (!valid) {
+          await deleteUploadedFile(req.file.path);
+          return res.status(400).json({ error: "File content does not match its declared type. Upload rejected." });
+        }
         avatarUrl = `/uploads/avatars/${req.file.filename}`;
       } else {
         const urlBody = req.body?.avatarUrl;

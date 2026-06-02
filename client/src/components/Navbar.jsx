@@ -58,7 +58,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 inset-x-0 z-[100] px-3 pt-2.5">
-      <div className="max-w-[1320px] mx-auto navbar-glass flex items-center justify-between h-[62px] px-4 gap-3 relative">
+      <div className="max-w-[1320px] mx-auto navbar-glass flex items-center justify-between h-[62px] px-6 gap-3 relative">
 
         {/* ── LEFT: brand ──────────────────────────────────── */}
         <Link
@@ -66,9 +66,9 @@ const Navbar = () => {
           onClick={playPop}
           className="flex-shrink-0 flex items-center gap-1.5 no-underline"
         >
-          <span className="text-xl leading-none" style={{ filter: "drop-shadow(0 0 7px rgba(255,215,0,0.9))" }}>⭐</span>
+          <span className="text-2xl leading-none" style={{ filter: "drop-shadow(0 0 9px rgba(255,215,0,0.95))" }}>⭐</span>
           <span
-            className="font-bold text-[18px] tracking-tight"
+            className="font-bold text-[22px] tracking-tight"
             style={{
               fontFamily: "'Fredoka One','Baloo 2',sans-serif",
               background: "linear-gradient(135deg,#e9d5ff,#f9a8d4)",

@@ -9,6 +9,7 @@ const WordList = require("../models/WordList");
 const GameResult = require("../models/GameResult");
 const Video = require("../models/Video");
 const { validatePassword } = require("../utils/passwordPolicy");
+const { validateDisplayName } = require("../utils/sanitize");
 
 router.get("/users", protect, isAdmin, async (req, res) => {
   try {
@@ -154,14 +155,26 @@ router.patch("/reject-wordlist/:id", protect, isAdmin, validateObjectId("id"), a
 
 router.patch("/profile", protect, isAdmin, async (req, res) => {
   try {
+    // Allowlist: only email and displayName may be updated
     const { email, displayName } = req.body;
-    const update = {};
-    if (email !== undefined) update.email = email.trim().toLowerCase();
-    if (displayName !== undefined) update.displayName = displayName.trim();
 
-    if (update.email) {
-      const conflict = await User.findOne({ email: update.email, _id: { $ne: req.user._id } });
+    if (displayName !== undefined && typeof displayName !== "string")
+      return res.status(400).json({ error: "Invalid display name" });
+    if (email !== undefined && typeof email !== "string")
+      return res.status(400).json({ error: "Invalid email" });
+
+    const update = {};
+    if (displayName !== undefined) {
+      const err = validateDisplayName(displayName);
+      if (err) return res.status(400).json({ error: err });
+      update.displayName = displayName.trim();
+    }
+    if (email !== undefined) {
+      const trimmed = email.trim().toLowerCase();
+      if (!trimmed) return res.status(400).json({ error: "Email cannot be empty" });
+      const conflict = await User.findOne({ email: trimmed, _id: { $ne: req.user._id } });
       if (conflict) return res.status(400).json({ error: "Email already in use" });
+      update.email = trimmed;
     }
 
     const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select("-password");

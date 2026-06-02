@@ -1,6 +1,43 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const fsPromises = require("fs").promises;
+
+// Magic-byte signatures for each accepted image MIME type
+const MAGIC_SIGS = {
+  "image/jpeg": [Buffer.from([0xff, 0xd8, 0xff])],
+  "image/png":  [Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])],
+  "image/gif":  [Buffer.from("GIF87a"), Buffer.from("GIF89a")],
+  // image/webp handled separately (RIFF....WEBP structure)
+};
+
+async function checkMagicBytes(filePath, mimetype) {
+  let fd;
+  try {
+    fd = await fsPromises.open(filePath, "r");
+    const buf = Buffer.alloc(12);
+    await fd.read(buf, 0, 12, 0);
+    await fd.close();
+    fd = null;
+
+    if (mimetype === "image/webp") {
+      return buf.slice(0, 4).equals(Buffer.from("RIFF")) &&
+             buf.slice(8, 12).equals(Buffer.from("WEBP"));
+    }
+    const sigs = MAGIC_SIGS[mimetype];
+    if (!sigs) return false;
+    return sigs.some((sig) => buf.slice(0, sig.length).equals(sig));
+  } catch {
+    return false;
+  } finally {
+    if (fd) await fd.close().catch(() => {});
+  }
+}
+
+async function deleteUploadedFile(filePath) {
+  if (!filePath) return;
+  try { await fsPromises.unlink(filePath); } catch {}
+}
 
 const mkdirIfNeeded = (dir) => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -86,4 +123,4 @@ const uploadAvatar = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
 });
 
-module.exports = { uploadThumbnail, uploadVideo, uploadAvatar };
+module.exports = { uploadThumbnail, uploadVideo, uploadAvatar, checkMagicBytes, deleteUploadedFile };

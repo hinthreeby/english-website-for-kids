@@ -310,6 +310,13 @@ const HomePage = () => {
           <div className="video-tabs">
             <button
               type="button"
+              className={`video-tab-btn${videoTab === "all" ? " active" : ""}`}
+              onClick={() => setVideoTab("all")}
+            >
+              🌟 All
+            </button>
+            <button
+              type="button"
               className={`video-tab-btn${videoTab === "series" ? " active" : ""}`}
               onClick={() => setVideoTab("series")}
             >
@@ -330,6 +337,42 @@ const HomePage = () => {
               🎵 Songs
             </button>
           </div>
+
+          {/* ── All tab ── */}
+          {videoTab === "all" && (
+            videosLoading ? (
+              <VideoTabSkeleton />
+            ) : (seriesList.length === 0 && quickVideos.length === 0 && songs.length === 0) ? (
+              <VideoEmptyState icon="🎬" label="Videos" />
+            ) : (
+              <div className="story-grid home-story-grid">
+                {seriesList.map((series, index) => (
+                  <SeriesCard
+                    key={series.id}
+                    series={series}
+                    index={index}
+                    onClick={() => { playPop(); setSelectedSeries(series); }}
+                  />
+                ))}
+                {quickVideos.map((story, index) => (
+                  <StoryCard
+                    key={story.id}
+                    story={story}
+                    index={index}
+                    onClick={() => { playPop(); openPlayer(story); }}
+                  />
+                ))}
+                {songs.map((song, index) => (
+                  <SongCard
+                    key={song.id}
+                    song={song}
+                    index={index}
+                    onClick={() => { playPop(); openPlayer(song); }}
+                  />
+                ))}
+              </div>
+            )
+          )}
 
           {/* ── Story Series tab ── */}
           {videoTab === "series" && (

@@ -6,6 +6,7 @@ const Classroom = require("../models/Classroom");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
 const { validatePassword } = require("../utils/passwordPolicy");
+const { validateDisplayName } = require("../utils/sanitize");
 
 router.get("/stats", protect, isTeacher, async (req, res) => {
   try {
@@ -108,9 +109,20 @@ router.delete("/classroom/:id/student/:studentId", protect, isTeacher, validateO
 
 router.patch("/profile", protect, isTeacher, async (req, res) => {
   try {
+    // Allowlist: only email and displayName may be updated
     const { email, displayName } = req.body;
+
+    if (displayName !== undefined && typeof displayName !== "string")
+      return res.status(400).json({ error: "Invalid display name" });
+    if (email !== undefined && typeof email !== "string")
+      return res.status(400).json({ error: "Invalid email" });
+
     const update = {};
-    if (displayName !== undefined) update.displayName = displayName.trim();
+    if (displayName !== undefined) {
+      const err = validateDisplayName(displayName);
+      if (err) return res.status(400).json({ error: err });
+      update.displayName = displayName.trim();
+    }
     if (email !== undefined) {
       const trimmed = email.trim().toLowerCase();
       if (!trimmed) return res.status(400).json({ error: "Email cannot be empty" });

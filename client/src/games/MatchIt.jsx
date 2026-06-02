@@ -7,7 +7,6 @@ const pairPool = [
   { id: "cat", emoji: "🐱", word: "Cat" },
   { id: "sun", emoji: "☀️", word: "Sun" },
   { id: "car", emoji: "🚗", word: "Car" },
-  { id: "fish", emoji: "🐟", word: "Fish" },
   { id: "ball", emoji: "⚽", word: "Ball" },
   { id: "book", emoji: "📘", word: "Book" },
   { id: "moon", emoji: "🌙", word: "Moon" },
@@ -18,7 +17,7 @@ const pairPool = [
 ];
 
 const shuffled = (array) => [...array].sort(() => Math.random() - 0.5);
-const TOTAL_QUESTIONS = 8;
+const TOTAL_QUESTIONS = 6;
 
 const MatchIt = ({ onComplete }) => {
   const { playPop, playChime, playWhoosh, speakText } = useSound();

@@ -13,7 +13,8 @@ const CSRF_EXEMPT = [
   /^\/api\/health$/,
 ];
 
-// Stateless signed token: random_hex.HMAC(random_hex:hourkey, JWT_SECRET)
+// Stateless signed token bound to the user's JWT cookie (session binding).
+// Format: random_hex.HMAC(random_hex:hourkey:session_binding, JWT_SECRET)
 // Valid for ~2 hours (current + previous hour window).
 
 function hourKey() {
@@ -24,13 +25,20 @@ function hmac(data, key) {
   return crypto.createHmac("sha256", key).update(data).digest("hex");
 }
 
-function createCsrfToken() {
+// Derives a short binding string from the user's JWT cookie so the CSRF token
+// is tied to their specific session and cannot be reused cross-session.
+function sessionBinding(jwtCookie) {
+  if (!jwtCookie) return "";
+  return crypto.createHash("sha256").update(jwtCookie).digest("hex").slice(0, 16);
+}
+
+function createCsrfToken(jwtCookie = "") {
   const random = crypto.randomBytes(32).toString("hex");
-  const sig = hmac(`${random}:${hourKey()}`, env.JWT_SECRET);
+  const sig = hmac(`${random}:${hourKey()}:${sessionBinding(jwtCookie)}`, env.JWT_SECRET);
   return `${random}.${sig}`;
 }
 
-function verifyCsrfToken(value) {
+function verifyCsrfToken(value, jwtCookie = "") {
   if (!value || typeof value !== "string") return false;
   const dot = value.lastIndexOf(".");
   if (dot < 1) return false;
@@ -38,9 +46,10 @@ function verifyCsrfToken(value) {
   const sig = value.slice(dot + 1);
   if (!/^[0-9a-f]{64}$/i.test(sig)) return false;
 
+  const binding = sessionBinding(jwtCookie);
   const currentHour = parseInt(hourKey(), 10);
   for (const h of [currentHour, currentHour - 1]) {
-    const expected = hmac(`${random}:${h}`, env.JWT_SECRET);
+    const expected = hmac(`${random}:${h}:${binding}`, env.JWT_SECRET);
     try {
       if (crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))) {
         return true;
@@ -59,8 +68,9 @@ const csrfMiddleware = (req, res, next) => {
   // Only enforce for authenticated requests (JWT cookie present)
   if (!req.cookies?.token) return next();
 
+  const jwtCookie = req.cookies.token;
   const headerToken = req.headers?.["x-csrf-token"];
-  if (!headerToken || !verifyCsrfToken(headerToken)) {
+  if (!headerToken || !verifyCsrfToken(headerToken, jwtCookie)) {
     security("csrf_failed", {
       method: req.method,
       url: req.originalUrl || req.url,
@@ -74,7 +84,8 @@ const csrfMiddleware = (req, res, next) => {
   next();
 };
 
-// GET /api/csrf-token  – returns a fresh signed token for the frontend to store
-const csrfTokenHandler = (_req, res) => res.json({ csrfToken: createCsrfToken() });
+// GET /api/csrf-token – returns a fresh token bound to the caller's JWT cookie
+const csrfTokenHandler = (req, res) =>
+  res.json({ csrfToken: createCsrfToken(req.cookies?.token || "") });
 
 module.exports = { csrfMiddleware, csrfTokenHandler, createCsrfToken, verifyCsrfToken };

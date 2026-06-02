@@ -1364,8 +1364,9 @@ button {
 }
 
 .count-emoji {
-  display: inline-grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   isolation: isolate;
   width: clamp(3.4rem, 8vw, 5.4rem);
@@ -1378,13 +1379,16 @@ button {
 .count-emoji::before {
   content: "";
   position: absolute;
-  inset: -18%;
+  left: 50%;
+  top: 50%;
+  width: 136%;
+  height: 136%;
   z-index: -1;
   border-radius: 999px;
   background:
     radial-gradient(circle, rgba(255, 245, 157, 0.95) 0%, rgba(255, 215, 0, 0.58) 42%, rgba(178, 235, 242, 0.18) 68%, transparent 78%);
   opacity: 0;
-  transform: scale(0.62);
+  transform: translate(-50%, -50%) scale(0.62);
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -1397,7 +1401,7 @@ button {
 
 .count-emoji.count-lit::before {
   opacity: 0.55;
-  transform: scale(0.9);
+  transform: translate(-50%, -50%) scale(0.9);
 }
 
 .count-emoji.count-current {
@@ -1408,7 +1412,7 @@ button {
 
 .count-emoji.count-current::before {
   opacity: 1;
-  transform: scale(1.15);
+  transform: translate(-50%, -50%) scale(1.15);
   animation: countHaloPulse 0.85s ease;
 }
 
@@ -1508,10 +1512,15 @@ button {
 }
 
 .match-card {
-  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  min-height: 72px;
   font-size: 3.2rem;
   background: #71b8da;
   color: #fff;
+  padding: 0.5rem;
 }
 
 .match-card.open {
@@ -2428,15 +2437,15 @@ button {
 @keyframes countHaloPulse {
   0% {
     opacity: 0;
-    transform: scale(0.58);
+    transform: translate(-50%, -50%) scale(0.58);
   }
   35% {
     opacity: 1;
-    transform: scale(1.2);
+    transform: translate(-50%, -50%) scale(1.2);
   }
   100% {
     opacity: 0.82;
-    transform: scale(1.06);
+    transform: translate(-50%, -50%) scale(1.06);
   }
 }
 
@@ -3094,7 +3103,6 @@ body,
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%;
   line-height: 1;
   text-align: center;
 }
