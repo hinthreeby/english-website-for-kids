@@ -10,5 +10,4 @@ logs/
 nodemon.json
 filebeat.yml
 seed/
-scripts/
 tmp/
