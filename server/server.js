@@ -62,7 +62,7 @@ async function buildSessionStore() {
 
   try {
     const { createClient } = require("redis");
-    const RedisStore = require("connect-redis").default;
+    const { RedisStore } = require("connect-redis");
 
     const redisClient = createClient({ url: env.REDIS_URL });
     redisClient.on("error", (err) =>
