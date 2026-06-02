@@ -4,7 +4,6 @@ import useSound from "../hooks/useSound";
 import "./DrawGuess.css";
 
 const KEYWORDS = [
-  // Animals
   { word: "cat",         emoji: "🐱" },
   { word: "dog",         emoji: "🐶" },
   { word: "fish",        emoji: "🐟" },
@@ -19,7 +18,6 @@ const KEYWORDS = [
   { word: "duck",        emoji: "🦆" },
   { word: "horse",       emoji: "🐴" },
   { word: "monkey",      emoji: "🐒" },
-  // Nature
   { word: "sun",         emoji: "☀️" },
   { word: "tree",        emoji: "🌲" },
   { word: "flower",      emoji: "🌸" },
@@ -30,7 +28,6 @@ const KEYWORDS = [
   { word: "mountain",    emoji: "⛰️" },
   { word: "rain",        emoji: "🌧️" },
   { word: "leaf",        emoji: "🍃" },
-  // Food
   { word: "apple",       emoji: "🍎" },
   { word: "banana",      emoji: "🍌" },
   { word: "pizza",       emoji: "🍕" },
@@ -39,7 +36,6 @@ const KEYWORDS = [
   { word: "watermelon",  emoji: "🍉" },
   { word: "strawberry",  emoji: "🍓" },
   { word: "carrot",      emoji: "🥕" },
-  // Objects
   { word: "house",       emoji: "🏠" },
   { word: "car",         emoji: "🚗" },
   { word: "boat",        emoji: "⛵" },
@@ -63,7 +59,7 @@ const TOTAL     = 5;
 const BRUSH     = 8;
 const ERASER    = 26;
 const CANVAS_SZ = 480;
-const TIME_LIMIT = 30;
+const TIME_LIMIT = 60;
 
 function pickRounds() {
   return [...KEYWORDS].sort(() => Math.random() - 0.5).slice(0, TOTAL);
@@ -80,7 +76,7 @@ const DrawGuess = ({ onComplete }) => {
   const [roundIndex,   setRoundIndex]   = useState(0);
   const [drawColor,    setDrawColor]    = useState(COLORS[0]);
   const [isEraser,     setIsEraser]     = useState(false);
-  const [status,       setStatus]       = useState("idle"); // idle|checking|correct|wrong|error
+  const [status,       setStatus]       = useState("idle");
   const [correctCount, setCorrectCount] = useState(0);
   const [timeLeft,     setTimeLeft]     = useState(TIME_LIMIT);
   const [attempts,     setAttempts]     = useState(0);
@@ -88,7 +84,6 @@ const DrawGuess = ({ onComplete }) => {
   const current  = rounds[roundIndex];
   const isActive = status === "idle";
 
-  // Init canvas with white background
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx    = canvas.getContext("2d");
@@ -99,12 +94,10 @@ const DrawGuess = ({ onComplete }) => {
     ctxRef.current = ctx;
   }, []);
 
-  // Announce keyword on each new round
   useEffect(() => {
     speakText(`Draw a ${current.word}`);
   }, [current.word, speakText]);
 
-  // Update brush style when color / eraser mode changes
   useEffect(() => {
     const ctx = ctxRef.current;
     if (!ctx) return;
@@ -129,7 +122,6 @@ const DrawGuess = ({ onComplete }) => {
     return true;
   }, []);
 
-  // Convert pointer/touch event to canvas coordinates
   const getPos = useCallback((e) => {
     const canvas = canvasRef.current;
     const rect   = canvas.getBoundingClientRect();
@@ -148,7 +140,6 @@ const DrawGuess = ({ onComplete }) => {
     isDrawing.current = true;
     const { x, y } = getPos(e);
     const ctx = ctxRef.current;
-    // Paint a dot on press (handles single tap)
     ctx.beginPath();
     ctx.arc(x, y, ctx.lineWidth / 2, 0, Math.PI * 2);
     ctx.fillStyle = ctx.strokeStyle;
@@ -173,7 +164,6 @@ const DrawGuess = ({ onComplete }) => {
     ctxRef.current?.beginPath();
   }, []);
 
-  // Advance to next round or end game
   const handleNext = useCallback(() => {
     const nextIndex = roundIndex + 1;
     if (nextIndex >= TOTAL) {
@@ -189,12 +179,10 @@ const DrawGuess = ({ onComplete }) => {
     resetCanvas();
   }, [roundIndex, correctCount, onComplete, resetCanvas]);
 
-  // Reset timer on new round
   useEffect(() => {
     setTimeLeft(TIME_LIMIT);
   }, [roundIndex]);
 
-  // Countdown tick — only while drawing
   useEffect(() => {
     if (status !== "idle") return;
     if (timeLeft <= 0) {
@@ -206,7 +194,6 @@ const DrawGuess = ({ onComplete }) => {
     return () => clearTimeout(t);
   }, [timeLeft, status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-advance 1.8s after a correct answer
   useEffect(() => {
     if (status !== "correct") return;
     const t = setTimeout(handleNext, 1800);
@@ -214,11 +201,9 @@ const DrawGuess = ({ onComplete }) => {
   }, [status, handleNext]);
 
   const handleCheck = async () => {
-    if (isCanvasEmpty()) return; // chưa vẽ gì → không làm gì
-
+    if (isCanvasEmpty()) return;
     const dataUrl = canvasRef.current.toDataURL("image/jpeg", 0.85);
     const base64  = dataUrl.split(",")[1];
-
     setStatus("checking");
     try {
       const { data } = await api.post("/api/draw-game/check", {
@@ -240,7 +225,7 @@ const DrawGuess = ({ onComplete }) => {
 
   const timeUp = status === "wrong" && timeLeft <= 0;
   const resultText = {
-    correct: `✅ Yes! That looks like a ${current.word}!`,
+    correct: `Yes! That looks like a ${current.word}!`,
     wrong:   timeUp ? `⏰ Time's up! Try again?` : `🤔 Not quite a ${current.word}… Keep trying!`,
     error:   "⚠️ Couldn't reach AI. Please try again!",
   }[status];
@@ -250,18 +235,22 @@ const DrawGuess = ({ onComplete }) => {
       <div className="game-frame">
         <section className="game-panel draw-guess-panel">
 
-          {/* ── Header ───────────────────────────────────────── */}
+          {/* ── Round badge ───────────────────────────────────── */}
           <div className="dg-header">
-            <p className="round">Round {roundIndex + 1} / {TOTAL}</p>
+            <div className="dg-round-badge">
+              <span className="dg-round-star">⭐</span>
+              <span className="dg-round-text">Round {roundIndex + 1} / {TOTAL}</span>
+              <span className="dg-round-star">⭐</span>
+            </div>
           </div>
 
-          {/* ── Two columns ──────────────────────────────────── */}
+          {/* ── Main: left col (card + timer) | right col (canvas) ── */}
           <div className="dg-main">
 
-            {/* Left: reference card + action below */}
+            {/* Left: reference card + timer */}
             <div className="dg-left">
               <div className="dg-reference">
-                <p className="dg-ref-label">Look at this!</p>
+                <div className="dg-ref-ribbon">Look at this!</div>
                 <div className="dg-ref-emoji">{current.emoji}</div>
                 <p className="dg-ref-word">{current.word.toUpperCase()}</p>
                 <button
@@ -274,7 +263,6 @@ const DrawGuess = ({ onComplete }) => {
                 </button>
               </div>
 
-              {/* Timer + action fill the empty space */}
               <div className="dg-actions">
                 <div className="dg-timer-wrap">
                   <div className={`dg-timer${timeLeft <= 10 ? " dg-timer--urgent" : ""}`}>
@@ -283,46 +271,12 @@ const DrawGuess = ({ onComplete }) => {
                       <circle
                         cx="22" cy="22" r="18"
                         className="dg-timer-progress"
-                        style={{
-                          strokeDashoffset: 113.1 - (113.1 * timeLeft) / TIME_LIMIT,
-                        }}
+                        style={{ strokeDashoffset: 113.1 - (113.1 * timeLeft) / TIME_LIMIT }}
                       />
                     </svg>
                     <span className="dg-timer-num">{timeLeft}</span>
                   </div>
                 </div>
-
-              <div className="dg-actions-btn">
-                {isActive && (
-                  <button type="button" className="kid-btn dg-check-btn" onClick={handleCheck}>
-                    🔍 Check!
-                  </button>
-                )}
-                {(status === "wrong" || status === "error") && (
-                  <div className="dg-retry-btns">
-                    {attempts < 3 && (
-                      <button
-                        type="button"
-                        className="kid-btn secondary dg-check-btn"
-                        onClick={() => {
-                          setAttempts((a) => a + 1);
-                          resetCanvas();
-                          setTimeLeft(TIME_LIMIT);
-                          setStatus("idle");
-                        }}
-                      >
-                        Try Again ({3 - attempts})
-                      </button>
-                    )}
-                    <button type="button" className="kid-btn ghost dg-check-btn" onClick={handleNext}>
-                      Next →
-                    </button>
-                  </div>
-                )}
-                {status === "correct" && (
-                  <p className="dg-auto-advance">Next round…</p>
-                )}
-              </div>
               </div>
             </div>
 
@@ -340,7 +294,6 @@ const DrawGuess = ({ onComplete }) => {
                 style={{ touchAction: "none" }}
               />
 
-              {/* Floating tools inside canvas */}
               {isActive && (
                 <div className="dg-canvas-tools">
                   <button
@@ -353,7 +306,7 @@ const DrawGuess = ({ onComplete }) => {
                   </button>
                   <button
                     type="button"
-                    className="dg-tool-btn"
+                    className="dg-tool-btn dg-tool-btn--clear"
                     onClick={resetCanvas}
                     title="Clear"
                   >
@@ -377,22 +330,55 @@ const DrawGuess = ({ onComplete }) => {
             </div>
           </div>
 
-          {/* ── Colors (centered) ────────────────────────────── */}
-          <div className="dg-toolbar">
-            <div className="dg-colors">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`dg-color-btn${!isEraser && drawColor === c ? " dg-color-btn--active" : ""}`}
-                  style={{ background: c }}
-                  onClick={() => { setDrawColor(c); setIsEraser(false); }}
-                  aria-label={`Color ${c}`}
-                />
-              ))}
+          {/* ── Bottom bar: Check button LEFT | color palette RIGHT ── */}
+          <div className="dg-bottom-bar">
+            <div className="dg-actions-btn">
+              {isActive && (
+                <button type="button" className="kid-btn dg-check-btn" onClick={handleCheck}>
+                  Check! ⭐
+                </button>
+              )}
+              {(status === "wrong" || status === "error") && (
+                <div className="dg-retry-btns">
+                  {attempts < 3 && (
+                    <button
+                      type="button"
+                      className="kid-btn secondary dg-check-btn"
+                      onClick={() => {
+                        setAttempts((a) => a + 1);
+                        resetCanvas();
+                        setTimeLeft(TIME_LIMIT);
+                        setStatus("idle");
+                      }}
+                    >
+                      Try Again 🤔
+                    </button>
+                  )}
+                  <button type="button" className="kid-btn ghost dg-check-btn" onClick={handleNext}>
+                    Next
+                  </button>
+                </div>
+              )}
+              {status === "correct" && (
+                <p className="dg-auto-advance">Next round…</p>
+              )}
+            </div>
+
+            <div className="dg-color-pill">
+              <div className="dg-colors">
+                {COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={`dg-color-btn${!isEraser && drawColor === c ? " dg-color-btn--active" : ""}`}
+                    style={{ background: c }}
+                    onClick={() => { setDrawColor(c); setIsEraser(false); }}
+                    aria-label={`Color ${c}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-
 
         </section>
       </div>
