@@ -156,7 +156,12 @@ async function startServer() {
     });
 
     // ── NoSQL injection prevention ───────────────────────────────────────────
-    app.use(mongoSanitize({ replaceWith: "_" }));
+    // req.query là getter-only trên Express prototype → không dùng middleware trực tiếp
+    app.use((req, res, next) => {
+      if (req.body)   req.body   = mongoSanitize.sanitize(req.body,   { replaceWith: "_" });
+      if (req.params) req.params = mongoSanitize.sanitize(req.params, { replaceWith: "_" });
+      next();
+    });
 
     // ── HTTP Parameter Pollution prevention ──────────────────────────────────
     app.use(hpp());
