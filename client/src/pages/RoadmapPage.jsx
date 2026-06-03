@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Navbar from "../components/Navbar";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -116,6 +117,7 @@ const BG_DOTS = Array.from({ length: 100 }, (_, i) => ({
 const RoadmapPage = () => {
   const { isChild } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [roadmap,      setRoadmap]      = useState(null);
   const [apiUnits,     setApiUnits]     = useState([]);
@@ -158,7 +160,7 @@ const RoadmapPage = () => {
 
   const handleUnitClick = (unit) => {
     if (getStatus(unit) === "locked") {
-      showToast("Complete the previous unit to unlock this planet! 🔒");
+      showToast(t("roadmap.locked"));
       return;
     }
     setSelectedUnit(unit);
@@ -236,16 +238,16 @@ const RoadmapPage = () => {
               filter:"drop-shadow(0 0 16px rgba(255,215,0,0.4))",
             }}
           >
-            {roadmap?.title || "MAP 1 – PLANET ADVENTURE"}
+            {roadmap?.title || t("roadmap.title")}
           </h1>
           <p className="text-violet-300 text-sm sm:text-base md:text-lg tracking-wider">
-            {roadmap?.description || "Learn English through the Solar System"}&nbsp;·&nbsp;Units 1 – 9
+            {roadmap?.description || t("roadmap.subtitle")}&nbsp;·&nbsp;{t("roadmap.units")}
           </p>
         </div>
 
         {loading && (
           <p className="text-center text-violet-400 text-lg animate-pulse mt-16">
-            Loading roadmap…
+            {t("roadmap.loading")}
           </p>
         )}
 
@@ -433,6 +435,7 @@ const ZigzagNode = ({ unit, pos, status, img, onClick }) => {
 // ─── Unit modal ───────────────────────────────────────────────────────────────
 
 const UnitModal = ({ unit, detail, status, isChild, completing, onComplete, onPlay, onClose }) => {
+  const { t } = useTranslation();
   const img       = PLANET_IMAGES[unit.imageKey];
   const done      = status === "completed";
   const fallback  = isFB(unit._id);
@@ -479,7 +482,7 @@ const UnitModal = ({ unit, detail, status, isChild, completing, onComplete, onPl
           {done && (
             <span className="mt-2 px-3 py-1 rounded-full text-xs font-bold"
               style={{ background:"rgba(255,215,0,0.15)", border:"1px solid #ffd700", color:"#ffd700" }}>
-              Completed
+              {t("roadmap.completed")}
             </span>
           )}
         </div>
@@ -488,7 +491,7 @@ const UnitModal = ({ unit, detail, status, isChild, completing, onComplete, onPl
           <button type="button" onClick={() => onPlay(unit)}
             className="mt-6 w-full py-3 rounded-2xl font-bold text-white transition-all duration-200 hover:scale-105"
             style={{ background:"linear-gradient(90deg,#f59e0b,#ef4444)", boxShadow:"0 0 20px rgba(245,158,11,0.5)" }}>
-            ▶ Play Game
+            {t("roadmap.play")}
           </button>
         )}
       </div>

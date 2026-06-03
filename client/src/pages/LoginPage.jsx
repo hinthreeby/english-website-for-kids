@@ -236,7 +236,7 @@ const LoginPage = () => {
           <form className="lp-card" onSubmit={handle2FASubmit} style={{ gap: "14px" }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: "2.8rem", lineHeight: 1, marginBottom: "6px" }}>🔐</div>
-              <h2 style={{ margin: "0 0 4px", color: "#ffd700", fontFamily: "'Fredoka One','Baloo 2',sans-serif", fontSize: "1.7rem" }}>
+              <h2 style={{ margin: "0 0 4px", color: "#ffd700", fontFamily: "var(--font-heading)", fontSize: "1.7rem" }}>
                 {t("login.twoFa.title")}
               </h2>
               <p style={{ margin: "0 0 4px", color: "#c4b5fd", fontSize: "13.5px" }}>{t("login.twoFa.subtitle")}</p>
@@ -263,7 +263,7 @@ const LoginPage = () => {
             </button>
             <button type="button" className="lp-back-home"
               onClick={() => { setStep("credentials"); setError(""); setDigits(Array(CODE_LENGTH).fill("")); }}>
-              ← {t("login.twoFa.backToLogin")}
+              {t("login.twoFa.backToLogin")}
             </button>
           </form>
         </div>

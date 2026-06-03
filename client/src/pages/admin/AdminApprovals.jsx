@@ -1,10 +1,12 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
 
 const AdminApprovals = () => {
+  const { t } = useTranslation();
   const [teachers, setTeachers] = useState([]);
   const [wordLists, setWordLists] = useState([]);
   const [children, setChildren] = useState([]);
@@ -89,36 +91,36 @@ const AdminApprovals = () => {
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
-          <h1>Approval Queue</h1>
-          <p>Review teacher accounts and custom educational content.</p>
+          <h1>{t("admin.approvals.title")}</h1>
+          <p>{t("admin.approvals.subtitle")}</p>
         </section>
 
         <section className="glass-card">
-          <h2>Pending Child Accounts</h2>
+          <h2>{t("admin.approvals.pendingChildren")}</h2>
           <div className="role-list">
             {children.map((child) => (
               <article key={child._id} className="role-item">
                 <div>
                   <strong>{child.displayName || child.username}</strong>
-                  <p>@{child.username} · Parent: {child.parentId?.displayName || child.parentId?.username || "Unknown"}</p>
+                  <p>@{child.username} · {t("admin.approvals.parentLabel")} {child.parentId?.displayName || child.parentId?.username || "Unknown"}</p>
                 </div>
                 <div className="role-actions">
                   <button className="btn-register" type="button" onClick={() => approveChild(child._id)}>
-                    Approve
+                    {t("admin.approvals.approve")}
                   </button>
                   <button className="btn-secondary-glass" type="button" onClick={() => rejectChild(child._id)}>
-                    Reject
+                    {t("admin.approvals.reject")}
                   </button>
                 </div>
               </article>
             ))}
-            {children.length === 0 ? <p>No pending child accounts.</p> : null}
+            {children.length === 0 ? <p>{t("admin.approvals.noChildren")}</p> : null}
           </div>
         </section>
 
         <section className="glass-card role-grid role-grid-2">
           <div>
-            <h2>Pending Teachers</h2>
+            <h2>{t("admin.approvals.pendingTeachers")}</h2>
             <div className="role-list">
               {teachers.map((teacher) => (
                 <article key={teacher._id} className="role-item">
@@ -128,41 +130,41 @@ const AdminApprovals = () => {
                   </div>
                   <div className="role-actions">
                     <button className="btn-register" type="button" onClick={() => approveTeacher(teacher._id)}>
-                      Approve
+                      {t("admin.approvals.approve")}
                     </button>
                     <button className="btn-secondary-glass" type="button" onClick={() => rejectTeacher(teacher._id)}>
-                      Reject
+                      {t("admin.approvals.reject")}
                     </button>
                   </div>
                 </article>
               ))}
-              {teachers.length === 0 ? <p>No pending teachers.</p> : null}
+              {teachers.length === 0 ? <p>{t("admin.approvals.noTeachers")}</p> : null}
             </div>
           </div>
 
           <div>
-            <h2>Pending Word Lists</h2>
+            <h2>{t("admin.approvals.pendingWordLists")}</h2>
             <div className="role-list">
               {wordLists.map((list) => (
                 <article key={list._id} className="role-item">
                   <div>
                     <strong>{list.title}</strong>
                     <p>
-                      Teacher: {list.teacherId?.displayName || list.teacherId?.username || "Unknown"} •{" "}
-                      {list.words?.length || 0} words
+                      {list.teacherId?.displayName || list.teacherId?.username || "Unknown"} •{" "}
+                      {list.words?.length || 0} {t("teacher.wordList.words")}
                     </p>
                   </div>
                   <div className="role-actions">
                     <button className="btn-register" type="button" onClick={() => approveWordList(list._id)}>
-                      Approve
+                      {t("admin.approvals.approve")}
                     </button>
                     <button className="btn-secondary-glass" type="button" onClick={() => rejectWordList(list._id)}>
-                      Reject
+                      {t("admin.approvals.reject")}
                     </button>
                   </div>
                 </article>
               ))}
-              {wordLists.length === 0 ? <p>No pending word lists.</p> : null}
+              {wordLists.length === 0 ? <p>{t("admin.approvals.noWordLists")}</p> : null}
             </div>
           </div>
         </section>

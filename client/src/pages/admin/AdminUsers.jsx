@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
@@ -96,6 +97,7 @@ const RoleDropdown = ({ current, onChange }) => {
 
 // ── Main page ────────────────────────────────────────────────
 const AdminUsers = () => {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
 
@@ -125,8 +127,8 @@ const AdminUsers = () => {
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
-          <h1>User Management</h1>
-          <p>Activate, deactivate, approve, and update user roles.</p>
+          <h1>{t("admin.users.title")}</h1>
+          <p>{t("admin.users.subtitle")}</p>
         </section>
 
         <section className="glass-card">
@@ -135,11 +137,11 @@ const AdminUsers = () => {
             <table className="role-table">
               <thead>
                 <tr>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Approved</th>
-                  <th>Actions</th>
+                  <th>{t("admin.users.username")}</th>
+                  <th>{t("admin.users.role")}</th>
+                  <th>{t("admin.users.status")}</th>
+                  <th>{t("admin.users.approved")}</th>
+                  <th>{t("admin.users.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -168,7 +170,7 @@ const AdminUsers = () => {
                           color: user.isActive ? "#34d399" : "#64748b",
                         }}>
                           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor", display: "inline-block" }} />
-                          {user.isActive ? "Active" : "Disabled"}
+                          {user.isActive ? t("common.active") : t("common.disabled")}
                         </span>
                       </td>
                       <td>
@@ -179,7 +181,7 @@ const AdminUsers = () => {
                           border: `1px solid ${user.isApproved ? "rgba(99,102,241,0.35)" : "rgba(245,158,11,0.3)"}`,
                           color: user.isApproved ? "#818cf8" : "#fbbf24",
                         }}>
-                          {user.isApproved ? "✓ Yes" : "⏳ Pending"}
+                          {user.isApproved ? `✓ ${t("admin.users.yes")}` : t("admin.users.pending")}
                         </span>
                       </td>
                       <td>
@@ -190,7 +192,7 @@ const AdminUsers = () => {
                             style={{ fontSize: "0.78rem", padding: "0.3rem 0.75rem" }}
                             onClick={() => updateUser(user._id, { isActive: !user.isActive })}
                           >
-                            {user.isActive ? "Deactivate" : "Activate"}
+                            {user.isActive ? t("admin.users.deactivate") : t("admin.users.activate")}
                           </button>
                           {!user.isApproved ? (
                             <button
@@ -199,7 +201,7 @@ const AdminUsers = () => {
                               style={{ fontSize: "0.78rem", padding: "0.3rem 0.75rem" }}
                               onClick={() => updateUser(user._id, { isApproved: true })}
                             >
-                              Approve
+                              {t("admin.users.approve")}
                             </button>
                           ) : null}
                         </div>

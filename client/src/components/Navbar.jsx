@@ -70,7 +70,7 @@ const Navbar = () => {
           <span
             className="font-bold text-[22px] tracking-tight"
             style={{
-              fontFamily: "'Fredoka One','Baloo 2',sans-serif",
+              fontFamily: "var(--font-heading)",
               background: "linear-gradient(135deg,#e9d5ff,#f9a8d4)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",

@@ -137,12 +137,12 @@ const ParentDashboard = () => {
   const bestStreak = children.reduce((max, c) => Math.max(max, c.currentStreak || 0), 0);
 
   const formatLastPlayed = (date) => {
-    if (!date) return "Never";
+    if (!date) return t("parent.dashboard.never");
     const d = new Date(date);
     const diff = Math.floor((Date.now() - d) / 86400000);
-    if (diff === 0) return "Today";
-    if (diff === 1) return "Yesterday";
-    return `${diff} days ago`;
+    if (diff === 0) return t("parent.dashboard.today");
+    if (diff === 1) return t("parent.dashboard.yesterday");
+    return t("parent.dashboard.daysAgo", { count: diff });
   };
 
   return (
@@ -151,8 +151,8 @@ const ParentDashboard = () => {
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
-          <h1>Parent Mission Control</h1>
-          <p>Track your children's progress and manage their profiles.</p>
+          <h1>{t("parent.dashboard.title")}</h1>
+          <p>{t("parent.dashboard.subtitle")}</p>
         </section>
 
         {error ? <p className="error-msg">{error}</p> : null}
@@ -161,26 +161,26 @@ const ParentDashboard = () => {
         <section className="glass-card role-grid role-grid-3">
           <article className="metric-card">
             <span className="metric-icon">👦</span>
-            <h3>Children</h3>
+            <h3>{t("parent.dashboard.children")}</h3>
             <p>{children.length}</p>
           </article>
           <article className="metric-card">
             <span className="metric-icon">⭐</span>
-            <h3>Total Stars</h3>
+            <h3>{t("parent.dashboard.totalStars")}</h3>
             <p>{totalStars}</p>
           </article>
           <article className="metric-card">
             <span className="metric-icon">🔥</span>
-            <h3>Best Streak</h3>
-            <p>{bestStreak} days</p>
+            <h3>{t("parent.dashboard.bestStreak")}</h3>
+            <p>{bestStreak} {t("parent.dashboard.days")}</p>
           </article>
         </section>
 
         <section className="glass-card role-grid role-grid-2">
           <div>
-            <h2>My Children</h2>
-            {loading ? <p>Loading...</p> : null}
-            {!loading && children.length === 0 ? <p>No child accounts yet. Create one below.</p> : null}
+            <h2>{t("parent.dashboard.myChildren")}</h2>
+            {loading ? <p>{t("parent.dashboard.loading")}</p> : null}
+            {!loading && children.length === 0 ? <p>{t("parent.dashboard.noChildren")}</p> : null}
             <div className="role-list">
               {children.map((child) => (
                 <article key={child._id} className="role-item role-item-col">
@@ -198,10 +198,10 @@ const ParentDashboard = () => {
                   </div>
                   <div className="role-actions">
                     <Link to={`/parent/child/${child._id}`} className="btn-register">
-                      View Progress
+                      {t("parent.dashboard.viewProgress")}
                     </Link>
                     <button type="button" className="btn-secondary-glass" onClick={() => switchToChild(child._id)}>
-                      Switch Profile
+                      {t("parent.dashboard.switchProfile")}
                     </button>
                     <button type="button" className="btn-danger-glass" onClick={() => openDeleteConfirm(child)}>
                       {t("parent.deleteChild.button")}
@@ -213,10 +213,10 @@ const ParentDashboard = () => {
           </div>
 
           <div>
-            <h2>Add Child Account</h2>
+            <h2>{t("parent.dashboard.addChild")}</h2>
             <form className="role-form" onSubmit={handleCreateChild}>
               <input
-                placeholder="Username"
+                placeholder={t("parent.dashboard.usernamePlaceholder")}
                 value={createForm.username}
                 onChange={(e) => {
                   setCreateError("");
@@ -227,7 +227,7 @@ const ParentDashboard = () => {
                 required
               />
               <input
-                placeholder="Password"
+                placeholder={t("parent.dashboard.passwordPlaceholder")}
                 type="password"
                 value={createForm.password}
                 onChange={(e) => {
@@ -251,7 +251,7 @@ const ParentDashboard = () => {
                 </div>
               ) : null}
               <button type="submit" className="btn-register">
-                Create Child
+                {t("parent.dashboard.createChild")}
               </button>
             </form>
           </div>

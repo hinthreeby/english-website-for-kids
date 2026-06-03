@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import LoadingDots from "../components/LoadingDots";
 import Navbar from "../components/Navbar";
 import starImg from "../assets/general/star/star.png";
@@ -34,6 +35,7 @@ const DashboardPage = () => {
   const { user, loading } = useAuth();
   const { fetchMyProgress } = useProgress();
   const { playPop } = useSound();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,7 +60,7 @@ const DashboardPage = () => {
   if (loading || isLoading) {
     return (
       <div className="screen with-bg centered">
-        <LoadingDots label="Loading dashboard" />
+        <LoadingDots label={t("dashboard.loadingLabel")} />
       </div>
     );
   }
@@ -75,7 +77,7 @@ const DashboardPage = () => {
       <main className="dashboard-wrap">
         {!user ? (
           <div className="completion-card">
-            <h2>Join to save your stars 🌟</h2>
+            <h2>{t("dashboard.joinToSave")}</h2>
             <button
               type="button"
               className="kid-btn"
@@ -84,12 +86,12 @@ const DashboardPage = () => {
                 navigate("/login");
               }}
             >
-              🔐 Login / Sign Up
+              {t("dashboard.loginSignUp")}
             </button>
           </div>
         ) : (
           <>
-            <h1 className="stars-page-title">Stars & History</h1>
+            <h1 className="stars-page-title">{t("dashboard.title")}</h1>
 
             <div className="stars-summary">
               <div className="stars-summary-card total-stars-card">
@@ -99,21 +101,21 @@ const DashboardPage = () => {
                   </span>{" "}
                   {user.totalStars || 0}
                 </div>
-                <div className="label">TOTAL STARS</div>
+                <div className="label">{t("dashboard.totalStars")}</div>
               </div>
               <div className="stars-summary-card">
                 <div className="value">{user.currentStreak || 0}</div>
-                <div className="label">DAY STREAK</div>
+                <div className="label">{t("dashboard.dayStreak")}</div>
               </div>
               <div className="stars-summary-card">
                 <div className="value">{results.length}</div>
-                <div className="label">GAMES PLAYED</div>
+                <div className="label">{t("dashboard.gamesPlayed")}</div>
               </div>
             </div>
 
             <section className="history-list">
               {results.length === 0 ? (
-                <p>No games yet. Play your first game!</p>
+                <p>{t("dashboard.noGames")}</p>
               ) : (
                 results.map((item) => {
                   const gameName = getGameName(item.gameId);

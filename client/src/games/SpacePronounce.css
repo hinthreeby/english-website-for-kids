@@ -175,7 +175,7 @@
 }
 
 .vocab-word {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: 36px;
   color: #ffd700;
   letter-spacing: 3px;
@@ -261,14 +261,14 @@
 }
 
 .encourage-text-correct {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: 48px;
   color: #4fffb0;
   text-shadow: 0 0 20px rgba(79, 255, 176, 0.8), 0 0 40px rgba(79, 255, 176, 0.4);
 }
 
 .encourage-text-wrong {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--font-body);
   font-size: 22px;
   font-weight: 700;
   color: #ffd166;

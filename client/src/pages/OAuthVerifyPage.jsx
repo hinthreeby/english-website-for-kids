@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import earthImg from "../assets/general/planet/earth.png";
 import jupiterImg from "../assets/general/planet/jupiter.png";
 import planetImg from "../assets/general/planet/planet.png";
@@ -13,6 +14,7 @@ const RESEND_COOLDOWN = 60; // seconds
 const OAuthVerifyPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [pendingToken, setPendingToken] = useState(searchParams.get("token") || "");
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
@@ -70,7 +72,7 @@ const OAuthVerifyPage = () => {
     e.preventDefault();
     const code = digits.join("");
     if (code.length < CODE_LENGTH) {
-      setError("Please enter all 6 digits.");
+      setError(t("oauthVerify.enterAllDigits"));
       return;
     }
 
@@ -87,7 +89,7 @@ const OAuthVerifyPage = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Verification failed.");
+        setError(data.error || t("oauthVerify.verificationFailed"));
         setDigits(Array(CODE_LENGTH).fill(""));
         focusInput(0);
         return;
@@ -95,7 +97,7 @@ const OAuthVerifyPage = () => {
 
       navigate(getRoleHome(data.user.role), { replace: true });
     } catch {
-      setError("Connection error. Please try again.");
+      setError(t("oauthVerify.connectionError"));
     } finally {
       setLoading(false);
     }
@@ -116,7 +118,7 @@ const OAuthVerifyPage = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Resend failed.");
+        setError(data.error || t("oauthVerify.connectionError"));
         return;
       }
 
@@ -125,7 +127,7 @@ const OAuthVerifyPage = () => {
       setResendCooldown(RESEND_COOLDOWN);
       focusInput(0);
     } catch {
-      setError("Connection error. Please try again.");
+      setError(t("oauthVerify.connectionError"));
     } finally {
       setResendLoading(false);
     }
@@ -147,12 +149,12 @@ const OAuthVerifyPage = () => {
       <div className="shooting shooting-2" aria-hidden="true" />
 
       <form className="auth-card" onSubmit={handleSubmit} style={{ gap: "1.5rem", padding: "3rem 2.5rem" }}>
-        <h2>Two-Step Verification</h2>
+        <h2>{t("oauthVerify.title")}</h2>
         <p className="subtitle" style={{ marginBottom: "0.25rem" }}>
-          A verification code was sent to your email.
+          {t("oauthVerify.subtitle")}
         </p>
         <p style={{ color: "#64748b", fontSize: "0.85rem", margin: 0 }}>
-          Code expires in 5 minutes.
+          {t("oauthVerify.expires")}
         </p>
 
         {/* 6-digit OTP inputs */}
@@ -203,7 +205,7 @@ const OAuthVerifyPage = () => {
           type="submit"
           disabled={loading || digits.join("").length < CODE_LENGTH}
         >
-          {loading ? "Verifying..." : "Confirm"}
+          {loading ? t("oauthVerify.verifying") : t("oauthVerify.confirm")}
         </button>
 
         <button
@@ -214,10 +216,10 @@ const OAuthVerifyPage = () => {
           style={{ fontSize: "0.9rem" }}
         >
           {resendLoading
-            ? "Sending..."
+            ? t("oauthVerify.sending")
             : resendCooldown > 0
-            ? `Resend code (${resendCooldown}s)`
-            : "Resend code"}
+            ? t("oauthVerify.resendCooldown", { count: resendCooldown })
+            : t("oauthVerify.resend")}
         </button>
 
         <button
@@ -226,7 +228,7 @@ const OAuthVerifyPage = () => {
           onClick={() => navigate("/login")}
           style={{ fontSize: "0.85rem", opacity: 0.7 }}
         >
-          ← Back to Login
+          {t("oauthVerify.backToLogin")}
         </button>
       </form>
     </div>

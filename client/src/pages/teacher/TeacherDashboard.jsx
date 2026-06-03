@@ -1,11 +1,13 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
 
 function JoinCodeBadge({ code }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard.writeText(code);
@@ -39,12 +41,13 @@ function JoinCodeBadge({ code }) {
           fontSize: 13,
         }}
       >
-        {copied ? "✓" : "Copy"}
+        {copied ? t("teacher.dashboard.copied") : t("teacher.dashboard.copy")}
       </button>
     </span>
   );
 }
 const TeacherDashboard = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [classrooms, setClassrooms] = useState([]);
   const [newClassroomName, setNewClassroomName] = useState("");
@@ -91,8 +94,8 @@ const TeacherDashboard = () => {
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
-          <h1>Teacher Control Deck</h1>
-          <p>Manage classrooms, create content, and track student progress.</p>
+          <h1>{t("teacher.dashboard.title")}</h1>
+          <p>{t("teacher.dashboard.subtitle")}</p>
         </section>
 
         {error ? <p className="error-msg">{error}</p> : null}
@@ -100,37 +103,37 @@ const TeacherDashboard = () => {
         <section className="glass-card role-grid role-grid-4">
           <article className="metric-card">
             <span className="metric-icon">🏫</span>
-            <h3>Classrooms</h3>
+            <h3>{t("teacher.dashboard.classrooms")}</h3>
             <p>{stats?.totalClassrooms ?? "—"}</p>
           </article>
           <article className="metric-card">
             <span className="metric-icon">👦</span>
-            <h3>Students</h3>
+            <h3>{t("teacher.dashboard.students")}</h3>
             <p>{stats?.totalStudents ?? "—"}</p>
           </article>
           <article className="metric-card">
             <span className="metric-icon">⭐</span>
-            <h3>Avg Stars</h3>
+            <h3>{t("teacher.dashboard.avgStars")}</h3>
             <p>{stats?.avgStarsPerStudent ?? "—"}</p>
           </article>
           <article className="metric-card">
             <span className="metric-icon">🎮</span>
-            <h3>Games Played</h3>
+            <h3>{t("teacher.dashboard.gamesPlayed")}</h3>
             <p>{stats?.totalGamesPlayed ?? "—"}</p>
           </article>
         </section>
 
         <section className="glass-card role-grid role-grid-2">
           <div>
-            <h2>Classrooms</h2>
+            <h2>{t("teacher.dashboard.classrooms")}</h2>
             <form className="role-form role-inline-form" onSubmit={createClassroom}>
               <input
                 value={newClassroomName}
                 onChange={(e) => setNewClassroomName(e.target.value)}
-                placeholder="New classroom name"
+                placeholder={t("teacher.dashboard.newClassroomPlaceholder")}
               />
               <button className="btn-register" type="submit">
-                Create
+                {t("teacher.dashboard.create")}
               </button>
             </form>
 
@@ -148,21 +151,21 @@ const TeacherDashboard = () => {
                     </p>
                   </div>
                   <Link className="btn-secondary-glass" to={`/teacher/classroom/${room._id}`}>
-                    View
+                    {t("teacher.dashboard.view")}
                   </Link>
                 </article>
               ))}
-              {classrooms.length === 0 ? <p>No classrooms yet.</p> : null}
+              {classrooms.length === 0 ? <p>{t("teacher.dashboard.noClassrooms")}</p> : null}
             </div>
           </div>
 
           <div>
-            <h2>My Content</h2>
+            <h2>{t("teacher.dashboard.myContent")}</h2>
             <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: "1rem" }}>
-              Create games and quizzes for your students.
+              {t("teacher.dashboard.myContentSubtitle")}
             </p>
             <Link to="/teacher/contents" className="btn-register">
-              Go to My Content
+              {t("teacher.dashboard.goToContent")}
             </Link>
           </div>
         </section>

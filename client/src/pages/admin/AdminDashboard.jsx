@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
@@ -16,6 +17,7 @@ const ROLE_META = {
 };
 
 const AdminDashboard = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [pendingTeachers, setPendingTeachers] = useState([]);
   const [pendingWordLists, setPendingWordLists] = useState([]);
@@ -83,8 +85,8 @@ const AdminDashboard = () => {
 
         {/* Hero */}
         <section className="role-hero glass-card">
-          <h1>Admin Starport</h1>
-          <p>System overview — users, videos, activity, and pending approvals.</p>
+          <h1>{t("admin.dashboard.title")}</h1>
+          <p>{t("admin.dashboard.subtitle")}</p>
         </section>
 
         {error ? <p className="error-msg">{error}</p> : null}
@@ -92,48 +94,48 @@ const AdminDashboard = () => {
         {/* Quick nav */}
         <section className="glass-card role-grid role-grid-3" style={{ gap: "0.75rem" }}>
           <Link to="/admin/users" className="btn-secondary-glass" style={{ textAlign: "center", padding: "0.75rem 1rem", display: "block" }}>
-            👥 Manage Users
+            {t("admin.dashboard.manageUsers")}
           </Link>
           <Link to="/admin/approvals" className="btn-secondary-glass" style={{ textAlign: "center", padding: "0.75rem 1rem", display: "block" }}>
-            ✅ Approvals
+            {t("admin.dashboard.approvalsNav")}
           </Link>
           <Link to="/admin/videos" className="btn-register" style={{ textAlign: "center", padding: "0.75rem 1rem", display: "block" }}>
-            🎬 Manage Videos
+            {t("admin.dashboard.manageVideos")}
           </Link>
         </section>
 
         {/* User stats */}
         <section className="glass-card">
-          <h2 style={{ marginBottom: "1rem" }}>👥 Users</h2>
+          <h2 style={{ marginBottom: "1rem" }}>{t("admin.dashboard.usersSection")}</h2>
           <div className="role-grid role-grid-3">
             <article className="metric-card">
               <span className="metric-icon">👥</span>
-              <h3>Total Users</h3>
+              <h3>{t("admin.dashboard.totalUsers")}</h3>
               <p>{stats?.totalUsers ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">👦</span>
-              <h3>Children</h3>
+              <h3>{t("admin.dashboard.children")}</h3>
               <p>{stats?.totalChildren ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">👨‍👩‍👧</span>
-              <h3>Parents</h3>
+              <h3>{t("admin.dashboard.parents")}</h3>
               <p>{stats?.totalParents ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">👩‍🏫</span>
-              <h3>Teachers</h3>
+              <h3>{t("admin.dashboard.teachers")}</h3>
               <p>{stats?.totalTeachers ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">🎮</span>
-              <h3>Games Played</h3>
+              <h3>{t("admin.dashboard.gamesPlayed")}</h3>
               <p>{stats?.totalGames ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">⭐</span>
-              <h3>Stars Given</h3>
+              <h3>{t("admin.dashboard.starsGiven")}</h3>
               <p>{stats?.totalStarsGiven ?? "—"}</p>
             </article>
           </div>
@@ -142,38 +144,38 @@ const AdminDashboard = () => {
         {/* Video stats */}
         <section className="glass-card">
           <div className="role-section-header" style={{ marginBottom: "1rem" }}>
-            <h2>🎬 Videos</h2>
-            <Link to="/admin/videos" className="btn-secondary-glass">Manage</Link>
+            <h2>{t("admin.dashboard.videosSection")}</h2>
+            <Link to="/admin/videos" className="btn-secondary-glass">{t("admin.dashboard.manage")}</Link>
           </div>
           <div className="role-grid role-grid-3">
             <article className="metric-card">
               <span className="metric-icon">🎬</span>
-              <h3>Total Videos</h3>
+              <h3>{t("admin.dashboard.totalVideos")}</h3>
               <p>{stats?.totalVideos ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">✅</span>
-              <h3>Published</h3>
+              <h3>{t("admin.dashboard.published")}</h3>
               <p>{stats?.publishedVideos ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">📝</span>
-              <h3>Drafts</h3>
+              <h3>{t("admin.dashboard.drafts")}</h3>
               <p>{stats?.draftVideos ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">👁</span>
-              <h3>Total Views</h3>
+              <h3>{t("admin.dashboard.totalViews")}</h3>
               <p>{stats?.totalVideoViews ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">📺</span>
-              <h3>Story Series</h3>
+              <h3>{t("admin.dashboard.storySeries")}</h3>
               <p>{stats?.videosByType?.["story-series"] ?? "—"}</p>
             </article>
             <article className="metric-card">
               <span className="metric-icon">⚡</span>
-              <h3>Quick Videos</h3>
+              <h3>{t("admin.dashboard.quickVideos")}</h3>
               <p>{stats?.videosByType?.["quick-video"] ?? "—"}</p>
             </article>
           </div>
@@ -210,7 +212,7 @@ const AdminDashboard = () => {
                       <strong style={{ fontSize: "0.88rem" }}>{v.title}</strong>
                       <p style={{ fontSize: "0.75rem", margin: 0, opacity: 0.65 }}>{v.type}</p>
                     </div>
-                    <span className={v.isPublished ? "badge-ok" : "badge-pending"}>{v.isPublished ? "Live" : "Draft"}</span>
+                    <span className={v.isPublished ? "badge-ok" : "badge-pending"}>{v.isPublished ? t("admin.dashboard.live") : t("admin.dashboard.draft")}</span>
                   </article>
                 ))}
               </div>
@@ -354,42 +356,42 @@ const AdminDashboard = () => {
         <section className="glass-card role-grid role-grid-2">
           <div>
             <div className="role-section-header">
-              <h2>Pending Teachers ({pendingTeachers.length})</h2>
-              <Link to="/admin/approvals" className="btn-secondary-glass">View All</Link>
+              <h2>{t("admin.dashboard.pendingTeachers")} ({pendingTeachers.length})</h2>
+              <Link to="/admin/approvals" className="btn-secondary-glass">{t("admin.dashboard.viewAll")}</Link>
             </div>
             <div className="role-list">
-              {pendingTeachers.slice(0, 4).map((t) => (
-                <article key={t._id} className="role-item">
+              {pendingTeachers.slice(0, 4).map((teacher) => (
+                <article key={teacher._id} className="role-item">
                   <div>
-                    <strong>{t.displayName || t.username}</strong>
-                    <p>@{t.username}</p>
+                    <strong>{teacher.displayName || teacher.username}</strong>
+                    <p>@{teacher.username}</p>
                   </div>
                   <div className="role-actions">
-                    <button type="button" className="btn-register" onClick={() => approveTeacher(t._id)}>Approve</button>
-                    <button type="button" className="btn-secondary-glass" onClick={() => rejectTeacher(t._id)}>Reject</button>
+                    <button type="button" className="btn-register" onClick={() => approveTeacher(teacher._id)}>{t("admin.approvals.approve")}</button>
+                    <button type="button" className="btn-secondary-glass" onClick={() => rejectTeacher(teacher._id)}>{t("admin.approvals.reject")}</button>
                   </div>
                 </article>
               ))}
-              {pendingTeachers.length === 0 ? <p>No pending teachers.</p> : null}
+              {pendingTeachers.length === 0 ? <p>{t("admin.dashboard.noTeachers")}</p> : null}
             </div>
           </div>
 
           <div>
             <div className="role-section-header">
-              <h2>Pending Word Lists ({pendingWordLists.length})</h2>
-              <Link to="/admin/approvals" className="btn-secondary-glass">View All</Link>
+              <h2>{t("admin.dashboard.pendingWordLists")} ({pendingWordLists.length})</h2>
+              <Link to="/admin/approvals" className="btn-secondary-glass">{t("admin.dashboard.viewAll")}</Link>
             </div>
             <div className="role-list">
               {pendingWordLists.slice(0, 4).map((list) => (
                 <article key={list._id} className="role-item">
                   <div>
                     <strong>{list.title}</strong>
-                    <p>{list.teacherId?.displayName || list.teacherId?.username} • {list.words?.length || 0} words</p>
+                    <p>{list.teacherId?.displayName || list.teacherId?.username} • {list.words?.length || 0} {t("teacher.wordList.words")}</p>
                   </div>
-                  <button type="button" className="btn-register" onClick={() => approveWordList(list._id)}>Approve</button>
+                  <button type="button" className="btn-register" onClick={() => approveWordList(list._id)}>{t("admin.approvals.approve")}</button>
                 </article>
               ))}
-              {pendingWordLists.length === 0 ? <p>No pending word lists.</p> : null}
+              {pendingWordLists.length === 0 ? <p>{t("admin.dashboard.noWordLists")}</p> : null}
             </div>
           </div>
         </section>
@@ -397,23 +399,23 @@ const AdminDashboard = () => {
         {/* Pending children */}
         <section className="glass-card">
           <div className="role-section-header">
-            <h2>Pending Child Accounts ({pendingChildren.length})</h2>
-            <Link to="/admin/approvals" className="btn-secondary-glass">View All</Link>
+            <h2>{t("admin.dashboard.pendingChildren")} ({pendingChildren.length})</h2>
+            <Link to="/admin/approvals" className="btn-secondary-glass">{t("admin.dashboard.viewAll")}</Link>
           </div>
           <div className="role-list">
             {pendingChildren.slice(0, 4).map((child) => (
               <article key={child._id} className="role-item">
                 <div>
                   <strong>{child.displayName || child.username}</strong>
-                  <p>@{child.username} · Parent: {child.parentId?.displayName || child.parentId?.username || "Unknown"}</p>
+                  <p>@{child.username} · {t("admin.dashboard.parentLabel")} {child.parentId?.displayName || child.parentId?.username || "Unknown"}</p>
                 </div>
                 <div className="role-actions">
-                  <button type="button" className="btn-register" onClick={() => approveChild(child._id)}>Approve</button>
-                  <button type="button" className="btn-secondary-glass" onClick={() => rejectChild(child._id)}>Reject</button>
+                  <button type="button" className="btn-register" onClick={() => approveChild(child._id)}>{t("admin.approvals.approve")}</button>
+                  <button type="button" className="btn-secondary-glass" onClick={() => rejectChild(child._id)}>{t("admin.approvals.reject")}</button>
                 </div>
               </article>
             ))}
-            {pendingChildren.length === 0 ? <p>No pending child accounts.</p> : null}
+            {pendingChildren.length === 0 ? <p>{t("admin.dashboard.noChildren")}</p> : null}
           </div>
         </section>
 
@@ -424,9 +426,9 @@ const AdminDashboard = () => {
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
               <span style={{ fontSize: "1.65rem", filter: "drop-shadow(0 0 8px rgba(167,139,250,0.75))", lineHeight: 1 }}>👥</span>
               <div>
-                <h2 style={{ margin: 0, fontWeight: 800, fontSize: "1.2rem", color: "#fff", lineHeight: 1.2 }}>Recent Users</h2>
+                <h2 style={{ margin: 0, fontWeight: 800, fontSize: "1.2rem", color: "#fff", lineHeight: 1.2 }}>{t("admin.dashboard.recentUsers")}</h2>
                 <p style={{ margin: "3px 0 0", fontSize: "0.77rem", color: "rgba(196,181,253,0.6)", lineHeight: 1.4 }}>
-                  A quick look at the most recently joined learners and staff.
+                  {t("admin.dashboard.recentUsersSubtitle")}
                 </p>
               </div>
             </div>
@@ -452,7 +454,7 @@ const AdminDashboard = () => {
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              Manage All
+              {t("admin.dashboard.manageAll")}
             </Link>
           </div>
 
@@ -460,10 +462,10 @@ const AdminDashboard = () => {
             <table className="role-table">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Joined</th>
+                  <th>{t("admin.dashboard.userCol")}</th>
+                  <th>{t("admin.dashboard.roleCol")}</th>
+                  <th>{t("admin.dashboard.statusCol")}</th>
+                  <th>{t("admin.dashboard.joinedCol")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -501,7 +503,7 @@ const AdminDashboard = () => {
                           color: u.isActive ? "#34d399" : "#64748b",
                         }}>
                           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor", display: "inline-block" }} />
-                          {u.isActive ? "Active" : "Disabled"}
+                          {u.isActive ? t("common.active") : t("common.disabled")}
                         </span>
                       </td>
                       <td style={{ fontSize: "0.82rem", color: "rgba(148,163,184,0.85)" }}>

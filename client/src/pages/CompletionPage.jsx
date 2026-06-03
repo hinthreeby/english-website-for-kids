@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import astronautImg from "../assets/general/astronaut/astronaut_3.png";
 import jupiterImg from "../assets/general/planet/jupiter.png";
 import starImg from "../assets/general/star/star.png";
@@ -15,6 +16,7 @@ import api from "../lib/api";
 const CompletionPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const { addGuestStars, getGuestStars, saveProgress } = useProgress();
   const { playPop } = useSound();
@@ -231,7 +233,7 @@ const CompletionPage = () => {
   }
 
   const titleText =
-    starsEarned === 3 ? "🎉 Perfect!" : starsEarned === 2 ? "🌟 Great Job!" : "✨ Well Done!";
+    starsEarned === 3 ? t("completion.perfect") : starsEarned === 2 ? t("completion.greatJob") : t("completion.wellDone");
 
   return (
     <div className="completion-page">
@@ -269,7 +271,7 @@ const CompletionPage = () => {
         </div>
 
         <h2 className="completion-title">{titleText}</h2>
-        <p className="completion-game-name">{state.gameName} is complete!</p>
+        <p className="completion-game-name">{t("completion.complete", { gameName: state.gameName })}</p>
         <p className="completion-message">{message}</p>
 
         {isSaving && (
@@ -277,7 +279,7 @@ const CompletionPage = () => {
             <span className="saving-dot" />
             <span className="saving-dot" />
             <span className="saving-dot" />
-            <span>Saving your stars...</span>
+            <span>{t("completion.savingStars")}</span>
           </div>
         )}
 
@@ -287,13 +289,13 @@ const CompletionPage = () => {
             <div className="stat-item">
               <span className="stat-icon">⭐</span>
               <span className="stat-value">{savedData.totalStars}</span>
-              <span className="stat-label">Total Stars</span>
+              <span className="stat-label">{t("completion.totalStars")}</span>
             </div>
             <div className="stat-divider" />
             <div className="stat-item">
               <span className="stat-icon">🔥</span>
               <span className="stat-value">{savedData.streak}</span>
-              <span className="stat-label">Day Streak</span>
+              <span className="stat-label">{t("completion.dayStreak")}</span>
             </div>
           </div>
         )}
@@ -306,7 +308,7 @@ const CompletionPage = () => {
               type="button"
               onClick={() => { playPop(); navigate("/roadmap"); }}
             >
-              🗺️ Back to Roadmap
+              {t("completion.backToRoadmap")}
             </button>
           )}
 
@@ -315,7 +317,7 @@ const CompletionPage = () => {
             type="button"
             onClick={() => { playPop(); navigate(`/game/${state.gameId}`); }}
           >
-            🔄 Play Again
+            {t("completion.playAgain")}
           </button>
 
           {user ? (
@@ -326,7 +328,7 @@ const CompletionPage = () => {
                   type="button"
                   onClick={() => { playPop(); navigate("/"); }}
                 >
-                  🎮 Choose Game
+                  {t("completion.chooseGame")}
                 </button>
               )}
               <button
@@ -334,7 +336,7 @@ const CompletionPage = () => {
                 type="button"
                 onClick={() => { playPop(); navigate("/dashboard"); }}
               >
-                ⭐ My Stars
+                {t("completion.myStars")}
               </button>
             </>
           ) : (
@@ -345,7 +347,7 @@ const CompletionPage = () => {
                   type="button"
                   onClick={() => { playPop(); navigate("/"); }}
                 >
-                  🎮 Choose Game
+                  {t("completion.chooseGame")}
                 </button>
               )}
               <button
@@ -353,7 +355,7 @@ const CompletionPage = () => {
                 type="button"
                 onClick={() => { playPop(); navigate("/login"); }}
               >
-                🔐 Login to Save
+                {t("completion.loginToSave")}
               </button>
             </>
           )}

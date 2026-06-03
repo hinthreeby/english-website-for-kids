@@ -54,8 +54,8 @@ const ClassroomsPage = () => {
         <section className="role-hero glass-card" style={{ textAlign: "left" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
             <div>
-              <h1 style={GRADIENT_TITLE}>My Classrooms</h1>
-              <p style={{ color: "#c4b5fd" }}>Enter a join code from your teacher to join a classroom.</p>
+              <h1 style={GRADIENT_TITLE}>{t("classrooms.title")}</h1>
+              <p style={{ color: "#c4b5fd" }}>{t("classrooms.subtitle")}</p>
             </div>
             <Link to="/my-content" className="btn-register" style={{ textDecoration: "none", whiteSpace: "nowrap" }}>
               📚 {t("nav.classContent")}
@@ -64,7 +64,7 @@ const ClassroomsPage = () => {
         </section>
 
         <section className="glass-card">
-          <h2>Join a Classroom</h2>
+          <h2>{t("classrooms.joinTitle")}</h2>
           {msg && (
             <p style={{ color: msg.ok ? "#10b981" : "#f43f5e", marginBottom: "0.75rem", fontWeight: 600 }}>
               {msg.text}
@@ -72,7 +72,7 @@ const ClassroomsPage = () => {
           )}
           <form className="role-form role-inline-form" onSubmit={handleJoin}>
             <input
-              placeholder="Enter code"
+              placeholder={t("classrooms.codePlaceholder")}
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               maxLength={6}
@@ -80,17 +80,17 @@ const ClassroomsPage = () => {
               required
             />
             <button type="submit" className="btn-register">
-              Join
+              {t("classrooms.join")}
             </button>
           </form>
         </section>
 
         <section className="glass-card">
-          <h2>Enrolled Classrooms</h2>
+          <h2>{t("classrooms.enrolledTitle")}</h2>
           {loading ? (
-            <p>Loading...</p>
+            <p>{t("classrooms.loading")}</p>
           ) : classrooms.length === 0 ? (
-            <p style={{ color: "#94a3b8" }}>You have not joined any classrooms yet.</p>
+            <p style={{ color: "#94a3b8" }}>{t("classrooms.none")}</p>
           ) : (
             <div className="role-list">
               {classrooms.map((room) => (
@@ -98,10 +98,10 @@ const ClassroomsPage = () => {
                   <div>
                     <strong style={{ fontSize: "1.05rem" }}>{room.name}</strong>
                     <p style={{ color: "#94a3b8", fontSize: 13, marginTop: "0.2rem" }}>
-                      Code: <span style={{ letterSpacing: "0.08em", color: "#c4b5fd" }}>{room.joinCode}</span>
+                      {t("classrooms.code")} <span style={{ letterSpacing: "0.08em", color: "#c4b5fd" }}>{room.joinCode}</span>
                     </p>
                   </div>
-                  <span className="badge-ok">Enrolled</span>
+                  <span className="badge-ok">{t("classrooms.enrolled")}</span>
                 </article>
               ))}
             </div>

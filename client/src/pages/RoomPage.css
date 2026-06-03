@@ -49,7 +49,7 @@
 }
 
 .room-label-bar h2 {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   color: #ffd700;
   margin: 0;
   font-size: clamp(18px, 3vw, 28px);
@@ -108,7 +108,7 @@
 }
 
 .modal-card h3 {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: 24px;
   color: #ffd700;
   margin: 0 0 16px;

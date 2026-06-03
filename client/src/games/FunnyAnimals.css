@@ -163,7 +163,7 @@
 }
 
 .celebration-msg {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(24px, 5vw, 44px);
   text-align: center;
   padding: 0 20px;
@@ -219,7 +219,7 @@
 }
 
 .celebration-name {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(28px, 6vw, 52px);
   color: #ffd700;
   text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 4px 8px rgba(0, 0, 0, 0.5);

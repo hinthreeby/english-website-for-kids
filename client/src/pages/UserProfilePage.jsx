@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import api from "../lib/api";
 import Navbar from "../components/Navbar";
 import StarBackground from "../components/StarBackground";
@@ -14,6 +15,7 @@ const PROFILE_LINES = [
 
 const UserProfilePage = ({ apiBase, roleLabel }) => {
   useMouseParticles();
+  const { t } = useTranslation();
   const { user, setUser } = useAuth();
 
   const [displayName, setDisplayName] = useState(user?.displayName || "");
@@ -109,13 +111,13 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
-          <h1>{roleLabel} Profile</h1>
-          <p>Update your display name, email, password, and avatar.</p>
+          <h1>{roleLabel} {t("userProfile.title")}</h1>
+          <p>{t("userProfile.subtitle")}</p>
         </section>
 
         {/* Avatar section */}
         <section className="glass-card" style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ marginBottom: "1rem" }}>Avatar</h2>
+          <h2 style={{ marginBottom: "1rem" }}>{t("userProfile.avatar")}</h2>
           <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
             <div className="avatar-preview-lg">
               {user?.avatar
@@ -125,7 +127,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
             </div>
             <div style={{ flex: 1, minWidth: 220 }}>
               <p style={{ color: "#94a3b8", fontSize: 13, marginBottom: "0.75rem" }}>
-                Upload an image file or paste an image URL.
+                {t("userProfile.avatarHint")}
               </p>
               <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
                 <button
@@ -134,7 +136,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={avatarLoading}
                 >
-                  Upload Image
+                  {t("userProfile.uploadImage")}
                 </button>
                 <input
                   ref={fileInputRef}
@@ -157,7 +159,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
                   style={{ flex: 1 }}
                 />
                 <button className="btn-register" type="submit" disabled={avatarLoading || !avatarUrl.trim()}>
-                  {avatarLoading ? "Saving…" : "Set URL"}
+                  {avatarLoading ? t("common.loading") : t("userProfile.setUrl")}
                 </button>
               </form>
               {avatarMsg.text
@@ -170,10 +172,10 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
 
         <section className="glass-card role-grid role-grid-2">
           <div>
-            <h2>Account Info</h2>
+            <h2>{t("userProfile.accountInfo")}</h2>
             <form className="profile-form" onSubmit={handleProfileSave}>
               <label className="profile-label">
-                Display Name
+                {t("userProfile.displayName")}
                 <input
                   className="profile-input"
                   type="text"
@@ -183,7 +185,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
                 />
               </label>
               <label className="profile-label">
-                Email
+                {t("userProfile.email")}
                 <input
                   className="profile-input"
                   type="email"
@@ -197,16 +199,16 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
                 <p className={profileMsg.error ? "error-msg" : "success-msg"}>{profileMsg.text}</p>
               ) : null}
               <button className="btn-register" type="submit" disabled={profileLoading}>
-                {profileLoading ? "Saving…" : "Save Changes"}
+                {profileLoading ? t("common.loading") : t("userProfile.saveChanges")}
               </button>
             </form>
           </div>
 
           <div>
-            <h2>Change Password</h2>
+            <h2>{t("userProfile.changePassword")}</h2>
             <form className="profile-form" onSubmit={handlePasswordChange}>
               <label className="profile-label">
-                Current Password
+                {t("userProfile.currentPassword")}
                 <input
                   className="profile-input"
                   type="password"
@@ -217,7 +219,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
                 />
               </label>
               <label className="profile-label">
-                New Password
+                {t("userProfile.newPassword")}
                 <input
                   className="profile-input"
                   type="password"
@@ -229,7 +231,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
                 />
               </label>
               <label className="profile-label">
-                Confirm New Password
+                {t("userProfile.confirmPassword")}
                 <input
                   className="profile-input"
                   type="password"
@@ -243,7 +245,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
                 <p className={pwMsg.error ? "error-msg" : "success-msg"}>{pwMsg.text}</p>
               ) : null}
               <button className="btn-register" type="submit" disabled={pwLoading}>
-                {pwLoading ? "Updating…" : "Change Password"}
+                {pwLoading ? t("common.loading") : t("userProfile.changePassword")}
               </button>
             </form>
           </div>

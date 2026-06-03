@@ -1,11 +1,13 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
 import { useAuth } from "../../context/AuthContext";
 
 const ChildProfilePage = () => {
+  const { t } = useTranslation();
   const { user, setUser } = useAuth();
 
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -23,7 +25,7 @@ const ChildProfilePage = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (setUser) setUser(res.data.user);
-      setAvatarMsg({ text: "Avatar updated! 🎉", error: false });
+      setAvatarMsg({ text: t("childProfile.avatarUpdated"), error: false });
     } catch (err) {
       setAvatarMsg({ text: err?.response?.data?.error || "Upload failed", error: true });
     } finally {
@@ -39,7 +41,7 @@ const ChildProfilePage = () => {
     try {
       const res = await api.post("/api/upload/avatar", { avatarUrl: avatarUrl.trim() });
       if (setUser) setUser(res.data.user);
-      setAvatarMsg({ text: "Avatar updated! 🎉", error: false });
+      setAvatarMsg({ text: t("childProfile.avatarUpdated"), error: false });
       setAvatarUrl("");
     } catch (err) {
       setAvatarMsg({ text: err?.response?.data?.error || "Failed to set avatar", error: true });
@@ -56,33 +58,33 @@ const ChildProfilePage = () => {
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
-          <h1>My Profile</h1>
-          <p>Hey {name}! Customize your avatar here.</p>
+          <h1>{t("childProfile.title")}</h1>
+          <p>{t("childProfile.subtitle", { name })}</p>
         </section>
 
         <section className="glass-card role-grid role-grid-2">
           {/* Stats */}
           <div>
-            <h2>My Stats</h2>
+            <h2>{t("childProfile.myStats")}</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1rem" }}>
               <div className="metric-card" style={{ flexDirection: "row", gap: "1rem", justifyContent: "flex-start" }}>
                 <span className="metric-icon">👤</span>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 14, color: "#94a3b8" }}>Username</h3>
+                  <h3 style={{ margin: 0, fontSize: 14, color: "#94a3b8" }}>{t("childProfile.username")}</h3>
                   <p style={{ margin: 0, fontWeight: 700 }}>{user?.username}</p>
                 </div>
               </div>
               <div className="metric-card" style={{ flexDirection: "row", gap: "1rem", justifyContent: "flex-start" }}>
                 <span className="metric-icon">⭐</span>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 14, color: "#94a3b8" }}>Total Stars</h3>
+                  <h3 style={{ margin: 0, fontSize: 14, color: "#94a3b8" }}>{t("childProfile.totalStars")}</h3>
                   <p style={{ margin: 0, fontWeight: 700 }}>{user?.totalStars || 0}</p>
                 </div>
               </div>
               <div className="metric-card" style={{ flexDirection: "row", gap: "1rem", justifyContent: "flex-start" }}>
                 <span className="metric-icon">🔥</span>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 14, color: "#94a3b8" }}>Day Streak</h3>
+                  <h3 style={{ margin: 0, fontSize: 14, color: "#94a3b8" }}>{t("childProfile.dayStreak")}</h3>
                   <p style={{ margin: 0, fontWeight: 700 }}>{user?.currentStreak || 0}</p>
                 </div>
               </div>
@@ -91,7 +93,7 @@ const ChildProfilePage = () => {
 
           {/* Avatar change */}
           <div>
-            <h2>Change Avatar</h2>
+            <h2>{t("childProfile.changeAvatar")}</h2>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem", marginTop: "1rem" }}>
               <div className="avatar-preview-lg">
                 {user?.avatar
@@ -106,7 +108,7 @@ const ChildProfilePage = () => {
                 disabled={avatarLoading}
                 style={{ width: "100%" }}
               >
-                📁 Upload Image
+                📁 {t("childProfile.uploadImage")}
               </button>
               <input
                 ref={fileInputRef}
@@ -124,11 +126,11 @@ const ChildProfilePage = () => {
                   type="url"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="Or paste an image URL…"
+                  placeholder={t("childProfile.pasteUrl")}
                   style={{ flex: 1 }}
                 />
                 <button className="btn-secondary-glass" type="submit" disabled={avatarLoading || !avatarUrl.trim()}>
-                  {avatarLoading ? "…" : "Set"}
+                  {avatarLoading ? "…" : t("childProfile.set")}
                 </button>
               </form>
               {avatarMsg.text

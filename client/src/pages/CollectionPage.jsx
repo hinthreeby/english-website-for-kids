@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Navbar from "../components/Navbar";
 import PlanetCollection from "../components/PlanetCollection";
 import SpaceBackground from "../components/SpaceBackground";
@@ -6,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../lib/api";
 
 const CollectionPage = () => {
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const [planetData, setPlanetData] = useState(null);
 
@@ -56,10 +58,10 @@ const CollectionPage = () => {
               filter: "drop-shadow(0 0 16px rgba(255,215,0,0.4))",
             }}
           >
-            Planet Collection
+            {t("collection.title")}
           </h1>
           <p style={{ color: "#c4b5fd" }}>
-            Keep your streak alive to unlock all 8 planets in the solar system!
+            {t("collection.subtitle")}
           </p>
         </section>
 

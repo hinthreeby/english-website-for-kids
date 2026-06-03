@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import SpaceBackground from "../../components/SpaceBackground";
@@ -62,6 +63,7 @@ function ContentModal({ contentId, onClose, onPlayed }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 const StudentContentsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [contents, setContents] = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -91,8 +93,8 @@ const StudentContentsPage = () => {
         <section className="role-hero glass-card" style={{ textAlign: "left" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
             <div>
-              <h1 style={GRADIENT_TITLE}>Class Content</h1>
-              <p style={{ color: "#c4b5fd" }}>Games and quizzes assigned by your teacher.</p>
+              <h1 style={GRADIENT_TITLE}>{t("studentContent.title")}</h1>
+              <p style={{ color: "#c4b5fd" }}>{t("studentContent.subtitle")}</p>
             </div>
             <button
               type="button"
@@ -100,22 +102,22 @@ const StudentContentsPage = () => {
               style={{ whiteSpace: "nowrap" }}
               onClick={() => navigate("/my-classrooms")}
             >
-              Back to Classrooms
+              {t("studentContent.backToClassrooms")}
             </button>
           </div>
         </section>
 
         {loading ? (
-          <section className="glass-card"><p>Loading…</p></section>
+          <section className="glass-card"><p>{t("studentContent.loading")}</p></section>
         ) : contents.length === 0 ? (
           <section className="glass-card">
-            <p style={{ color: "#94a3b8" }}>No content available yet. Ask your teacher to assign some!</p>
+            <p style={{ color: "#94a3b8" }}>{t("studentContent.noContent")}</p>
           </section>
         ) : (
           <>
             {quizzes.length > 0 && (
               <section className="glass-card">
-                <h2 style={{ marginBottom: "1rem" }}>📝 Quizzes</h2>
+                <h2 style={{ marginBottom: "1rem" }}>📝 {t("studentContent.quizzes")}</h2>
                 <div className="role-list">
                   {quizzes.map((c) => {
                     const played = c.playCount || 0;
@@ -126,7 +128,7 @@ const StudentContentsPage = () => {
                         <div>
                           <strong>{c.title}</strong>
                           <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>
-                            {c.questions?.length || 0} questions
+                            {c.questions?.length || 0} {t("studentContent.questions")}
                             {c.description ? ` · ${c.description}` : ""}
                           </p>
                         </div>
@@ -147,7 +149,7 @@ const StudentContentsPage = () => {
                             disabled={limitReached && !c.submission}
                             onClick={() => setSelected(c)}
                           >
-                            {c.submission ? "Review" : limitReached ? "Limit Reached" : "Start"}
+                            {c.submission ? t("studentContent.review") : limitReached ? t("studentContent.limitReached") : t("studentContent.start")}
                           </button>
                         </div>
                       </article>
@@ -159,7 +161,7 @@ const StudentContentsPage = () => {
 
             {games.length > 0 && (
               <section className="glass-card">
-                <h2 style={{ marginBottom: "1rem" }}>🎮 Games</h2>
+                <h2 style={{ marginBottom: "1rem" }}>🎮 {t("studentContent.games")}</h2>
                 <div className="role-list">
                   {games.map((c) => {
                     const played = c.playCount || 0;
@@ -170,8 +172,8 @@ const StudentContentsPage = () => {
                         <div>
                           <strong>{c.title}</strong>
                           <p style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>
-                            {c.template === "match-word-picture" ? "🔤 Match Word with Picture" : "🃏 Memory Card"}
-                            {" · "}{c.items?.length || 0} items
+                            {c.template === "match-word-picture" ? `🔤 ${t("studentContent.matchWord")}` : `🃏 ${t("studentContent.memoryCard")}`}
+                            {" · "}{c.items?.length || 0} {t("studentContent.items")}
                             {c.description ? ` · ${c.description}` : ""}
                           </p>
                         </div>
@@ -187,7 +189,7 @@ const StudentContentsPage = () => {
                             disabled={limitReached}
                             onClick={() => !limitReached && setSelected(c)}
                           >
-                            {limitReached ? "Limit Reached" : played > 0 ? "Play Again" : "Play"}
+                            {limitReached ? t("studentContent.limitReached") : played > 0 ? t("studentContent.playAgain") : t("studentContent.play")}
                           </button>
                         </div>
                       </article>

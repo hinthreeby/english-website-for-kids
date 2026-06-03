@@ -46,7 +46,7 @@
 .dg-round-star { font-size: 0.78rem; line-height: 1; }
 
 .dg-round-text {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(0.88rem, 1.7vw, 1.12rem);
   color: #fff;
   letter-spacing: 0.04em;
@@ -100,7 +100,7 @@
 .dg-ref-ribbon {
   background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
   color: #fff;
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(0.48rem, 0.8vw, 0.62rem);
   font-weight: 800;
   letter-spacing: 0.09em;
@@ -121,7 +121,7 @@
 }
 
 .dg-ref-word {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.05rem, 1.9vw, 1.6rem);
   color: #fff;
   text-shadow:
@@ -274,7 +274,7 @@
   align-items: center;
   gap: 0.8rem;
   color: #fff;
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: 1.1rem;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -293,7 +293,7 @@
 @keyframes dg-spin { to { transform: rotate(360deg); } }
 
 .dg-result-text {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1rem, 3.5vw, 1.5rem);
   color: #fff;
   text-align: center;
@@ -484,7 +484,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1.7rem, 3.8vh, 3rem);
   color: #ddd6fe;
   font-weight: 700;

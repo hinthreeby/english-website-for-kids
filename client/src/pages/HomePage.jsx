@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import GameCard from "../components/GameCard";
 import StoryCard from "../components/StoryCard";
 import SeriesCard from "../components/SeriesCard";
@@ -156,6 +157,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { playPop } = useSound();
+  const { t } = useTranslation();
 
   const [gameTab, setGameTab] = useState("all");
   const [videoTab, setVideoTab] = useState("series");
@@ -254,13 +256,13 @@ const HomePage = () => {
               <span>FUN</span>
               <span>ENGLISH</span>
             </h1>
-            <p className="hero-subtitle">WEBSITE LEARNING ENGLISH FOR KIDS</p>
+            <p className="hero-subtitle">{t("home.heroSubtitle")}</p>
           </div>
         </section>
 
         {/* ── Games ── */}
         <section className="games-section">
-          <h2 className="section-title">✨ CHOOSE A GAME ✨</h2>
+          <h2 className="section-title">{t("home.chooseGame")}</h2>
           <div className="section-divider" />
 
           <div className="video-tabs">
@@ -269,21 +271,21 @@ const HomePage = () => {
               className={`video-tab-btn${gameTab === "all" ? " active" : ""}`}
               onClick={() => setGameTab("all")}
             >
-              🌟 All
+              {t("home.tabAll")}
             </button>
             <button
               type="button"
               className={`video-tab-btn${gameTab === "basic" ? " active" : ""}`}
               onClick={() => setGameTab("basic")}
             >
-              🎮 Basic
+              {t("home.tabBasic")}
             </button>
             <button
               type="button"
               className={`video-tab-btn${gameTab === "ai" ? " active" : ""}`}
               onClick={() => setGameTab("ai")}
             >
-              🤖 Fun AI
+              {t("home.tabFunAi")}
             </button>
           </div>
 
@@ -304,7 +306,7 @@ const HomePage = () => {
 
         {/* ── Watch & Learn ── */}
         <section className="stories-section">
-          <h2 className="section-title">✨ WATCH &amp; LEARN ✨</h2>
+          <h2 className="section-title">{t("home.watchLearn")}</h2>
           <div className="section-divider" />
 
           <div className="video-tabs">
@@ -313,28 +315,28 @@ const HomePage = () => {
               className={`video-tab-btn${videoTab === "all" ? " active" : ""}`}
               onClick={() => setVideoTab("all")}
             >
-              🌟 All
+              {t("home.tabAll")}
             </button>
             <button
               type="button"
               className={`video-tab-btn${videoTab === "series" ? " active" : ""}`}
               onClick={() => setVideoTab("series")}
             >
-              📺 Story Series
+              {t("home.tabSeries")}
             </button>
             <button
               type="button"
               className={`video-tab-btn${videoTab === "quick" ? " active" : ""}`}
               onClick={() => setVideoTab("quick")}
             >
-              ⚡ Quick Videos
+              {t("home.tabQuickVideos")}
             </button>
             <button
               type="button"
               className={`video-tab-btn${videoTab === "songs" ? " active" : ""}`}
               onClick={() => setVideoTab("songs")}
             >
-              🎵 Songs
+              {t("home.tabSongs")}
             </button>
           </div>
 
@@ -475,11 +477,14 @@ const VideoTabSkeleton = () => (
   </div>
 );
 
-const VideoEmptyState = ({ icon, label }) => (
-  <div style={{ textAlign: "center", padding: "3rem 1rem", color: "rgba(255,255,255,0.5)" }}>
-    <div style={{ fontSize: "3.5rem", marginBottom: "0.75rem" }}>{icon}</div>
-    <p style={{ fontSize: "1rem", margin: 0 }}>No {label} yet — check back soon!</p>
-  </div>
-);
+const VideoEmptyState = ({ icon, label }) => {
+  const { t } = useTranslation();
+  return (
+    <div style={{ textAlign: "center", padding: "3rem 1rem", color: "rgba(255,255,255,0.5)" }}>
+      <div style={{ fontSize: "3.5rem", marginBottom: "0.75rem" }}>{icon}</div>
+      <p style={{ fontSize: "1rem", margin: 0 }}>{t("home.noContent", { label })}</p>
+    </div>
+  );
+};
 
 export default HomePage;

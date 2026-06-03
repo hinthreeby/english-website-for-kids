@@ -99,7 +99,7 @@
 
 /* ── Caption ─────────────────────────────────────────────────────────────── */
 .aichat-caption {
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: clamp(1rem, 2vw, 1.3rem);
   color: #fff;
   text-align: center;
@@ -181,7 +181,7 @@
   gap: 0.5rem;
   padding: 0.4rem 1.1rem;
   border-radius: 999px;
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: 1rem;
   background: rgba(255,255,255,0.06);
   border: 1.5px solid rgba(255,255,255,0.1);
@@ -277,7 +277,7 @@
   border: 2px solid #ff5252;
   background: rgba(229, 57, 53, 0.15);
   color: #ff5252;
-  font-family: "Fredoka One", sans-serif;
+  font-family: var(--font-heading);
   font-size: 0.95rem;
   cursor: pointer;
   transition: background 0.15s, transform 0.15s;
@@ -305,7 +305,7 @@
   border: 2px solid rgba(123, 47, 247, 0.4);
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.95rem;
   outline: none;
   transition: border-color 0.2s;

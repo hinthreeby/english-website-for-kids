@@ -1,5 +1,6 @@
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { stories } from "../data/stories";
 import Navbar from "../components/Navbar";
 import LoadingDots from "../components/LoadingDots";
@@ -11,6 +12,7 @@ const StoryPlayerPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { playPop } = useSound();
+  const { t } = useTranslation();
 
   const episodeOverride = location.state?.episode;
   const baseStory = stories.find((s) => s.id === storyId);
@@ -19,7 +21,7 @@ const StoryPlayerPage = () => {
   if (!story) {
     return (
       <div className="screen with-bg centered">
-        <LoadingDots label="Loading story" />
+        <LoadingDots label={t("story.loading")} />
       </div>
     );
   }
@@ -42,7 +44,7 @@ const StoryPlayerPage = () => {
           type="button"
           aria-label="Go back"
         >
-          ← <span>Back</span>
+          {t("story.back")}
         </motion.button>
 
         <motion.div
@@ -63,7 +65,7 @@ const StoryPlayerPage = () => {
               transition={{ delay: 0.2, duration: 0.3 }}
             >
               <source src={story.videoPath} type="video/mp4" />
-              Your browser does not support the video tag.
+              {t("story.noVideo")}
             </motion.video>
           </div>
 
@@ -76,7 +78,7 @@ const StoryPlayerPage = () => {
             <h1 className="story-player-title">{story.title}</h1>
             <p className="story-player-description">{story.description}</p>
             {story.duration && (
-              <p className="story-player-duration">⏱️ Duration: {story.duration}</p>
+              <p className="story-player-duration">{t("story.duration")} {story.duration}</p>
             )}
           </motion.div>
         </motion.div>
