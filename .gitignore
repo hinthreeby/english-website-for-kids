@@ -26,3 +26,6 @@ logs/
 .DS_Store
 Thumbs.db
 tmp/
+
+node_modules/
+**/node_modules/
