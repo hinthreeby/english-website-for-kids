@@ -122,7 +122,7 @@ router.post("/register-verify", otpVerifyLimiter, async (req, res) => {
     return res.status(400).json({ error: "Invalid token type." });
 
   try {
-    const { email, username, role, passwordPlain } = result;
+    const { email, username, role, passwordPlain, passwordHash } = result;
 
     // Double-check uniqueness (race condition safety)
     const existsByUsername = await User.findOne({ username });
@@ -132,14 +132,16 @@ router.post("/register-verify", otpVerifyLimiter, async (req, res) => {
     if (existsByEmail)
       return res.status(400).json({ error: "Email is already registered." });
 
-    const user = await User.create({
-      username,
-      email,
-      password: passwordPlain,
-      role,
-      displayName: username,
-      isApproved: true,
-    });
+    // Use pre-hashed password if available (new flow), fallback to plain (legacy)
+    const userPayload = { username, email, role, displayName: username, isApproved: true };
+    if (passwordHash) {
+      // Already hashed by otpService — set directly to bypass pre-save bcrypt hook
+      userPayload.password = passwordHash;
+    } else {
+      userPayload.password = passwordPlain;
+    }
+
+    const user = await User.create(userPayload);
 
     auth("info", "register_success", {
       userId:    user._id.toString(),

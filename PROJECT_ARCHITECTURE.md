@@ -1,4 +1,6 @@
-# Fun English - Tài liệu hiểu project
+# Fun English - Project Architecture
+
+> Cập nhật theo codebase hiện tại. Tài liệu này ưu tiên góc nhìn kiến trúc, luồng dữ liệu và các điểm cần biết khi bảo trì/mở rộng project.
 
 Tài liệu này tổng hợp project hiện tại ở mức kiến trúc: cấu trúc thư mục, backend hoạt động ra sao, dữ liệu đi qua những lớp nào, bảo mật/mã hóa đang dùng gì, topology triển khai như thế nào và nên học project theo thứ tự nào.
 
@@ -22,6 +24,9 @@ Tech stack:
 | Database | MongoDB qua Mongoose |
 | Auth | JWT trong HTTP-only cookie, bcrypt password hash, Google OAuth |
 | Security | Helmet, CORS allowlist, CSRF HMAC token, rate limiting, role guards |
+| AI | Groq chat completion, Groq vision-style drawing check, audio transcription endpoint |
+| Upload | Multer local disk storage, magic-byte validation cho image upload |
+| Test | Jest + Supertest cho security/unit route checks |
 | Deploy | Docker Compose, Nginx reverse proxy, Redis session store, Let's Encrypt TLS |
 
 ## 2. Sơ đồ cấu trúc thư mục
@@ -122,8 +127,11 @@ english-website-for-kids/
 │       │   ├── CleanOceanHero.jsx
 │       │   ├── ColorFun.jsx
 │       │   ├── CountLearn.jsx
+│       │   ├── FamilyPhoto.jsx
+│       │   ├── FunnyAnimals.jsx
 │       │   ├── MatchIt.jsx
 │       │   ├── PictureWords.jsx
+│       │   ├── SchoolFind.jsx
 │       │   ├── SpacePronounce.jsx
 │       │   ├── DrawGuess.jsx         # Game dùng AI vision backend
 │       │   └── AiChat.jsx            # Game chat với AI backend
@@ -223,6 +231,7 @@ english-website-for-kids/
     ├── utils/                        # Helper backend
     │   ├── autoSeedRoadmap.js        # Tự seed roadmap khi server start
     │   ├── passwordPolicy.js         # Rule độ mạnh mật khẩu
+    │   ├── sanitize.js               # Validate displayName, chặn input HTML/XSS đơn giản
     │   └── cache.js                  # Cache helper
     │
     ├── seed/
@@ -231,6 +240,9 @@ english-website-for-kids/
     ├── scripts/
     │   ├── createAdmin.js            # Tạo admin đầu tiên
     │   └── createTeacher.js          # Tạo teacher bằng script
+    │
+    ├── tests/
+    │   └── security.test.js          # Jest/Supertest: CSRF, upload magic bytes, XSS, mass assignment
     │
     ├── uploads/                      # File user/admin upload, backend serve qua /uploads
     │   ├── avatars/                  # Ảnh đại diện user
@@ -312,8 +324,9 @@ Luồng khởi động frontend:
 1. `main.jsx` render app.
 2. `App.jsx` bọc toàn bộ route trong `AuthProvider`.
 3. `AuthProvider` gọi `GET /api/auth/me` để biết user hiện tại dựa trên cookie JWT.
-4. Route guard trong `RoleRoute.jsx` điều hướng theo role.
-5. API call dùng `client/src/lib/api.js`, là Axios instance có:
+4. Các hook global bật hiệu ứng nền: mouse particles, click sound và background music.
+5. Route guard trong `RoleRoute.jsx` điều hướng theo role.
+6. API call dùng `client/src/lib/api.js`, là Axios instance có:
    - `baseURL = VITE_API_URL` hoặc fallback Render URL.
    - `withCredentials: true` để gửi cookie JWT.
    - request interceptor tự lấy CSRF token trước request `POST/PUT/PATCH/DELETE`.
@@ -323,11 +336,14 @@ Route frontend theo role:
 
 | Nhóm | Route tiêu biểu |
 |---|---|
-| Guest/Child | `/`, `/game/:gameId`, `/story/:storyId`, `/videos` |
-| Child only | `/dashboard`, `/collection`, `/shop`, `/my-home`, `/my-classrooms`, `/my-content`, `/child/profile` |
+| Guest/Child | `/`, `/game/:gameId`, `/story/:storyId`, `/completion`, `/videos` |
+| Public app route | `/chat-with-luna`, `/roadmap` |
+| Child only | `/dashboard`, `/collection`, `/shop`, `/my-home`, `/room/:roomId`, `/my-classrooms`, `/my-content`, `/child/profile` |
 | Parent | `/parent/dashboard`, `/parent/child/:childId`, `/parent/profile` |
 | Teacher | `/teacher/dashboard`, `/teacher/classroom/:id`, `/teacher/contents`, `/teacher/profile` |
 | Admin | `/admin/dashboard`, `/admin/users`, `/admin/approvals`, `/admin/videos`, `/admin/profile` |
+
+Lưu ý nhỏ: `/chat-with-luna` và `/roadmap` hiện không bọc role guard trong `App.jsx`; backend từng endpoint vẫn tự quyết định endpoint nào public, endpoint nào cần auth.
 
 ## 6. Đường đi dữ liệu tổng quát
 
@@ -539,7 +555,28 @@ Video:
 - User/guest xem video published qua `/api/videos`.
 - View được tăng qua `/api/videos/:id/view`, có rate limit.
 
-## 14. Bảo mật và mã hóa
+## 14. Luồng AI game
+
+Project có 3 route AI/audio chính:
+
+| Module | Endpoint | Auth | Mục đích |
+|---|---|---|---|
+| Draw game | `POST /api/draw-game/check` | Public, có rate limit | Nhận `imageBase64` + `keyword`, gọi `aiVisionService.checkDrawing` |
+| Chat game | `POST /api/chat-game/message` | Public, có rate limit | Chat với Luna qua Groq, giữ tối đa 10 message gần nhất |
+| Transcribe | `POST /api/transcribe` | Public, có rate limit | Nhận multipart `audio`, gọi Groq Whisper để chuyển giọng nói thành text |
+
+Chat game dùng system prompt cố định để Luna trả lời ngắn, đơn giản cho trẻ 5-10 tuổi. Backend gọi Groq endpoint `chat/completions` với model `llama-3.3-70b-versatile`, timeout 15 giây, `max_tokens` 120.
+
+Draw game kiểm tra:
+
+- `imageBase64` phải là string.
+- `keyword` phải là string và tối đa 50 ký tự.
+- Base64 tối đa khoảng 1.4 MB.
+- Nếu AI service lỗi, trả `503` để frontend có thể hiển thị trạng thái thử lại.
+
+Transcribe dùng Multer memory storage, giới hạn file audio 10 MB, gọi Groq `audio/transcriptions` với model `whisper-large-v3-turbo`, language `en`, timeout 20 giây.
+
+## 15. Bảo mật và mã hóa
 
 ### Password
 
@@ -634,6 +671,7 @@ Image whitelist:
 - MIME: jpeg, png, webp, gif.
 - Extension: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`.
 - SVG bị loại vì có rủi ro XSS.
+- Sau khi Multer lưu file, backend kiểm tra magic bytes cho thumbnail/avatar để phát hiện file giả MIME.
 
 Video whitelist:
 
@@ -643,7 +681,7 @@ Video whitelist:
 
 Ở production, Nginx dùng Let's Encrypt certificate và TLS 1.2/1.3. HTTPS là encryption trên đường truyền. App hiện tại không tự mã hóa dữ liệu ở MongoDB hoặc file upload ở tầng application.
 
-## 15. Topology triển khai
+## 16. Topology triển khai
 
 Production Docker Compose:
 
@@ -689,12 +727,14 @@ Docker/production:
 Browser -> Nginx :80/:443 -> backend :5001 -> MongoDB + Redis
 ```
 
-## 16. Biến môi trường quan trọng
+## 17. Biến môi trường quan trọng
 
-`server/config/env.js` load:
+`server/config/env.js` load một file env theo `NODE_ENV`:
 
 - `.env.production` nếu `NODE_ENV=production`.
 - `.env.development` nếu development.
+
+Code comment có nhắc `.env`, nhưng implementation hiện tại chỉ gọi `dotenv.config({ path: envPath })` với file tương ứng môi trường.
 
 Biến quan trọng:
 
@@ -717,7 +757,13 @@ Biến quan trọng:
 | `GROQ_API_KEY` | AI chat game |
 | `GROQ_DRAW_API_KEY` | AI draw game |
 
-## 17. Logging và monitoring
+Frontend:
+
+| Variable | Ý nghĩa |
+|---|---|
+| `VITE_API_URL` | Base URL để Axios gọi backend; nếu thiếu sẽ fallback về Render URL hard-coded trong `client/src/lib/api.js` |
+
+## 18. Logging và monitoring
 
 Backend dùng Pino:
 
@@ -727,7 +773,27 @@ Backend dùng Pino:
 - Docker mount `logs_data:/app/logs`.
 - Có `server/filebeat.yml`, có vẻ chuẩn bị cho log shipping/monitoring.
 
-## 18. Những điểm cần chú ý khi học hoặc sửa code
+## 19. Test suite
+
+Backend có script:
+
+```bash
+cd server
+npm test
+```
+
+Hiện tại test chính nằm ở `server/tests/security.test.js`, tập trung vào:
+
+| Nhóm test | Mục đích |
+|---|---|
+| Upload magic bytes | Chặn file giả MIME image, kiểm tra PNG/JPEG/WebP/GIF thật |
+| CSRF | Token bị bind theo cookie/session, chặn token malformed hoặc bị sửa |
+| XSS displayName | Chặn HTML tag, `javascript:`, `data:` và input không phải string |
+| Mass assignment | Đảm bảo profile update không cho sửa role/trường nhạy cảm qua body |
+
+Đây chưa phải test coverage đầy đủ toàn project; nó đang đóng vai trò regression tests cho các lớp bảo mật quan trọng.
+
+## 20. Những điểm cần chú ý khi học hoặc sửa code
 
 1. `server/server.js` là bản đồ middleware và route backend.
 2. `client/src/lib/api.js` là bản đồ cách frontend gọi backend, đặc biệt CSRF/cookie.
@@ -743,10 +809,12 @@ Các lưu ý kỹ thuật:
 - OTP/reset token đang là memory store, chưa bền vững qua restart.
 - `UserInventory` thao tác mua item dựa vào `price` frontend gửi lên; nên cân nhắc server-side price catalog nếu triển khai thật.
 - Upload lưu local volume; nếu scale backend nhiều instance thì cần object storage hoặc shared volume.
+- `server/package.json` có dependency Cloudinary, nhưng upload route hiện tại đang dùng Multer disk storage local.
+- `/chat-with-luna` và `/roadmap` là route frontend public; nếu muốn child-only thì cần bọc guard ở frontend và/hoặc backend tương ứng.
 - App không mã hóa dữ liệu trong database ở tầng application; bảo mật chính hiện tại là TLS trên đường truyền, password hash, cookie HttpOnly, CSRF và role guard.
 - Cần đảm bảo `PORT=5001` trong production env nếu dùng Docker healthcheck/Nginx hiện tại.
 
-## 19. Thứ tự học project đề xuất
+## 21. Thứ tự học project đề xuất
 
 1. Đọc `README.md` để nắm vai trò user và script chạy.
 2. Đọc `client/src/App.jsx` để biết page nào thuộc role nào.
@@ -758,7 +826,7 @@ Các lưu ý kỹ thuật:
 8. Đọc `server/routes/parent.js`, `teacher.js`, `teacherContent.js`, `studentContent.js` để hiểu workflow phụ huynh/giáo viên/học sinh.
 9. Đọc `docker-compose.yml` và `nginx/nginx.conf` để hiểu deploy.
 
-## 20. Cheat sheet chạy project
+## 22. Cheat sheet chạy project
 
 Install dependencies:
 
@@ -786,6 +854,13 @@ Build frontend:
 npm run build
 ```
 
+Chạy test backend:
+
+```bash
+cd server
+npm test
+```
+
 Tạo admin:
 
 ```bash
@@ -799,6 +874,6 @@ Health check backend:
 GET /api/health
 ```
 
-## 21. Tóm tắt một câu
+## 23. Tóm tắt một câu
 
 Project này là React SPA gọi Express API qua Axios credential cookies; backend dùng JWT cookie + CSRF HMAC + role middleware để bảo vệ route, lưu dữ liệu nghiệp vụ vào MongoDB bằng Mongoose, lưu upload local, dùng Redis cho session OAuth khi production, và được Nginx reverse proxy/serve static trong Docker Compose.

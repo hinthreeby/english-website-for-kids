@@ -4,15 +4,17 @@
  * ══════════════════════════════════════════════════════════════════════════════
  */
 
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
-const mongoose = require("mongoose");
-const passport = require("./config/passport");
-const path = require("path");
-const pinoHttp = require("pino-http");
+const express        = require("express");
+const cors           = require("cors");
+const helmet         = require("helmet");
+const mongoSanitize  = require("express-mongo-sanitize");
+const hpp            = require("hpp");
+const cookieParser   = require("cookie-parser");
+const session        = require("express-session");
+const mongoose       = require("mongoose");
+const passport       = require("./config/passport");
+const path           = require("path");
+const pinoHttp       = require("pino-http");
 
 // ── Load environment configuration first ────────────────────────────────────
 const env = require("./config/env");
@@ -112,8 +114,25 @@ async function startServer() {
       })
     );
 
-    // ── Security headers ─────────────────────────────────────────────────────
-    app.use(helmet());
+    // ── Security headers (helmet + Content Security Policy) ─────────────────
+    app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc:  ["'self'"],
+            scriptSrc:   ["'self'"],
+            styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc:     ["'self'", "https://fonts.gstatic.com"],
+            imgSrc:      ["'self'", "data:", "blob:", "https:"],
+            connectSrc:  ["'self'", env.CLIENT_URL].filter(Boolean),
+            frameSrc:    ["'none'"],
+            objectSrc:   ["'none'"],
+            ...(env.isProduction && { upgradeInsecureRequests: [] }),
+          },
+        },
+        crossOriginEmbedderPolicy: false,
+      })
+    );
 
     // ── CORS ─────────────────────────────────────────────────────────────────
     app.use(cors(corsConfig));
@@ -130,6 +149,12 @@ async function startServer() {
       }
       next(err);
     });
+
+    // ── NoSQL injection prevention ───────────────────────────────────────────
+    app.use(mongoSanitize({ replaceWith: "_" }));
+
+    // ── HTTP Parameter Pollution prevention ──────────────────────────────────
+    app.use(hpp());
 
     // ── Threat detection & security logging ──────────────────────────────────
     app.use(securityLogger);

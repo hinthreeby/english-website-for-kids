@@ -46,8 +46,12 @@ const allowedOrigins = getAllowedOrigins();
  */
 const corsConfig = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // In production: block no-origin requests (browser requests always send Origin)
+    // In development: allow no-origin for curl/Postman testing
     if (!origin) {
+      if (env.isProduction) {
+        return callback(new Error("Not allowed by CORS"));
+      }
       return callback(null, true);
     }
 

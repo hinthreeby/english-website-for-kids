@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 
 // pendingToken -> { userId, email, otpHash, expiresAt, purpose, attempts, ...extraData }
+// Note: passwordPlain is stored in-memory only, with 5-min TTL + 5-attempt lockout
 const pendingStore = new Map();
 
 // resetToken -> { userId, expiresAt }
