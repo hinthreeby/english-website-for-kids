@@ -134,6 +134,11 @@ async function startServer() {
       })
     );
 
+    // ── Health check (trước CORS để wget/curl không bị block) ───────────────
+    app.get("/api/health", (_req, res) => {
+      res.json({ ok: true, environment: env.NODE_ENV, timestamp: new Date().toISOString() });
+    });
+
     // ── CORS ─────────────────────────────────────────────────────────────────
     app.use(cors(corsConfig));
 
@@ -182,11 +187,6 @@ async function startServer() {
 
     // ── CSRF token endpoint ──────────────────────────────────────────────────
     app.get("/api/csrf-token", csrfTokenHandler);
-
-    // ── Health check ─────────────────────────────────────────────────────────
-    app.get("/api/health", (_req, res) => {
-      res.json({ ok: true, environment: env.NODE_ENV, timestamp: new Date().toISOString() });
-    });
 
     // ── API Routes ───────────────────────────────────────────────────────────
     app.use("/api/auth", authRoutes);
