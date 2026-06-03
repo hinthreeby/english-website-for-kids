@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect, isAdmin } = require("../middleware/authMiddleware");
+const { validateAvatarUrl } = require("../utils/sanitize");
 const { uploadThumbnail, uploadVideo, uploadAvatar, checkMagicBytes, deleteUploadedFile } = require("../config/upload");
 const User = require("../models/User");
 
@@ -56,6 +57,8 @@ router.post("/avatar", protect, (req, res) => {
         if (!urlBody || !urlBody.trim()) {
           return res.status(400).json({ error: "Provide a file or an avatar URL" });
         }
+        const urlErr = validateAvatarUrl(urlBody);
+        if (urlErr) return res.status(400).json({ error: urlErr });
         avatarUrl = urlBody.trim();
       }
       const user = await User.findByIdAndUpdate(

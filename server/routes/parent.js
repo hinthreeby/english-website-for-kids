@@ -9,7 +9,7 @@ const UserInventory = require("../models/UserInventory");
 const ContentResult = require("../models/ContentResult");
 const RoadmapProgress = require("../models/RoadmapProgress");
 const { validatePassword } = require("../utils/passwordPolicy");
-const { validateDisplayName } = require("../utils/sanitize");
+const { validateDisplayName, validateUsername } = require("../utils/sanitize");
 
 router.get("/children", protect, isParent, async (req, res) => {
   try {
@@ -74,6 +74,8 @@ router.post("/create-child", protect, isParent, async (req, res) => {
   if (!trimmedUsername || !password) {
     return res.status(400).json({ error: "Username and password are required" });
   }
+  const usernameErr = validateUsername(trimmedUsername);
+  if (usernameErr) return res.status(400).json({ error: usernameErr });
   try {
     const existingUser = await User.findOne({ username: trimmedUsername }).select("_id").lean();
     if (existingUser) {

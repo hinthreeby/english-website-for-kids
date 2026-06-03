@@ -123,7 +123,7 @@ async function startServer() {
             scriptSrc:   ["'self'"],
             styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc:     ["'self'", "https://fonts.gstatic.com"],
-            imgSrc:      ["'self'", "data:", "blob:", "https:"],
+            imgSrc:      ["'self'", "blob:", "https:"],
             connectSrc:  ["'self'", env.CLIENT_URL].filter(Boolean),
             frameSrc:    ["'none'"],
             objectSrc:   ["'none'"],
