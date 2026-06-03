@@ -16,7 +16,7 @@ router.get("/users", protect, isAdmin, async (req, res) => {
     const { role, page = 1, limit = 20 } = req.query;
     const pageNum = Number(page);
     const limitNum = Number(limit);
-    const filter = role ? { role } : {};
+    const filter = { isDeleted: { $ne: true }, ...(role ? { role } : {}) };
 
     const users = await User.find(filter)
       .select("-password")
@@ -66,18 +66,29 @@ router.patch("/user/:id", protect, isAdmin, validateObjectId("id"), async (req, 
 router.delete("/user/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
   try {
     if (req.params.id === req.user._id.toString()) {
-      return res.status(400).json({ error: "Admin cannot delete their own account." });
+      return res.status(400).json({ error: "Bạn không thể xóa chính tài khoản đang đăng nhập." });
     }
-    await User.findByIdAndUpdate(req.params.id, { isActive: false });
+
+    const target = await User.findById(req.params.id).select("isDeleted username");
+    if (!target) return res.status(404).json({ error: "Không tìm thấy người dùng." });
+    if (target.isDeleted) return res.status(400).json({ error: "Người dùng này đã bị xóa trước đó." });
+
+    await User.findByIdAndUpdate(req.params.id, {
+      isDeleted: true,
+      deletedAt: new Date(),
+      deletedBy: req.user._id,
+      isActive:  false,
+    });
+
     adminLog("DELETE_USER", req.user._id, req.params.id);
     pinoAdmin("delete_user", {
       adminId:  req.user._id.toString(),
       targetId: req.params.id,
       method:   req.method,
       url:      req.originalUrl || req.url,
-      message:  `Admin disabled user ${req.params.id}`,
+      message:  `Admin soft-deleted user ${req.params.id} (${target.username})`,
     });
-    return res.json({ success: true });
+    return res.json({ success: true, message: "Xóa người dùng thành công." });
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
@@ -85,7 +96,7 @@ router.delete("/user/:id", protect, isAdmin, validateObjectId("id"), async (req,
 
 router.get("/pending-teachers", protect, isAdmin, async (_req, res) => {
   try {
-    const teachers = await User.find({ role: "teacher", isApproved: false }).select("-password");
+    const teachers = await User.find({ role: "teacher", isApproved: false, isDeleted: { $ne: true } }).select("-password");
     return res.json({ teachers });
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -115,7 +126,7 @@ router.patch("/approve-teacher/:id", protect, isAdmin, validateObjectId("id"), a
 
 router.get("/pending-children", protect, isAdmin, async (_req, res) => {
   try {
-    const children = await User.find({ role: "child", isApproved: false, isActive: true })
+    const children = await User.find({ role: "child", isApproved: false, isActive: true, isDeleted: { $ne: true } })
       .select("-password")
       .populate("parentId", "username displayName");
     return res.json({ children });
@@ -261,10 +272,10 @@ router.get("/stats", protect, isAdmin, async (_req, res) => {
       totalVideos, publishedVideos,
       videoViewsAgg, videosByTypeAgg, topViewedVideos, recentVideos,
     ] = await Promise.all([
-      User.countDocuments({ isActive: true }),
-      User.countDocuments({ role: "child", isActive: true }),
-      User.countDocuments({ role: "parent", isActive: true }),
-      User.countDocuments({ role: "teacher", isActive: true }),
+      User.countDocuments({ isActive: true, isDeleted: { $ne: true } }),
+      User.countDocuments({ role: "child",   isActive: true, isDeleted: { $ne: true } }),
+      User.countDocuments({ role: "parent",  isActive: true, isDeleted: { $ne: true } }),
+      User.countDocuments({ role: "teacher", isActive: true, isDeleted: { $ne: true } }),
       GameResult.countDocuments(),
       GameResult.aggregate([{ $group: { _id: null, total: { $sum: "$starsEarned" } } }]),
       Video.countDocuments(),

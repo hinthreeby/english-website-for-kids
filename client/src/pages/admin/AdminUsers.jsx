@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
+import { useAuth } from "../../context/AuthContext";
 
 const ROLES = ["child", "parent", "teacher", "admin"];
 
@@ -98,8 +99,10 @@ const RoleDropdown = ({ current, onChange }) => {
 // ── Main page ────────────────────────────────────────────────
 const AdminUsers = () => {
   const { t } = useTranslation();
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null); // { id, name }
 
   const loadUsers = async () => {
     try {
@@ -121,10 +124,71 @@ const AdminUsers = () => {
     }
   };
 
+  const deleteUser = async (id) => {
+    try {
+      await api.delete(`/api/admin/user/${id}`);
+      setUsers((prev) => prev.filter((u) => u._id !== id));
+      setConfirmDelete(null);
+    } catch (err) {
+      setError(err?.response?.data?.error || "Failed to delete user");
+      setConfirmDelete(null);
+    }
+  };
+
   return (
     <div className="screen with-bg role-page">
       <StarBackground />
       <Navbar />
+
+      {/* Confirm delete dialog */}
+      {confirmDelete && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "1rem",
+        }}>
+          <div style={{
+            background: "rgba(12,6,30,0.98)", border: "1px solid rgba(239,68,68,0.4)",
+            borderRadius: "14px", padding: "2rem", maxWidth: "420px", width: "100%",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
+          }}>
+            <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>🗑️</div>
+            <h3 style={{ margin: "0 0 0.75rem", color: "#f87171", fontSize: "1.1rem" }}>
+              Xác nhận xóa người dùng
+            </h3>
+            <p style={{ margin: "0 0 0.5rem", color: "#e2e8f0", fontSize: "0.92rem" }}>
+              Bạn có chắc muốn xóa <strong style={{ color: "#fbbf24" }}>{confirmDelete.name}</strong> không?
+            </p>
+            <p style={{ margin: "0 0 1.5rem", color: "rgba(148,163,184,0.8)", fontSize: "0.82rem" }}>
+              Dữ liệu học tập và tiến trình game sẽ được giữ lại. Thao tác này có thể hoàn tác bởi quản trị viên.
+            </p>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className="btn-secondary-glass"
+                style={{ fontSize: "0.85rem", padding: "0.5rem 1.25rem" }}
+                onClick={() => setConfirmDelete(null)}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                style={{
+                  fontSize: "0.85rem", padding: "0.5rem 1.25rem",
+                  background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.5)",
+                  color: "#f87171", borderRadius: "8px", cursor: "pointer", fontWeight: 700,
+                  fontFamily: "inherit",
+                }}
+                onClick={() => deleteUser(confirmDelete.id)}
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="role-wrap">
         <section className="role-hero glass-card">
           <h1>{t("admin.users.title")}</h1>
@@ -204,6 +268,20 @@ const AdminUsers = () => {
                               {t("admin.users.approve")}
                             </button>
                           ) : null}
+                          {currentUser?._id !== user._id && (
+                            <button
+                              type="button"
+                              style={{
+                                fontSize: "0.78rem", padding: "0.3rem 0.75rem",
+                                background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)",
+                                color: "#f87171", borderRadius: "7px", cursor: "pointer", fontWeight: 600,
+                                fontFamily: "inherit",
+                              }}
+                              onClick={() => setConfirmDelete({ id: user._id, name: user.displayName || user.username })}
+                            >
+                              Xóa
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
