@@ -51,7 +51,6 @@
     "subtitle": "Create your account to get started.",
     "roleParent": "Parent",
     "roleTeacher": "Teacher",
-    "teacherNotice": "Teacher accounts require admin approval before login.",
     "username": "Username",
     "usernamePlaceholder": "Your username",
     "email": "Email",
@@ -124,7 +123,8 @@
     "createChild": {
       "usernameTaken": "This child username is already used. Please choose another name.",
       "failed": "Failed to create child. Please try again.",
-      "success": "Great! {{name}}'s child account has been created."
+      "success": "Great! {{name}}'s child account has been created.",
+      "pendingApproval": "{{name}}'s account was created and is awaiting admin approval before they can log in."
     },
     "deleteChild": {
       "button": "Delete",

@@ -68,17 +68,22 @@ const ParentDashboard = () => {
     }, 180);
   };
 
+  const [createdChildNeedsApproval, setCreatedChildNeedsApproval] = useState(false);
+
   const handleCreateChild = async (event) => {
     event.preventDefault();
     setError("");
     setCreateError("");
     setCreatedChildName("");
+    setCreatedChildNeedsApproval(false);
     setDeleteSuccess("");
     try {
       const res = await api.post("/api/parent/create-child", createForm);
       const child = res.data?.child;
+      const needsApproval = res.data?.needsApproval ?? false;
       setCreatedChildName(child?.displayName || child?.username || createForm.username.trim());
-      celebrateChildCreated();
+      setCreatedChildNeedsApproval(needsApproval);
+      if (!needsApproval) celebrateChildCreated();
       setCreateForm({ username: "", password: "" });
       loadChildren();
     } catch (err) {
@@ -182,6 +187,9 @@ const ParentDashboard = () => {
                   <div className="role-item-top">
                     <strong>{child.displayName || child.username}</strong>
                     <span className="badge-ok">@{child.username}</span>
+                    {!child.isApproved && (
+                      <span className="badge-pending">Pending Approval</span>
+                    )}
                   </div>
                   <div className="role-item-stats">
                     <span>⭐ {child.totalStars || 0} stars</span>
@@ -236,8 +244,10 @@ const ParentDashboard = () => {
                 </div>
               ) : null}
               {createdChildName ? (
-                <div className="form-alert form-alert-success" role="status">
-                  {t("parent.createChild.success", { name: createdChildName })}
+                <div className={`form-alert ${createdChildNeedsApproval ? "form-alert-warning" : "form-alert-success"}`} role="status">
+                  {createdChildNeedsApproval
+                    ? t("parent.createChild.pendingApproval", { name: createdChildName })
+                    : t("parent.createChild.success", { name: createdChildName })}
                 </div>
               ) : null}
               <button type="submit" className="btn-register">

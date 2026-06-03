@@ -7,16 +7,19 @@ import StarBackground from "../../components/StarBackground";
 const AdminApprovals = () => {
   const [teachers, setTeachers] = useState([]);
   const [wordLists, setWordLists] = useState([]);
+  const [children, setChildren] = useState([]);
   const [error, setError] = useState("");
 
   const load = async () => {
     try {
-      const [teachersRes, listsRes] = await Promise.all([
+      const [teachersRes, listsRes, childrenRes] = await Promise.all([
         api.get("/api/admin/pending-teachers"),
         api.get("/api/admin/pending-wordlists"),
+        api.get("/api/admin/pending-children"),
       ]);
       setTeachers(teachersRes.data.teachers || []);
       setWordLists(listsRes.data.lists || []);
+      setChildren(childrenRes.data.children || []);
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to load approvals");
     }
@@ -62,6 +65,24 @@ const AdminApprovals = () => {
     }
   };
 
+  const approveChild = async (id) => {
+    try {
+      await api.patch(`/api/admin/approve-child/${id}`);
+      load();
+    } catch (err) {
+      setError(err?.response?.data?.error || "Failed to approve child");
+    }
+  };
+
+  const rejectChild = async (id) => {
+    try {
+      await api.patch(`/api/admin/reject-child/${id}`);
+      load();
+    } catch (err) {
+      setError(err?.response?.data?.error || "Failed to reject child");
+    }
+  };
+
   return (
     <div className="screen with-bg role-page">
       <StarBackground />
@@ -70,6 +91,29 @@ const AdminApprovals = () => {
         <section className="role-hero glass-card">
           <h1>Approval Queue</h1>
           <p>Review teacher accounts and custom educational content.</p>
+        </section>
+
+        <section className="glass-card">
+          <h2>Pending Child Accounts</h2>
+          <div className="role-list">
+            {children.map((child) => (
+              <article key={child._id} className="role-item">
+                <div>
+                  <strong>{child.displayName || child.username}</strong>
+                  <p>@{child.username} · Parent: {child.parentId?.displayName || child.parentId?.username || "Unknown"}</p>
+                </div>
+                <div className="role-actions">
+                  <button className="btn-register" type="button" onClick={() => approveChild(child._id)}>
+                    Approve
+                  </button>
+                  <button className="btn-secondary-glass" type="button" onClick={() => rejectChild(child._id)}>
+                    Reject
+                  </button>
+                </div>
+              </article>
+            ))}
+            {children.length === 0 ? <p>No pending child accounts.</p> : null}
+          </div>
         </section>
 
         <section className="glass-card role-grid role-grid-2">

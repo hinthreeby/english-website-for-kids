@@ -19,6 +19,7 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [pendingTeachers, setPendingTeachers] = useState([]);
   const [pendingWordLists, setPendingWordLists] = useState([]);
+  const [pendingChildren, setPendingChildren] = useState([]);
   const [recentUsers, setRecentUsers] = useState([]);
   const [error, setError] = useState("");
   const [tick, setTick] = useState(0);
@@ -28,16 +29,18 @@ const AdminDashboard = () => {
     let cancelled = false;
     const loadData = async () => {
       try {
-        const [statsRes, teachersRes, listsRes, usersRes] = await Promise.all([
+        const [statsRes, teachersRes, listsRes, childrenRes, usersRes] = await Promise.all([
           api.get("/api/admin/stats"),
           api.get("/api/admin/pending-teachers"),
           api.get("/api/admin/pending-wordlists"),
+          api.get("/api/admin/pending-children"),
           api.get("/api/admin/users?limit=8"),
         ]);
         if (cancelled) return;
         setStats(statsRes.data);
         setPendingTeachers(teachersRes.data.teachers || []);
         setPendingWordLists(listsRes.data.lists || []);
+        setPendingChildren(childrenRes.data.children || []);
         setRecentUsers(usersRes.data.users || []);
       } catch (err) {
         if (!cancelled) setError(err?.response?.data?.error || "Failed to load admin stats");
@@ -55,6 +58,16 @@ const AdminDashboard = () => {
   const rejectTeacher = async (id) => {
     try { await api.patch(`/api/admin/user/${id}`, { isActive: false }); reload(); }
     catch (err) { setError(err?.response?.data?.error || "Failed to reject teacher"); }
+  };
+
+  const approveChild = async (id) => {
+    try { await api.patch(`/api/admin/approve-child/${id}`); reload(); }
+    catch (err) { setError(err?.response?.data?.error || "Failed to approve child"); }
+  };
+
+  const rejectChild = async (id) => {
+    try { await api.patch(`/api/admin/reject-child/${id}`); reload(); }
+    catch (err) { setError(err?.response?.data?.error || "Failed to reject child"); }
   };
 
   const approveWordList = async (id) => {
@@ -378,6 +391,29 @@ const AdminDashboard = () => {
               ))}
               {pendingWordLists.length === 0 ? <p>No pending word lists.</p> : null}
             </div>
+          </div>
+        </section>
+
+        {/* Pending children */}
+        <section className="glass-card">
+          <div className="role-section-header">
+            <h2>Pending Child Accounts ({pendingChildren.length})</h2>
+            <Link to="/admin/approvals" className="btn-secondary-glass">View All</Link>
+          </div>
+          <div className="role-list">
+            {pendingChildren.slice(0, 4).map((child) => (
+              <article key={child._id} className="role-item">
+                <div>
+                  <strong>{child.displayName || child.username}</strong>
+                  <p>@{child.username} · Parent: {child.parentId?.displayName || child.parentId?.username || "Unknown"}</p>
+                </div>
+                <div className="role-actions">
+                  <button type="button" className="btn-register" onClick={() => approveChild(child._id)}>Approve</button>
+                  <button type="button" className="btn-secondary-glass" onClick={() => rejectChild(child._id)}>Reject</button>
+                </div>
+              </article>
+            ))}
+            {pendingChildren.length === 0 ? <p>No pending child accounts.</p> : null}
           </div>
         </section>
 

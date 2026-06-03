@@ -296,11 +296,6 @@ const RegisterPage = () => {
             ))}
           </div>
 
-          {/* Teacher notice */}
-          {isTeacher ? (
-            <div className="rp-notice">{t("register.teacherNotice")}</div>
-          ) : null}
-
           {/* Fields grid */}
           <div className="rp-fields-grid">
             {/* Username */}

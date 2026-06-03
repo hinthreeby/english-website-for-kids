@@ -51,7 +51,6 @@
     "subtitle": "Tạo tài khoản để bắt đầu.",
     "roleParent": "Phụ huynh",
     "roleTeacher": "Giáo viên",
-    "teacherNotice": "Tài khoản giáo viên cần được admin phê duyệt trước khi đăng nhập.",
     "username": "Tên đăng nhập",
     "usernamePlaceholder": "Tên đăng nhập của bạn",
     "email": "Email",
@@ -124,7 +123,8 @@
     "createChild": {
       "usernameTaken": "Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.",
       "failed": "Không thể tạo tài khoản trẻ. Vui lòng thử lại.",
-      "success": "Tuyệt vời! Tài khoản của bé {{name}} đã được tạo."
+      "success": "Tuyệt vời! Tài khoản của bé {{name}} đã được tạo.",
+      "pendingApproval": "Tài khoản của bé {{name}} đã được tạo và đang chờ admin phê duyệt trước khi đăng nhập được."
     },
     "deleteChild": {
       "button": "Xóa",

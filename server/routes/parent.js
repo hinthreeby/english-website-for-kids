@@ -83,20 +83,25 @@ router.post("/create-child", protect, isParent, async (req, res) => {
       });
     }
 
+    const parent = await User.findById(req.user._id).select("children").lean();
+    const existingChildCount = parent?.children?.length ?? 0;
+    // First child is auto-approved; additional children need admin approval
+    const needsApproval = existingChildCount >= 1;
+
     const child = await User.create({
       username: trimmedUsername,
       password,
       displayName: trimmedUsername,
       role: "child",
       parentId: req.user._id,
-      isApproved: true,
+      isApproved: !needsApproval,
     });
 
     await User.findByIdAndUpdate(req.user._id, {
       $push: { children: child._id },
     });
 
-    return res.status(201).json({ child });
+    return res.status(201).json({ child, needsApproval });
   } catch (err) {
     if (err?.code === 11000 && err?.keyPattern?.username) {
       return res.status(409).json({

@@ -113,6 +113,54 @@ router.patch("/approve-teacher/:id", protect, isAdmin, validateObjectId("id"), a
   }
 });
 
+router.get("/pending-children", protect, isAdmin, async (_req, res) => {
+  try {
+    const children = await User.find({ role: "child", isApproved: false, isActive: true })
+      .select("-password")
+      .populate("parentId", "username displayName");
+    return res.json({ children });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch("/approve-child/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "child" },
+      { isApproved: true },
+      { new: true }
+    ).select("-password");
+    if (!user) return res.status(404).json({ error: "Child not found" });
+    adminLog("APPROVE_CHILD", req.user._id, req.params.id);
+    pinoAdmin("update_user", {
+      adminId:  req.user._id.toString(),
+      targetId: req.params.id,
+      method:   req.method,
+      url:      req.originalUrl || req.url,
+      message:  `Admin approved child account ${req.params.id}`,
+    });
+    return res.json({ user });
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
+router.patch("/reject-child/:id", protect, isAdmin, validateObjectId("id"), async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "child" },
+      { isActive: false },
+      { new: true }
+    ).select("-password");
+    if (!user) return res.status(404).json({ error: "Child not found" });
+    adminLog("REJECT_CHILD", req.user._id, req.params.id);
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
 router.get("/pending-wordlists", protect, isAdmin, async (_req, res) => {
   try {
     const lists = await WordList.find({ isApproved: false }).populate(
