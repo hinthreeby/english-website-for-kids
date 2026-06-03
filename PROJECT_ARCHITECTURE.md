@@ -13,7 +13,7 @@ Fun English là website học tiếng Anh cho trẻ em. Hệ thống có 4 nhóm
 | `child` | Chơi game, xem video/story, học roadmap, tích sao, streak, mua đồ trang trí |
 | `parent` | Tạo/quản lý tài khoản con, xem tiến độ học của con |
 | `teacher` | Tạo lớp học, quản lý học sinh, tạo nội dung game/quiz giao cho lớp |
-| `admin` | Quản lý user, duyệt giáo viên/word list, quản lý video, upload media |
+| `admin` | Quản lý user, duyệt, quản lý video, upload media |
 
 Tech stack:
 
