@@ -194,12 +194,14 @@ const CountLearn = ({ onComplete }) => {
     <div className="game-page-wrapper">
       <div className="game-frame">
         <section className="game-panel">
-          <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
-          {feedback.type === "correct" ? (
-            <div className="count-correct-badge" aria-live="polite">
-              Correct! ✨
-            </div>
-          ) : null}
+          <div className="count-header">
+            <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
+            {feedback.type === "correct" ? (
+              <div className="count-correct-badge" aria-live="polite">
+                Correct! ✨
+              </div>
+            ) : null}
+          </div>
           <div className="count-items" aria-label="counting items">
         {Array.from({ length: current.answer }).map((_, idx) => (
           <span

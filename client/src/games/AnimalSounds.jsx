@@ -79,7 +79,7 @@ const AnimalSounds = ({ onComplete }) => {
   return (
     <div className="game-page-wrapper">
       <div className="game-frame">
-        <section className="game-panel">
+        <section className="game-panel animal-sounds-panel">
           <p className="round">Round {roundIndex + 1} / {TOTAL_QUESTIONS}</p>
           <h2 className="sound-bubble">{current.answer.sound}</h2>
           <div className="options-grid four">
