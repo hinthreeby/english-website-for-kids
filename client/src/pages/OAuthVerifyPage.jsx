@@ -6,6 +6,7 @@ import jupiterImg from "../assets/general/planet/jupiter.png";
 import planetImg from "../assets/general/planet/planet.png";
 import starImg from "../assets/general/star/star.png";
 import { getRoleHome } from "../lib/roleHome";
+import { useAuth, LOGIN_KEY } from "../context/AuthContext";
 
 const STAR_COUNT = 20;
 const CODE_LENGTH = 6;
@@ -15,6 +16,8 @@ const OAuthVerifyPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const { setUser } = useAuth();
 
   const [pendingToken, setPendingToken] = useState(searchParams.get("token") || "");
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
@@ -95,6 +98,8 @@ const OAuthVerifyPage = () => {
         return;
       }
 
+      setUser(data.user);
+      sessionStorage.setItem(LOGIN_KEY, "true");
       navigate(getRoleHome(data.user.role), { replace: true });
     } catch {
       setError(t("oauthVerify.connectionError"));
