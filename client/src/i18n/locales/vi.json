@@ -192,7 +192,7 @@
     "tabAll": "🌟 Tất cả",
     "tabBasic": "🎮 Cơ bản",
     "tabFunAi": "🤖 AI Vui",
-    "tabSeries": "📺 Phim hoạt hình",
+    "tabSeries": "📺 Phim Dài Tập",
     "tabQuickVideos": "⚡ Video ngắn",
     "tabSongs": "🎵 Bài hát",
     "noContent": "Chưa có {{label}} — quay lại sau nhé!"
@@ -584,6 +584,9 @@
   },
   "userProfile": {
     "title": "Hồ Sơ",
+    "titleParent": "Hồ Sơ Phụ Huynh",
+    "titleTeacher": "Hồ Sơ Giáo Viên",
+    "titleAdmin": "Hồ Sơ Admin",
     "subtitle": "Cập nhật tên hiển thị, email, mật khẩu và ảnh đại diện.",
     "avatar": "Ảnh đại diện",
     "avatarHint": "Tải ảnh lên hoặc dán URL ảnh.",

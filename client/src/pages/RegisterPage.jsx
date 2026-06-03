@@ -274,7 +274,6 @@ const RegisterPage = () => {
         <form className="lp-card" onSubmit={handleFormSubmit}>
           {/* Header */}
           <div className="lp-card-header">
-            <div className="lp-card-icon" aria-hidden="true">✨</div>
             <h1 className="lp-title">
               <span className="lp-title-white">Join </span>
               <span className="lp-title-gold">Us!</span>

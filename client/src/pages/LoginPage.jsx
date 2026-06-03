@@ -280,7 +280,6 @@ const LoginPage = () => {
         <form className="lp-card" onSubmit={handleCredentialSubmit}>
           {/* Header */}
           <div className="lp-card-header">
-            <div className="lp-card-icon" aria-hidden="true">🚀</div>
             <h1 className="lp-title">
               <span className="lp-title-white">Log </span>
               <span className="lp-title-gold">In</span>

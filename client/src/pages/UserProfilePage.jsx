@@ -111,7 +111,7 @@ const UserProfilePage = ({ apiBase, roleLabel }) => {
       <Navbar />
       <main className="role-wrap">
         <section className="role-hero glass-card">
-          <h1>{roleLabel} {t("userProfile.title")}</h1>
+          <h1>{t(`userProfile.title${roleLabel}`, `${roleLabel} ${t("userProfile.title")}`)}</h1>
           <p>{t("userProfile.subtitle")}</p>
         </section>
 

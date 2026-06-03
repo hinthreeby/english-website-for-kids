@@ -58,19 +58,24 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 inset-x-0 z-[100] px-3 pt-2.5">
-      <div className="max-w-[1320px] mx-auto navbar-glass flex items-center justify-between h-[62px] px-6 gap-3 relative">
+      {/* navbar-inner handles flex (mobile) → grid 1fr auto 1fr (desktop) */}
+      <div className="max-w-[1320px] mx-auto navbar-glass navbar-inner h-[62px]">
 
-        {/* ── LEFT: brand ──────────────────────────────────── */}
+        {/* ── COL 1: brand (left-aligned) ──────────────────── */}
         <Link
           to="/"
           onClick={playPop}
-          className="flex-shrink-0 flex items-center gap-1.5 no-underline"
+          className="flex items-center gap-1.5 no-underline flex-shrink-0 min-w-0"
         >
-          <span className="text-2xl leading-none" style={{ filter: "drop-shadow(0 0 9px rgba(255,215,0,0.95))" }}>⭐</span>
+          <span className="text-2xl leading-none flex-shrink-0" style={{ filter: "drop-shadow(0 0 9px rgba(255,215,0,0.95))" }}>⭐</span>
           <span
-            className="font-bold text-[22px] tracking-tight"
             style={{
               fontFamily: "var(--font-heading)",
+              fontWeight: 800,
+              fontSize: "clamp(17px, 2vw, 22px)",
+              letterSpacing: "-0.01em",
+              lineHeight: 1,
+              whiteSpace: "nowrap",
               background: "linear-gradient(135deg,#e9d5ff,#f9a8d4)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -80,13 +85,12 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* ── CENTER: nav links (absolute center) ──────────── */}
-        <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+        {/* ── COL 2: nav links (auto-width, centered by grid) ──
+             hidden below lg; on desktop grid takes center column */}
+        <div className="hidden lg:flex items-center gap-1">
 
-          {/* Roadmap — child only */}
           {isChild ? <NavLink to="/roadmap">🚀 {t("nav.roadmap")}</NavLink> : null}
 
-          {/* Child links */}
           {isChild ? <>
             <NavLink to="/dashboard">{t("nav.dashboard")}</NavLink>
             <NavLink to="/collection">{t("nav.collection")}</NavLink>
@@ -94,20 +98,17 @@ const Navbar = () => {
             <NavLink to="/my-classrooms">{t("nav.myClass")}</NavLink>
           </> : null}
 
-          {/* Parent links */}
           {isParent ? <>
             <NavLink to="/parent/dashboard">{t("nav.dashboard")}</NavLink>
             <NavLink to="/parent/profile">{t("nav.profile")}</NavLink>
           </> : null}
 
-          {/* Teacher links */}
           {isTeacher ? <>
             <NavLink to="/teacher/dashboard">{t("nav.dashboard")}</NavLink>
             <NavLink to="/teacher/contents">{t("nav.myContent")}</NavLink>
             <NavLink to="/teacher/profile">{t("nav.profile")}</NavLink>
           </> : null}
 
-          {/* Admin links */}
           {isAdmin ? <>
             <NavLink to="/admin/dashboard">{t("nav.dashboard")}</NavLink>
             <NavLink to="/admin/users">{t("nav.users")}</NavLink>
@@ -115,13 +116,11 @@ const Navbar = () => {
             <NavLink to="/admin/profile">{t("nav.profile")}</NavLink>
           </> : null}
 
-          {/* Guest links */}
           {!user ? <>
             <NavLink to="/register">{t("nav.registerNow")}</NavLink>
             <NavLink to="/login">{t("nav.logIn")}</NavLink>
           </> : null}
 
-          {/* Home — child only */}
           {isChild ? (
             <Link
               to={getRoleHome(user.role)}
@@ -133,29 +132,26 @@ const Navbar = () => {
           ) : null}
         </div>
 
-        {/* ── RIGHT: user card + lang + logout ─────────────── */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        {/* ── COL 3: user card + lang + logout (right-aligned) ─ */}
+        <div className="flex items-center gap-2 justify-end flex-shrink-0">
 
           {/* User card */}
           {user ? (
             <Link
               to={profileHref}
               onClick={playPop}
-              className="flex items-center gap-2 no-underline group"
+              className="flex items-center gap-2 no-underline group min-w-0"
             >
-              {/* Avatar circle */}
-              <div className="nav-user-avatar">
+              <div className="nav-user-avatar flex-shrink-0">
                 {user.avatar
                   ? <img src={user.avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   : <span>{initial}</span>
                 }
               </div>
-
-              {/* Name + role badge */}
-              <div className="hidden sm:flex flex-col leading-none" style={{ gap: "3px" }}>
+              <div className="hidden sm:flex flex-col leading-none min-w-0" style={{ gap: "3px" }}>
                 <span
-                  className="text-white font-semibold text-sm"
-                  style={{ fontFamily: "'Baloo 2',sans-serif" }}
+                  className="text-white font-semibold truncate"
+                  style={{ fontFamily: "var(--font-ui)", fontSize: "13px", lineHeight: 1 }}
                 >
                   {userName}
                 </span>
@@ -166,39 +162,37 @@ const Navbar = () => {
             </Link>
           ) : (
             <span
-              className="hidden lg:inline text-sm px-3 py-1.5 rounded-full"
+              className="hidden lg:inline"
               style={{
+                fontSize: "13px",
+                lineHeight: 1,
+                padding: "5px 12px",
+                borderRadius: "999px",
                 color: "rgba(196,181,253,0.7)",
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.10)",
+                fontFamily: "var(--font-ui)",
+                whiteSpace: "nowrap",
               }}
             >
               {t("nav.guest")}
             </span>
           )}
 
-          {/* Register / Login — chỉ hiện khi chưa đăng nhập, ẩn ở lg vì đã có ở center */}
+          {/* Mobile: register/login pills (hidden on lg since center has them) */}
           {!user && (
-            <div className="flex lg:hidden items-center gap-1.5">
-              <Link
-                to="/register"
-                onClick={playPop}
-                className="nav-pill nav-pill-active text-xs px-3 py-1.5"
-              >
+            <div className="flex lg:hidden items-center gap-1">
+              <Link to="/register" onClick={playPop} className="nav-pill nav-pill-active" style={{ fontSize: "12px", padding: "5px 10px" }}>
                 {t("nav.registerNow")}
               </Link>
-              <Link
-                to="/login"
-                onClick={playPop}
-                className="nav-pill nav-pill-inactive text-xs px-3 py-1.5"
-              >
+              <Link to="/login" onClick={playPop} className="nav-pill nav-pill-inactive" style={{ fontSize: "12px", padding: "5px 10px" }}>
                 {t("nav.logIn")}
               </Link>
             </div>
           )}
 
-          {/* Language switcher — ẩn mobile qua CSS media query */}
-          <div className="nav-lang-group">
+          {/* Language switcher */}
+          <div className="nav-lang-group flex-shrink-0">
             {LANGS.map((lang) => (
               <button
                 key={lang.code}
@@ -217,10 +211,10 @@ const Navbar = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="nav-logout-btn"
+              className="nav-logout-btn flex-shrink-0"
               title={t("nav.logOut")}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
                 <line x1="21" y1="12" x2="9" y2="12"/>

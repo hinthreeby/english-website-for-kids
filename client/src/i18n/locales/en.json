@@ -584,6 +584,9 @@
   },
   "userProfile": {
     "title": "Profile",
+    "titleParent": "Parent Profile",
+    "titleTeacher": "Teacher Profile",
+    "titleAdmin": "Admin Profile",
     "subtitle": "Update your display name, email, password, and avatar.",
     "avatar": "Avatar",
     "avatarHint": "Upload an image file or paste an image URL.",

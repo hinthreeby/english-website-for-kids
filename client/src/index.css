@@ -140,21 +140,63 @@ textarea {
     0 6px 24px rgba(0, 0, 0, 0.50);
 }
 
+/* ── Responsive 3-column inner layout ───────────────────── */
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  gap: 8px;
+}
+
+@media (min-width: 1024px) {
+  .navbar-inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    padding: 0 24px;
+    column-gap: 14px;
+  }
+}
+
 /* ── Nav pill links ──────────────────────────────────────── */
 .nav-pill {
   display: inline-flex;
   align-items: center;
+  line-height: 1;
   gap: 4px;
   font-size: 13.5px;
   font-weight: 600;
   font-family: var(--font-ui);
-  padding: 6px 14px;
+  padding: 6px 13px;
   border-radius: 999px;
   text-decoration: none;
   white-space: nowrap;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+/* Tablet: tighter pills */
+@media (max-width: 1280px) and (min-width: 1024px) {
+  .nav-pill {
+    padding: 5px 9px;
+    font-size: 12.5px;
+  }
+  .nav-home-pill {
+    padding: 5px 13px;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 1024px) {
+  .nav-pill {
+    padding: 5px 7px;
+    font-size: 12px;
+  }
+  .nav-home-pill {
+    padding: 5px 11px;
+    font-size: 12px;
+  }
 }
 
 .nav-pill-active {
@@ -176,11 +218,13 @@ textarea {
 .nav-home-pill {
   display: inline-flex;
   align-items: center;
+  line-height: 1;
   gap: 5px;
   font-size: 13.5px;
   font-weight: 700;
   font-family: var(--font-heading);
-  padding: 7px 18px;
+  padding: 6px 16px;
+  margin-left: 4px;
   border-radius: 999px;
   text-decoration: none;
   white-space: nowrap;
@@ -258,13 +302,14 @@ textarea {
 .nav-lang-btn {
   background: transparent;
   border: none;
-  padding: 4px 10px;
+  padding: 4px 9px;
   border-radius: 999px;
   font-size: 11.5px;
   font-weight: 600;
+  line-height: 1;
   cursor: pointer;
   color: rgba(196, 181, 253, 0.70);
-  font-family: var(--font-body);
+  font-family: var(--font-ui);
   transition: all 0.2s;
   white-space: nowrap;
 }
@@ -282,14 +327,15 @@ textarea {
 .nav-logout-btn {
   display: inline-flex;
   align-items: center;
+  line-height: 1;
   gap: 5px;
   background: transparent;
   border: 1px solid transparent;
   color: rgba(196, 181, 253, 0.60);
-  font-size: 13px;
-  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-family: var(--font-ui);
   font-weight: 500;
-  padding: 6px 12px;
+  padding: 6px 11px;
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s;
@@ -518,6 +564,7 @@ textarea {
 
 .space-title span {
   font-size: clamp(64px, 10vw, 120px);
+  font-weight: 900;
   color: var(--color-accent-3);
   text-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 8px 22px rgba(0, 0, 0, 0.6);
 }
@@ -539,6 +586,7 @@ textarea {
   margin: 0;
   text-align: center;
   font-size: clamp(28px, 4vw, 32px);
+  font-weight: 800;
   color: var(--color-accent-3);
   text-shadow: 0 0 14px rgba(255, 215, 0, 0.45);
 }
@@ -1583,45 +1631,63 @@ textarea {
   display: grid;
   grid-template-columns: repeat(3, minmax(150px, 1fr));
   gap: 20px;
-  max-width: 920px;
+  max-width: 860px;
   margin: 0 auto 40px;
 }
 
 .stars-summary-card {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  padding: 20px 32px;
+  background: rgba(123, 47, 247, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  border-radius: 24px;
+  padding: 28px 24px;
   text-align: center;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset, 0 4px 24px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stars-summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 28px rgba(123, 47, 247, 0.3), 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .stars-summary-card .value {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 44px;
+  font-weight: 800;
+  font-family: var(--font-heading);
   color: #ffd700;
+  line-height: 1;
 }
 
 .total-stars-card .value {
-  text-shadow: 0 0 16px rgba(255, 215, 0, 0.7), 0 0 28px rgba(255, 215, 0, 0.35);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.75), 0 0 40px rgba(255, 215, 0, 0.35);
+}
+
+.stars-summary-card .value:not(.total-stars-card .value) {
+  color: #c4b5fd;
+  text-shadow: 0 0 16px rgba(167, 139, 250, 0.5);
 }
 
 .value-star {
   display: inline-block;
-  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.7));
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
 }
 
 .stars-summary-card .label {
-  font-size: 13px;
-  color: #c9b8ff;
-  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  margin-top: 10px;
 }
 
 .stars-page {
   position: relative;
   min-height: 100vh;
-  padding: 130px 24px 40px;
-  background: radial-gradient(ellipse at top, #3d1278 0%, #1a0533 50%, #0a0020 100%);
+  padding: 130px 24px 60px;
+  background: radial-gradient(circle at top, #2b0a5a 0%, #12002e 40%, #07001a 100%);
   overflow: hidden;
 }
 
@@ -1778,34 +1844,46 @@ textarea {
 .stars-page-title {
   text-align: center;
   font-family: var(--font-heading);
-  font-size: 36px;
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 800;
   color: #ffd700;
-  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+  margin-bottom: 36px;
+  text-shadow: 0 0 28px rgba(255, 215, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .history-list {
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+}
+
+.history-list > p {
+  text-align: center;
+  color: #a78bfa;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  padding: 32px 0;
 }
 
 .history-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  padding: 14px 20px;
-  backdrop-filter: blur(8px);
-  transition: background 0.2s, border-color 0.2s;
+  background: rgba(123, 47, 247, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.20);
+  border-radius: 18px;
+  padding: 14px 22px;
+  backdrop-filter: blur(12px);
+  transition: background 0.2s, border-color 0.2s, transform 0.18s;
 }
 
 .history-item:hover {
-  background: rgba(123, 47, 247, 0.2);
-  border-color: rgba(123, 47, 247, 0.4);
+  background: rgba(123, 47, 247, 0.18);
+  border-color: rgba(139, 92, 246, 0.42);
+  transform: translateX(4px);
 }
 
 .history-item-left {
@@ -1815,11 +1893,12 @@ textarea {
 }
 
 .history-game-icon {
-  font-size: 28px;
+  font-size: 26px;
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  background: rgba(123, 47, 247, 0.3);
+  border-radius: 14px;
+  background: rgba(123, 47, 247, 0.25);
+  border: 1px solid rgba(139, 92, 246, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1827,25 +1906,29 @@ textarea {
 }
 
 .history-game-name {
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 16px;
+  color: #e9d5ff;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 15.5px;
   margin: 0 0 3px;
 }
 
 .history-date {
-  color: #9b8bb4;
-  font-size: 12px;
+  color: #7c6fa0;
+  font-size: 11.5px;
+  font-family: var(--font-ui);
   margin: 0;
 }
 
 .history-stars {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   color: #ffd700;
-  font-weight: 700;
+  font-weight: 800;
+  font-family: var(--font-heading);
   font-size: 18px;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
 }
 
 .result-stars {
@@ -5258,17 +5341,22 @@ body,
 
 .lp-title {
   font-family: var(--font-heading);
-  font-size: 3rem;
+  font-size: clamp(2.6rem, 5vw, 3.2rem);
+  font-weight: 800;
   line-height: 1;
   margin: 0 0 6px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
-.lp-title-white { color: #ffffff; }
+.lp-title-white {
+  color: #ffffff;
+  text-shadow: 0 0 22px rgba(255, 255, 255, 0.22), 0 2px 8px rgba(0, 0, 0, 0.45);
+}
 .lp-title-gold {
   background: linear-gradient(135deg, #ffd700 0%, #ffb347 60%, #ff8c42 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.45));
   filter: drop-shadow(0 0 12px rgba(255,215,0,0.55));
 }
 

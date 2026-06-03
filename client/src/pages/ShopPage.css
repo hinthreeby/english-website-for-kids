@@ -16,9 +16,12 @@
 
 .shop-title {
   font-family: var(--font-heading);
-  font-size: clamp(24px, 4vw, 36px);
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 800;
   color: #ffd700;
   margin: 0;
+  text-shadow: 0 0 22px rgba(255, 215, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+  letter-spacing: -0.01em;
 }
 
 .shop-star-balance {
