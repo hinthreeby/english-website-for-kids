@@ -195,7 +195,7 @@ async function startServer() {
 
     // ── API Routes ───────────────────────────────────────────────────────────
     app.use("/api/auth", authRoutes);
-    app.use("/auth", googleAuthRoutes);
+    app.use("/api/auth", googleAuthRoutes);
     app.use("/api/progress", progressRoutes);
     app.use("/api/shop", shopRoutes);
     app.use("/api/parent", parentRoutes);
