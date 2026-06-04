@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dadImg     from "../assets/games/unit1-family/dad.png";
 import momImg     from "../assets/games/unit1-family/mom.png";
 import brotherImg from "../assets/games/unit1-family/brother.png";
@@ -64,6 +64,7 @@ const FamilyPhoto = ({ onComplete }) => {
   const [allDone,  setAllDone]  = useState(false);
 
   const timersRef = useRef([]);
+  const audioRef  = useRef(null);
 
   const qt = (fn, ms) => {
     const id = setTimeout(() => {
@@ -73,18 +74,37 @@ const FamilyPhoto = ({ onComplete }) => {
     timersRef.current.push(id);
   };
 
-  useEffect(() => () => timersRef.current.forEach(clearTimeout), []);
+  useEffect(() => () => {
+    timersRef.current.forEach(clearTimeout);
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+  }, []);
+
+  const playAudio = useCallback((path) => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      const audio = new Audio(path);
+      audioRef.current = audio;
+      audio.play().catch((err) => {
+        console.warn(`[FamilyPhoto] Audio failed to play: ${path}`, err.message || err);
+      });
+    } catch (err) {
+      console.warn(`[FamilyPhoto] Audio error for: ${path}`, err.message || err);
+    }
+  }, []);
 
   // Auto-play question audio when question changes or game starts
   useEffect(() => {
     if (showIntro || allDone) return;
-    const id = setTimeout(() => new Audio(questions[currentQ].audio).play().catch(() => {}), 500);
+    const id = setTimeout(() => playAudio(questions[currentQ].audio), 500);
     return () => clearTimeout(id);
-  }, [currentQ, showIntro, allDone, questions]);
+  }, [currentQ, showIntro, allDone, questions, playAudio]);
 
   const q = questions[currentQ];
 
-  const playQuestionAudio = () => new Audio(q.audio).play().catch(() => {});
+  const playQuestionAudio = () => playAudio(q.audio);
 
   const handleSelect = (memberId) => {
     if (selected !== null) return;

@@ -781,16 +781,16 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
             <button
               onClick={onClose}
               style={{
-                flexShrink: 0, marginTop: "0.2rem",
+                flexShrink: 0, alignSelf: "flex-start",
                 width: 44, height: 44, borderRadius: "50%",
                 background: "rgba(255,255,255,0.07)",
                 border: "1.5px solid rgba(168,85,247,0.4)",
                 color: "#c4b5fd",
                 cursor: "pointer",
-                fontSize: 18, fontWeight: 800,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "all 0.2s",
                 boxShadow: "0 0 14px rgba(168,85,247,0.3)",
+                padding: 0,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "rgba(236,72,153,0.22)";
@@ -805,7 +805,9 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
                 e.currentTarget.style.color = "#c4b5fd";
               }}
             >
-              ✕
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+              </svg>
             </button>
           </div>
 
@@ -893,17 +895,20 @@ export default function ContentPlayer({ content, mode = "preview", alreadySubmit
           <button
             onClick={onClose}
             style={{
-              flexShrink: 0, marginTop: "0.2rem",
+              flexShrink: 0, alignSelf: "flex-start",
               width: 44, height: 44, borderRadius: "50%",
               background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(168,85,247,0.4)",
-              color: "#c4b5fd", cursor: "pointer", fontSize: 18, fontWeight: 800,
+              color: "#c4b5fd", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               transition: "all 0.2s", boxShadow: "0 0 14px rgba(168,85,247,0.3)",
+              padding: 0,
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(236,72,153,0.22)"; e.currentTarget.style.borderColor = "rgba(236,72,153,0.7)"; e.currentTarget.style.color = "#f9a8d4"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "rgba(168,85,247,0.4)"; e.currentTarget.style.color = "#c4b5fd"; }}
           >
-            ✕
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
           </button>
         </div>
 

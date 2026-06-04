@@ -231,7 +231,7 @@
     "resend": "Gửi lại mã",
     "resendCooldown": "Gửi lại mã ({{count}}s)",
     "sending": "Đang gửi...",
-    "backToLogin": "← Quay lại đăng nhập",
+    "backToLogin": "Quay lại đăng nhập",
     "connectionError": "Lỗi kết nối. Vui lòng thử lại.",
     "enterAllDigits": "Vui lòng nhập đủ 6 chữ số.",
     "verificationFailed": "Xác thực thất bại."

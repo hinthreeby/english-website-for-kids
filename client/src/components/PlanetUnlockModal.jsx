@@ -20,11 +20,15 @@ const PlanetUnlockModal = ({ planetId, bonusAwarded, bonusStars, onClose }) => {
     <div className="planet-modal-overlay" onClick={onClose}>
       <div className="planet-modal-card" onClick={(e) => e.stopPropagation()}>
         <div className="planet-modal-glow" />
+
         <p className="planet-modal-label">🌌 Planet Unlocked!</p>
+
         <img src={planet.img} alt={planet.name} className="planet-modal-img" />
+
         <h2 className="planet-modal-name">{planet.name}</h2>
+
         <p className="planet-modal-streak">
-          {planet.requiredStreak} days streak achieved!
+          🔥 {planet.requiredStreak}-day streak achieved!
         </p>
 
         {bonusAwarded && (
@@ -33,7 +37,7 @@ const PlanetUnlockModal = ({ planetId, bonusAwarded, bonusStars, onClose }) => {
           </div>
         )}
 
-        <button className="btn-register planet-modal-btn" type="button" onClick={onClose}>
+        <button className="planet-modal-btn" type="button" onClick={onClose}>
           Awesome! ✨
         </button>
       </div>

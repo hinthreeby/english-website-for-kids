@@ -112,10 +112,10 @@
   background: #fff;
   border: 3px solid #e5e7eb;
   border-radius: 18px;
-  padding: clamp(6px, 1.5vw, 14px);
+  padding: clamp(8px, 2vw, 16px);
   cursor: pointer;
   transition: transform 0.17s, border-color 0.17s, box-shadow 0.17s;
-  width: clamp(76px, 17vw, 136px);
+  width: clamp(108px, 22vw, 172px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   user-select: none;
   touch-action: manipulation;
@@ -150,9 +150,10 @@
 
 .fp-option-img {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 2 / 3;
   object-fit: contain;
   pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12));
 }
 
 .fp-option-name {
@@ -403,12 +404,12 @@
 @media (max-width: 540px) {
   .fp-quiz-frame      { gap: 18px; padding: 12px 10px; margin: 6px 8px 8px; border-radius: 18px; }
   .fp-options-row     { gap: 8px; }
-  .fp-option          { width: clamp(64px, 21vw, 100px); border-radius: 14px; }
+  .fp-option          { width: clamp(84px, 22vw, 128px); border-radius: 14px; }
   .fp-hint-mascot     { width: 88px; height: 88px; }
   .fp-mascot-wrapper  { bottom: 58px; left: 10px; }
 }
 
 @media (max-width: 380px) {
-  .fp-option          { width: 60px; padding: 5px; }
+  .fp-option          { width: 78px; padding: 6px; }
   .fp-audio-btn       { width: 76px; height: 76px; font-size: 2rem; }
 }

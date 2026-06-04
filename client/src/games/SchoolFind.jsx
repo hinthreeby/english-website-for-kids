@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import bagImg       from "../assets/roadmap/unit2/bag.png";
 import ballImg      from "../assets/roadmap/unit2/ball.png";
 import bookImg      from "../assets/roadmap/unit2/book.png";
@@ -67,6 +67,7 @@ const SchoolFind = ({ onComplete }) => {
   const [totalMistakes, setTotalMistakes] = useState(0);
   const [showWordFor,  setShowWordFor]    = useState(null);
   const timersRef = useRef([]);
+  const audioRef  = useRef(null);
 
   const qt = (fn, ms) => {
     const id = setTimeout(() => {
@@ -76,19 +77,38 @@ const SchoolFind = ({ onComplete }) => {
     timersRef.current.push(id);
   };
 
-  useEffect(() => () => timersRef.current.forEach(clearTimeout), []);
+  useEffect(() => () => {
+    timersRef.current.forEach(clearTimeout);
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+  }, []);
+
+  const playAudio = useCallback((path) => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      const audio = new Audio(path);
+      audioRef.current = audio;
+      audio.play().catch((err) => {
+        console.warn(`[SchoolFind] Audio failed to play: ${path}`, err.message || err);
+      });
+    } catch (err) {
+      console.warn(`[SchoolFind] Audio error for: ${path}`, err.message || err);
+    }
+  }, []);
 
   const currentId   = questionOrder[questionIdx];
-  const currentItem = ITEMS.find(i => i.id === currentId);
+  const currentItem = useMemo(() => ITEMS.find(i => i.id === currentId), [currentId]);
 
-  // Auto-play audio when question changes
+  // Auto-play audio when question changes (after user started playing)
   useEffect(() => {
     if (phase !== "question") return;
     const item = ITEMS.find(i => i.id === questionOrder[questionIdx]);
     if (!item) return;
-    const id = setTimeout(() => new Audio(item.audio).play().catch(() => {}), 450);
+    const id = setTimeout(() => playAudio(item.audio), 450);
     return () => clearTimeout(id);
-  }, [phase, questionIdx, questionOrder]);
+  }, [phase, questionIdx, questionOrder, playAudio]);
 
   const advanceToNext = useCallback((nextIdx) => {
     if (nextIdx >= TOTAL) {
@@ -103,6 +123,8 @@ const SchoolFind = ({ onComplete }) => {
 
   const handleCorrect = useCallback((id) => {
     playFeedback("correct");
+    const item = ITEMS.find(i => i.id === id);
+    if (item) playAudio(item.audio);
     setPoppingId(id);
     setShowWordFor(id);
     setPhase("transitioning");
@@ -113,9 +135,11 @@ const SchoolFind = ({ onComplete }) => {
       advanceToNext(questionIdx + 1);
     }, 750);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionIdx, advanceToNext]);
+  }, [questionIdx, advanceToNext, playAudio]);
 
   const handleReveal = useCallback((id) => {
+    const item = ITEMS.find(i => i.id === id);
+    if (item) playAudio(item.audio);
     setRevealingId(id);
     setShowWordFor(id);
     qt(() => {
@@ -129,7 +153,7 @@ const SchoolFind = ({ onComplete }) => {
       }, 750);
     }, 1500);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionIdx, advanceToNext]);
+  }, [questionIdx, advanceToNext, playAudio]);
 
   const handleClick = useCallback((id) => {
     if (phase !== "question") return;
@@ -153,7 +177,7 @@ const SchoolFind = ({ onComplete }) => {
   }, [phase, foundIds, currentId, mistakesRound, handleCorrect, handleReveal]);
 
   const playCurrentAudio = () => {
-    if (currentItem) new Audio(currentItem.audio).play().catch(() => {});
+    if (currentItem) playAudio(currentItem.audio);
   };
 
   const finish = () => {

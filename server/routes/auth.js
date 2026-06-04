@@ -271,11 +271,14 @@ router.post("/login", loginLimiter, async (req, res) => {
       return res.status(403).json({ error: "Your account has been disabled." });
     }
 
+    // Admin always requires 2FA regardless of device trust
+    const adminAlways2FA = user.role === "admin";
     // Children and accounts without email skip 2FA
-    const skip2FA = user.role === "child" || !user.email;
+    const skip2FA = !adminAlways2FA && (user.role === "child" || !user.email);
 
     if (!skip2FA) {
-      if (deviceId) {
+      // Trusted device bypass — admins are excluded from this shortcut
+      if (deviceId && !adminAlways2FA) {
         const hash = deviceHash(deviceId);
         const trusted = user.trustedDevices?.some((d) => d.tokenHash === hash);
         if (trusted) {
@@ -283,7 +286,18 @@ router.post("/login", loginLimiter, async (req, res) => {
           return await doDirectLogin(user, req, res, false);
         }
       }
-      // New device → send 2FA OTP
+
+      if (adminAlways2FA) {
+        auth("info", "admin_2fa_initiated", {
+          userId:    user._id.toString(),
+          email:     user.email,
+          ip,
+          userAgent,
+          message:   `Admin ${user.username} login: mandatory 2FA initiated`,
+        });
+      }
+
+      // New device / admin → send 2FA OTP
       const { otp, pendingToken } = createPending(user._id, user.email, "login-2fa", {
         deviceId: deviceId || null,
       });
@@ -387,6 +401,16 @@ router.post("/login-verify", otpVerifyLimiter, async (req, res) => {
       userAgent: req.headers?.["user-agent"],
       message:   `User ${updatedUser.username} logged in (2FA verified)`,
     });
+
+    if (updatedUser.role === "admin") {
+      auth("info", "admin_2fa_verified", {
+        userId:    updatedUser._id.toString(),
+        email:     updatedUser.email,
+        ip:        req.ip || req.socket?.remoteAddress,
+        userAgent: req.headers?.["user-agent"],
+        message:   `Admin ${updatedUser.username} 2FA verification successful`,
+      });
+    }
 
     sendToken(updatedUser, res);
     return res.json({ user: buildUserPayload(updatedUser), streakReset, deviceId: effectiveDeviceId });

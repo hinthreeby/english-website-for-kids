@@ -231,7 +231,7 @@
     "resend": "Resend code",
     "resendCooldown": "Resend code ({{count}}s)",
     "sending": "Sending...",
-    "backToLogin": "← Back to Login",
+    "backToLogin": "Back to Login",
     "connectionError": "Connection error. Please try again.",
     "enterAllDigits": "Please enter all 6 digits.",
     "verificationFailed": "Verification failed."

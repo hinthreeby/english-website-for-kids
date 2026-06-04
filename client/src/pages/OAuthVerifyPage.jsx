@@ -153,23 +153,35 @@ const OAuthVerifyPage = () => {
       <div className="shooting shooting-1" aria-hidden="true" />
       <div className="shooting shooting-2" aria-hidden="true" />
 
-      <form className="auth-card" onSubmit={handleSubmit} style={{ gap: "1.5rem", padding: "3rem 2.5rem" }}>
-        <h2>{t("oauthVerify.title")}</h2>
-        <p className="subtitle" style={{ marginBottom: "0.25rem" }}>
+      <form
+        className="auth-card"
+        onSubmit={handleSubmit}
+        style={{ gap: "1.25rem", padding: "2.5rem 2rem", textAlign: "center" }}
+      >
+        {/* Icon */}
+        <div style={{
+          width: 64, height: 64, borderRadius: "50%", margin: "0 auto",
+          background: "linear-gradient(135deg, rgba(123,47,247,0.35), rgba(255,107,157,0.25))",
+          border: "1.5px solid rgba(167,139,250,0.5)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "1.8rem",
+          boxShadow: "0 0 24px rgba(123,47,247,0.4)",
+        }}>
+          🔐
+        </div>
+
+        <h2 style={{ margin: 0 }}>{t("oauthVerify.title")}</h2>
+
+        <p className="subtitle" style={{ margin: 0, color: "#c4b5fd" }}>
           {t("oauthVerify.subtitle")}
         </p>
-        <p style={{ color: "#64748b", fontSize: "0.85rem", margin: 0 }}>
+        <p style={{ color: "rgba(167,139,250,0.6)", fontSize: "0.82rem", margin: 0 }}>
           {t("oauthVerify.expires")}
         </p>
 
         {/* 6-digit OTP inputs */}
         <div
-          style={{
-            display: "flex",
-            gap: "8px",
-            justifyContent: "center",
-            margin: "2rem 0",
-          }}
+          style={{ display: "flex", gap: "8px", justifyContent: "center", margin: "0.5rem 0" }}
           onPaste={handlePaste}
         >
           {digits.map((digit, i) => (
@@ -184,41 +196,58 @@ const OAuthVerifyPage = () => {
               onKeyDown={(e) => handleKeyDown(i, e)}
               style={{
                 width: "48px",
-                height: "54px",
+                height: "56px",
                 textAlign: "center",
                 fontSize: "1.5rem",
                 fontWeight: "700",
-                borderRadius: "9px",
-                border: `2px solid ${error ? "#f87171" : digit ? "#6366f1" : "#cbd5e1"}`,
+                borderRadius: "12px",
+                border: `2px solid ${error ? "rgba(248,113,113,0.8)" : digit ? "rgba(139,92,246,0.9)" : "rgba(167,139,250,0.3)"}`,
                 outline: "none",
-                background: "#fff",
-                color: "#1e293b",
+                background: digit ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.05)",
+                color: "#f0e6ff",
                 padding: "0",
                 boxSizing: "border-box",
-                transition: "border-color 0.15s",
+                transition: "border-color 0.15s, background 0.15s",
                 flex: "0 0 auto",
+                boxShadow: digit ? "0 0 10px rgba(139,92,246,0.3)" : "none",
               }}
               aria-label={`Digit ${i + 1}`}
             />
           ))}
         </div>
 
-        {error ? <p className="error-text auth-error">{error}</p> : null}
+        {error && (
+          <p className="error-text auth-error" style={{ margin: 0 }}>{error}</p>
+        )}
 
+        {/* Confirm button */}
         <button
           className="btn-primary"
           type="submit"
           disabled={loading || digits.join("").length < CODE_LENGTH}
+          style={{ marginTop: "0.25rem" }}
         >
           {loading ? t("oauthVerify.verifying") : t("oauthVerify.confirm")}
         </button>
 
+        {/* Resend button — glass style */}
         <button
           type="button"
-          className="btn-secondary"
           onClick={handleResend}
           disabled={resendCooldown > 0 || resendLoading}
-          style={{ fontSize: "0.9rem" }}
+          style={{
+            width: "100%",
+            background: "rgba(123,47,247,0.12)",
+            border: "1px solid rgba(167,139,250,0.35)",
+            borderRadius: "14px",
+            padding: "11px 12px",
+            color: resendCooldown > 0 ? "rgba(167,139,250,0.5)" : "#c4b5fd",
+            fontSize: "0.9rem",
+            fontWeight: 700,
+            cursor: resendCooldown > 0 || resendLoading ? "not-allowed" : "pointer",
+            transition: "background 0.15s, color 0.15s",
+            fontFamily: "inherit",
+          }}
         >
           {resendLoading
             ? t("oauthVerify.sending")
@@ -227,12 +256,31 @@ const OAuthVerifyPage = () => {
             : t("oauthVerify.resend")}
         </button>
 
+        {/* Back to Login — subtle link style */}
         <button
           type="button"
-          className="btn-secondary"
           onClick={() => navigate("/login")}
-          style={{ fontSize: "0.85rem", opacity: 0.7 }}
+          style={{
+            background: "none",
+            border: "none",
+            color: "rgba(167,139,250,0.6)",
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "5px",
+            padding: "4px 0",
+            transition: "color 0.15s",
+            fontFamily: "inherit",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#c4b5fd"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(167,139,250,0.6)"; }}
         >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M9 2L4 7l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
           {t("oauthVerify.backToLogin")}
         </button>
       </form>
