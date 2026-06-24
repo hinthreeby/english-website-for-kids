@@ -10,6 +10,7 @@
     "myChildren": "My Children",
     "profile": "Profile",
     "myContent": "My Content",
+    "forum": "Forum",
     "users": "Users",
     "approvals": "Approvals",
     "registerNow": "Register Now",
@@ -445,6 +446,23 @@
       "assignmentCompletion": "Assignment Completion",
       "completed": "Completed",
       "pending": "Pending"
+    },
+    "forum": {
+      "title": "Teacher Forum",
+      "subtitle": "Share games, media, and teaching insights with the community.",
+      "posts": "Community Posts",
+      "createPost": "Create Post",
+      "noPosts": "No posts yet",
+      "noPostsHint": "Be the first to share something with the community!",
+      "loadMore": "Load more posts",
+      "shareSuccess": "Link copied!",
+      "follow": "Follow",
+      "following": "Following",
+      "savedPosts": "Saved Posts",
+      "savedEmptyTitle": "No saved posts yet",
+      "savedEmptySubtitle": "Save useful posts to view them later.",
+      "comments": "Comments",
+      "noComments": "No comments yet. Be the first!"
     },
     "wordList": {
       "title": "Word List Editor",

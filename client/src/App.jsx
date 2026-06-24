@@ -22,6 +22,7 @@ import ChildProgress from "./pages/parent/ChildProgress";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import ClassroomPage from "./pages/teacher/ClassroomPage";
 import TeacherContentsPage from "./pages/teacher/TeacherContentsPage";
+import TeacherForum from "./pages/teacher/TeacherForum";
 import StudentContentsPage from "./pages/student/StudentContentsPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import ChildProfilePage from "./pages/child/ChildProfilePage";
@@ -188,6 +189,14 @@ const App = () => {
             element={
               <TeacherOnly>
                 <TeacherContentsPage />
+              </TeacherOnly>
+            }
+          />
+          <Route
+            path="/teacher/forum"
+            element={
+              <TeacherOnly>
+                <TeacherForum />
               </TeacherOnly>
             }
           />

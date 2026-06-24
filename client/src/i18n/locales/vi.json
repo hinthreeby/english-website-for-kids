@@ -10,6 +10,7 @@
     "myChildren": "Con tôi",
     "profile": "Hồ sơ",
     "myContent": "Nội dung",
+    "forum": "Diễn đàn",
     "users": "Người dùng",
     "approvals": "Phê duyệt",
     "registerNow": "Đăng ký",
@@ -445,6 +446,23 @@
       "assignmentCompletion": "Hoàn thành bài tập",
       "completed": "Đã xong",
       "pending": "Chưa xong"
+    },
+    "forum": {
+      "title": "Diễn Đàn Giáo Viên",
+      "subtitle": "Chia sẻ trò chơi, media và kinh nghiệm giảng dạy với cộng đồng.",
+      "posts": "Bài đăng cộng đồng",
+      "createPost": "Tạo bài đăng",
+      "noPosts": "Chưa có bài đăng",
+      "noPostsHint": "Hãy là người đầu tiên chia sẻ với cộng đồng!",
+      "loadMore": "Tải thêm bài đăng",
+      "shareSuccess": "Đã sao chép link!",
+      "follow": "Theo dõi",
+      "following": "Đang theo dõi",
+      "savedPosts": "Bài đã lưu",
+      "savedEmptyTitle": "Chưa có bài đăng đã lưu",
+      "savedEmptySubtitle": "Lưu các bài đăng hay để xem lại sau.",
+      "comments": "Bình luận",
+      "noComments": "Chưa có bình luận. Hãy là người đầu tiên!"
     },
     "wordList": {
       "title": "Trình Soạn Danh Sách Từ",

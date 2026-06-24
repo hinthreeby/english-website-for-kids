@@ -106,6 +106,7 @@ const Navbar = () => {
           {isTeacher ? <>
             <NavLink to="/teacher/dashboard">{t("nav.dashboard")}</NavLink>
             <NavLink to="/teacher/contents">{t("nav.myContent")}</NavLink>
+            <NavLink to="/teacher/forum">{t("nav.forum")}</NavLink>
             <NavLink to="/teacher/profile">{t("nav.profile")}</NavLink>
           </> : null}
 

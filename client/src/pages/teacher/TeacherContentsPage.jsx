@@ -766,7 +766,7 @@ function ContentForm({ initial, onSave, onCancel }) {
               )}
               <button type="button" className="btn-secondary-glass" style={{ fontSize: 13, padding: "0.35rem 0.85rem" }}
                 onClick={() => setShowPreview(true)}>
-                👁 Preview
+                Preview
               </button>
             </div>
           </div>
@@ -1163,7 +1163,7 @@ const TeacherContentsPage = () => {
                     {!c.isPublished && c.assignedClassrooms?.length > 0 && <span style={{ color: "#f59e0b" }}>⚠ Draft — students can't see this yet</span>}
                   </div>
                   <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-                    <button className="btn-secondary-glass" style={{ fontSize: 12, padding: "0.28rem 0.65rem" }} onClick={() => setPreviewContent(c)}>👁 Preview</button>
+                    <button className="btn-secondary-glass" style={{ fontSize: 12, padding: "0.28rem 0.65rem" }} onClick={() => setPreviewContent(c)}>Preview</button>
                     <button className="btn-secondary-glass" style={{ fontSize: 12, padding: "0.28rem 0.65rem" }} onClick={() => { setEditing(c); setView("edit"); }}>Edit</button>
                     <button className="btn-secondary-glass" style={{ fontSize: 12, padding: "0.28rem 0.65rem" }} onClick={() => handleDuplicate(c._id)}>Duplicate</button>
                     <button className={c.isPublished ? "btn-cancel" : "btn-register"} style={{ fontSize: 12, padding: "0.28rem 0.65rem" }} onClick={() => handlePublish(c._id)}>{c.isPublished ? "Unpublish" : "Publish"}</button>

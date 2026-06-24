@@ -41,6 +41,33 @@ const useSound = () => {
     playTone(240, 0.2, "sawtooth", 0.08);
   }, [playTone]);
 
+  const playApplause = useCallback(() => {
+    const ctx = getAudioContext();
+    const dur = 2.4;
+    const buf = ctx.createBuffer(2, ctx.sampleRate * dur, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < d.length; i++) {
+        const t = i / ctx.sampleRate;
+        // white noise modulated at ~6 claps/sec
+        let s = (Math.random() * 2 - 1) * (0.45 + 0.55 * Math.abs(Math.sin(Math.PI * 6 * t)));
+        // envelope: 0.12s attack, sustain to 1.6s, then decay
+        s *= Math.min(t / 0.12, 1) * Math.max(0, 1 - Math.max(0, t - 1.6) / 0.8);
+        d[i] = s * 0.32;
+      }
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 1600;
+    bp.Q.value = 0.7;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.75;
+    src.connect(bp); bp.connect(gain); gain.connect(ctx.destination);
+    src.start(); src.stop(ctx.currentTime + dur);
+  }, [getAudioContext]);
+
   const speakText = useCallback((text) => {
     if (!window.speechSynthesis) {
       return;
@@ -56,6 +83,7 @@ const useSound = () => {
     playPop,
     playChime,
     playWhoosh,
+    playApplause,
     speakText,
   };
 };

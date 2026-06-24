@@ -1,0 +1,51 @@
+# =============================================================================
+# Metricbeat Configuration — english-learning-api
+# =============================================================================
+#
+# Luồng metrics:
+#   Metricbeat (máy chạy app)  -->  Elasticsearch (ELK server)  -->  Kibana
+#
+# Metricbeat đo gì?
+#   - CPU%          : usage tổng + mỗi core
+#   - RAM%          : used / available / cached
+#   - Disk%         : used / free
+#   - Network I/O   : bytes in/out
+#   - Process count : số process đang chạy
+#
+# Khác gì Pino perf log?
+#   - Pino perf log  → Node.js heap/RSS (app-level), ghi mỗi 60s, qua Logstash
+#   - Metricbeat     → CPU/RAM/Disk OS-level, đo mỗi 30s, gửi thẳng vào ES
+#
+# Cách dùng:
+#   1. Thay YOUR_ELK_SERVER_IP bằng IP thực của ELK server
+#   2. Chạy: metricbeat.exe -e -c path/to/metricbeat.yml
+# =============================================================================
+
+# ── Thu thập metrics hệ thống ─────────────────────────────────────────────────
+metricbeat.modules:
+  - module: system
+    metricsets:
+      - cpu            # CPU usage % (total + per core)
+      - memory         # RAM usage %
+      - diskio         # Disk read/write bytes/s
+      - filesystem     # Disk usage % theo partition
+      - network        # Network bytes in/out
+      - process_summary # Tổng số process
+    enabled: true
+    period: 30s
+    cpu.metrics:  ["percentages", "normalized_percentages"]
+    core.metrics: ["percentages"]
+    # Lọc chỉ lấy các filesystem quan trọng (bỏ tmpfs, devtmpfs)
+    filesystem.ignore_types: ["tmpfs", "devtmpfs", "squashfs", "overlay"]
+
+# ── Output qua Logstash (cùng pipeline với Filebeat) ─────────────────────────
+output.logstash:
+  hosts: ["10.42.212.32:5044"]
+
+# Kibana — để import dashboards sẵn có của Metricbeat
+setup.kibana:
+  host: "http://10.42.212.32:5601"
+
+# Logging của chính Metricbeat
+logging.level: info
+logging.to_files: false

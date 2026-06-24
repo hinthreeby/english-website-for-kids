@@ -123,4 +123,54 @@ const uploadAvatar = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
 });
 
-module.exports = { uploadThumbnail, uploadVideo, uploadAvatar, checkMagicBytes, deleteUploadedFile };
+// ── Forum media (image 5 MB / video 100 MB / audio 20 MB) ────────────────────
+
+const ALLOWED_FORUM_MIMES = new Set([
+  "image/jpeg", "image/png", "image/webp", "image/gif",
+  "video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo",
+  "audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4", "audio/x-m4a",
+  "audio/aac", "audio/webm",
+]);
+
+const ALLOWED_FORUM_EXTS = new Set([
+  ".jpg", ".jpeg", ".png", ".webp", ".gif",
+  ".mp4", ".webm", ".ogg", ".mov", ".avi",
+  ".mp3", ".wav", ".m4a", ".aac",
+]);
+
+const FORUM_SIZE_LIMITS = { image: 5, video: 100, audio: 20 }; // MB
+
+const forumStorage = multer.diskStorage({
+  destination: (_req, file, cb) => {
+    const subfolder = file.mimetype.startsWith("image/") ? "images"
+                    : file.mimetype.startsWith("video/") ? "videos"
+                    : "audios";
+    const dir = path.join(__dirname, "../uploads/forum", subfolder);
+    mkdirIfNeeded(dir);
+    cb(null, dir);
+  },
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `forum_${Date.now()}_${Math.random().toString(36).slice(2)}${ext}`);
+  },
+});
+
+const forumMediaFilter = (_req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!ALLOWED_FORUM_MIMES.has(file.mimetype) || !ALLOWED_FORUM_EXTS.has(ext)) {
+    return cb(new Error("File type not allowed. Allowed: jpg/png/webp/gif, mp4/webm/mov, mp3/wav/m4a."), false);
+  }
+  cb(null, true);
+};
+
+const uploadForumMedia = multer({
+  storage: forumStorage,
+  fileFilter: forumMediaFilter,
+  limits: { fileSize: 100 * 1024 * 1024 }, // hard cap 100 MB; per-type check in controller
+});
+
+module.exports = {
+  uploadThumbnail, uploadVideo, uploadAvatar,
+  uploadForumMedia, FORUM_SIZE_LIMITS,
+  checkMagicBytes, deleteUploadedFile,
+};

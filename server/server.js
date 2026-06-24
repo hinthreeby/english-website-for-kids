@@ -48,6 +48,7 @@ const chatGameRoutes      = require("./routes/chatGame");
 const transcribeRoutes    = require("./routes/transcribe");
 const imageSearchRoutes   = require("./routes/imageSearch");
 const audioSearchRoutes   = require("./routes/audioSearch");
+const forumRoutes         = require("./routes/forum");
 
 // ── Initialize Express app ────────────────────────────────────────────────
 const app = express();
@@ -217,6 +218,7 @@ async function startServer() {
     app.use("/api/transcribe", transcribeRoutes);
     app.use("/api/images", imageSearchRoutes);
     app.use("/api/audio",  audioSearchRoutes);
+    app.use("/api/forum",  forumRoutes);
 
     // ── 404 handler (logs probing attempts) ──────────────────────────────────
     app.use(notFoundLogger);

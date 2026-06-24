@@ -4,8 +4,6 @@ import api from "../lib/api";
 import matchWithPicImg from "../assets/teacher/matchwithpicture.png";
 import flashcardImg    from "../assets/teacher/flashcard.png";
 import quizlogoImg     from "../assets/teacher/quizlogo.png";
-import astronautImg    from "../assets/SpacePronounce/astronaut_game.png";
-import meteoriteImg    from "../assets/SpacePronounce/meteorite.png";
 import saturnImg       from "../assets/streak_planet/saturn.png";
 import neptuneImg      from "../assets/streak_planet/neptune.png";
 import marsImg         from "../assets/streak_planet/mars.png";
@@ -127,6 +125,11 @@ if (typeof document !== "undefined" && !document.getElementById("cp-kf")) {
       50%  { opacity: 0.9; transform: scale(1.15); }
       100% { opacity: 0.3; transform: scale(0.85); }
     }
+    @keyframes cpBurst {
+      0%   { opacity: 1; transform: translate(0, 0) scale(1.4) rotate(0deg); }
+      30%  { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--tx, 80px), var(--ty, 80px)) scale(0.2) rotate(var(--rot, 360deg)); }
+    }
   `;
   document.head.appendChild(s);
 }
@@ -137,14 +140,6 @@ const QUIZ_COLORS = [
   { bg: "rgba(239,68,68,0.22)",   border: "rgba(239,68,68,0.75)",   text: "#fca5a5", glow: "rgba(239,68,68,0.5)",   icon: "♥" },
   { bg: "rgba(34,197,94,0.22)",   border: "rgba(34,197,94,0.70)",   text: "#86efac", glow: "rgba(34,197,94,0.5)",   icon: "◆" },
   { bg: "rgba(245,158,11,0.22)",  border: "rgba(245,158,11,0.70)",  text: "#fcd34d", glow: "rgba(245,158,11,0.5)",  icon: "■" },
-];
-
-// ── Option card right-side decorations ───────────────────────────────────────
-const OPTION_DECOS = [
-  { type: "img", src: saturnImg, size: 38 },
-  { type: "img", src: marsImg,   size: 32 },
-  { type: "img", src: earthImg,  size: 36 },
-  { type: "star" },
 ];
 
 // ── Item card colors for variety ──────────────────────────────────────────────
@@ -168,33 +163,16 @@ const _BG_DOTS = Array.from({ length: 100 }, (_, i) => ({
   del: (Math.random() * 8).toFixed(2),
 }));
 
-// Layer 1: colorful ★ icon stars — same data as RoadmapPage STAR_ICON_DECOS
+// Layer 1: minimal colorful ★ stars — perimeter only, small sizes
 const _STAR_ICONS = [
-  { x:"6%",  y:"6%",  size:22, color:"#FFD700", dur:3.2, delay:0    },
-  { x:"14%", y:"18%", size:16, color:"#A78BFA", dur:4.1, delay:0.8  },
-  { x:"87%", y:"9%",  size:20, color:"#38BDF8", dur:2.9, delay:1.5  },
-  { x:"75%", y:"22%", size:14, color:"#FF6B9D", dur:3.7, delay:0.3  },
-  { x:"92%", y:"38%", size:18, color:"#34D399", dur:3.4, delay:1.1  },
-  { x:"3%",  y:"43%", size:24, color:"#FBBF24", dur:4.5, delay:2.0  },
-  { x:"83%", y:"55%", size:16, color:"#F472B6", dur:3.0, delay:0.6  },
-  { x:"8%",  y:"65%", size:20, color:"#FFD700", dur:3.9, delay:1.7  },
-  { x:"80%", y:"74%", size:18, color:"#A78BFA", dur:2.8, delay:0.4  },
-  { x:"32%", y:"4%",  size:14, color:"#38BDF8", dur:4.2, delay:1.2  },
-  { x:"57%", y:"13%", size:18, color:"#FF6B9D", dur:3.5, delay:0.9  },
-  { x:"44%", y:"46%", size:12, color:"#FFD700", dur:4.0, delay:1.6  },
-  { x:"64%", y:"62%", size:20, color:"#34D399", dur:3.1, delay:2.2  },
-  { x:"20%", y:"85%", size:16, color:"#FBBF24", dur:3.6, delay:0.7  },
-  { x:"51%", y:"78%", size:22, color:"#F472B6", dur:2.7, delay:1.3  },
-  { x:"2%",  y:"30%", size:14, color:"#A78BFA", dur:3.8, delay:0.5  },
-  { x:"95%", y:"20%", size:12, color:"#FFD700", dur:4.3, delay:1.8  },
-  { x:"47%", y:"91%", size:16, color:"#38BDF8", dur:3.3, delay:0.2  },
-  { x:"78%", y:"88%", size:14, color:"#FF6B9D", dur:4.6, delay:1.4  },
-  { x:"19%", y:"52%", size:22, color:"#34D399", dur:2.9, delay:0.8  },
-  { x:"60%", y:"35%", size:16, color:"#FBBF24", dur:3.7, delay:1.0  },
-  { x:"38%", y:"70%", size:18, color:"#FFD700", dur:4.0, delay:1.9  },
-  { x:"71%", y:"46%", size:14, color:"#F472B6", dur:3.2, delay:0.3  },
-  { x:"90%", y:"64%", size:20, color:"#A78BFA", dur:3.6, delay:2.1  },
-  { x:"25%", y:"96%", size:16, color:"#38BDF8", dur:2.8, delay:0.6  },
+  { x:"5%",  y:"8%",  size:14, color:"#A78BFA", dur:3.4, delay:0.0 },
+  { x:"88%", y:"6%",  size:16, color:"#38BDF8", dur:3.0, delay:1.2 },
+  { x:"2%",  y:"42%", size:12, color:"#FBBF24", dur:4.1, delay:0.5 },
+  { x:"93%", y:"35%", size:14, color:"#34D399", dur:3.7, delay:1.8 },
+  { x:"7%",  y:"78%", size:14, color:"#FF6B9D", dur:3.2, delay:0.9 },
+  { x:"91%", y:"72%", size:12, color:"#A78BFA", dur:4.3, delay:0.3 },
+  { x:"48%", y:"3%",  size:12, color:"#FFD700", dur:3.6, delay:1.5 },
+  { x:"52%", y:"94%", size:14, color:"#38BDF8", dur:2.9, delay:0.7 },
 ];
 
 const _SHOOTING = [
@@ -237,48 +215,18 @@ function GalaxyOverlay() {
         }} />
       ))}
 
-      {/* Saturn — large, left side */}
-      <img src={saturnImg} alt="" style={{
-        position: "absolute", left: "-3%", top: "2%",
-        width: 210, height: "auto",
-        opacity: 0.88,
-        filter: "drop-shadow(0 0 40px rgba(139,92,246,0.7)) drop-shadow(0 0 70px rgba(88,28,135,0.35))",
-        animation: "cpFloatPlanet 9s ease-in-out infinite",
-      }} />
-
-      {/* Neptune — top right */}
-      <img src={neptuneImg} alt="" style={{
-        position: "absolute", right: "2%", top: "1%",
-        width: 80, height: "auto",
-        opacity: 0.92,
-        filter: "drop-shadow(0 0 22px rgba(56,189,248,0.65))",
-        animation: "cpFloatPlanet 7s 1s ease-in-out infinite",
-      }} />
-
-      {/* Meteorite — upper center-right (comet trail) */}
-      <img src={meteoriteImg} alt="" style={{
-        position: "absolute", right: "22%", top: "7%",
-        width: 46, height: "auto",
-        opacity: 0.75,
-        filter: "drop-shadow(0 0 10px rgba(196,181,253,0.55))",
-        animation: "cpFloatPlanet 6s 2s ease-in-out infinite",
-      }} />
-
-      {/* Astronaut — bottom left */}
-      <img src={astronautImg} alt="" style={{
-        position: "absolute", left: "0%", bottom: "12%",
-        width: 155, height: "auto",
-        opacity: 0.92,
-        filter: "drop-shadow(0 0 28px rgba(139,92,246,0.5))",
-        animation: "cpFloatPlanet 8s 0.5s ease-in-out infinite",
-      }} />
-
-      {/* Moon surface — bottom glow */}
+      {/* Subtle corner glows — replaces large planet illustrations */}
       <div style={{
-        position: "absolute", bottom: "-28%", left: "50%", transform: "translateX(-50%)",
-        width: "140%", paddingBottom: "38%",
-        borderRadius: "50% 50% 0 0",
-        background: "radial-gradient(ellipse at 50% 55%, rgba(67,20,110,0.6) 0%, rgba(49,9,98,0.32) 40%, rgba(30,5,65,0.15) 65%, transparent 80%)",
+        position: "absolute", top: "-10%", left: "-5%",
+        width: "35%", paddingBottom: "35%", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(88,28,135,0.22) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", bottom: "-8%", right: "-4%",
+        width: "28%", paddingBottom: "28%", borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)",
+        pointerEvents: "none",
       }} />
     </div>
   );
@@ -303,6 +251,73 @@ function useStarBurst() {
     next.forEach((s) => setTimeout(() => setStars((p) => p.filter((x) => x.id !== s.id)), 900));
   }, []);
   return { stars, burst };
+}
+
+const _BURST_COLORS = ["#fcd34d", "#34d399", "#a78bfa", "#f9a8d4", "#67e8f9", "#fb923c", "#c4b5fd"];
+
+// Two-wave burst: wave 0 = immediate (50 particles), wave 1 = delayed second pop (30 particles)
+const _BURST = Array.from({ length: 80 }, (_, i) => {
+  const wave      = i < 50 ? 0 : 1;
+  const count     = wave === 0 ? 50 : 30;
+  const idx       = wave === 0 ? i : i - 50;
+  const baseAngle = (idx / count) * Math.PI * 2;
+  const jitter    = (Math.random() - 0.5) * 0.8;
+  const angle     = baseAngle + jitter;
+  const dist      = wave === 0
+    ? 160 + Math.random() * 220   // first wave: 160–380px
+    : 120 + Math.random() * 260;  // second wave: 120–380px
+  const isCircle  = i % 3 === 0;
+  const w         = 7 + Math.floor(Math.random() * 7);
+  const h         = isCircle ? w : 6 + Math.floor(Math.random() * 10);
+  return {
+    id:    i,
+    tx:    Math.cos(angle) * dist,
+    ty:    Math.sin(angle) * dist + 55,   // gravity
+    rot:   (Math.random() > 0.5 ? 1 : -1) * (180 + Math.floor(Math.random() * 400)),
+    delay: wave === 0
+      ? (Math.random() * 0.12).toFixed(2)          // 0–0.12s
+      : (0.38 + Math.random() * 0.28).toFixed(2),  // 0.38–0.66s
+    dur:   wave === 0
+      ? (1.6 + Math.random() * 0.7).toFixed(2)     // 1.6–2.3s
+      : (1.4 + Math.random() * 0.8).toFixed(2),    // 1.4–2.2s
+    color: _BURST_COLORS[i % _BURST_COLORS.length],
+    shape: isCircle ? "circle" : "rect",
+    w,
+    h,
+  };
+});
+
+function CelebrationConfetti() {
+  return (
+    // Fixed overlay — covers full viewport regardless of parent overflow
+    <div style={{
+      position: "fixed", inset: 0,
+      pointerEvents: "none", zIndex: 9999, overflow: "visible",
+    }}>
+      {/* Burst origin: center of viewport, slightly above middle */}
+      <div style={{
+        position: "absolute", top: "46%", left: "50%",
+        width: 0, height: 0, overflow: "visible",
+      }}>
+        {_BURST.map((p) => (
+          <div key={p.id} style={{
+            position: "absolute",
+            left: -p.w / 2,
+            top:  -p.h / 2,
+            width:  p.w,
+            height: p.h,
+            borderRadius: p.shape === "circle" ? "50%" : 2,
+            background: p.color,
+            boxShadow: `0 0 8px ${p.color}dd`,
+            animation: `cpBurst ${p.dur}s ${p.delay}s ease-out forwards`,
+            "--tx":  `${p.tx}px`,
+            "--ty":  `${p.ty}px`,
+            "--rot": `${p.rot}deg`,
+          }} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // planet images cycled per card index
@@ -643,12 +658,14 @@ function MemoryCardGame({ items, onComplete }) {
 // mode="preview": teacher sees "Show Answers" toggle
 // mode="student": submit button + result screen; alreadySubmitted shows score directly
 function QuizGame({ content, mode, alreadySubmitted }) {
-  const { playChime, playWhoosh, playPop } = useSound();
+  const { playChime, playWhoosh, playPop, playApplause } = useSound();
   const [answers, setAnswers] = useState(Array(content.questions.length).fill(null));
   const [revealed, setRevealed] = useState(false);
   const [freshResult, setFreshResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [celebratingQi, setCelebratingQi] = useState(null);
+  const [celebrationKey, setCelebrationKey] = useState(0);
 
   const isPreview = mode === "preview";
 
@@ -731,118 +748,144 @@ function QuizGame({ content, mode, alreadySubmitted }) {
 
       {content.questions.map((q, qi) => (
         <div key={qi} style={{
-          background: "linear-gradient(145deg, rgba(30,12,65,0.92), rgba(18,7,42,0.96))",
-          border: "2px solid rgba(168,85,247,0.45)",
-          borderRadius: 24,
-          padding: "1.75rem",
-          marginBottom: "1.6rem",
+          background: "linear-gradient(160deg, rgba(26,10,58,0.97) 0%, rgba(14,5,38,0.99) 100%)",
+          border: "1.5px solid rgba(168,85,247,0.35)",
+          borderRadius: 28,
+          marginBottom: "1.75rem",
           animation: "cpSlideIn 0.3s ease",
-          boxShadow: "0 0 32px rgba(168,85,247,0.2), 0 10px 40px rgba(0,0,0,0.55)",
-          position: "relative",
+          boxShadow: "0 0 40px rgba(124,58,237,0.15), 0 16px 48px rgba(0,0,0,0.6)",
           overflow: "hidden",
+          position: "relative",
         }}>
-          {/* Inner aurora */}
-          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse at 8% 8%, rgba(168,85,247,0.1) 0%, transparent 60%)" }} />
-
-          {/* Question number + text */}
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", marginBottom: q.imageUrl ? "1rem" : "1.3rem" }}>
+          {isPreview && celebratingQi === qi && <CelebrationConfetti key={celebrationKey} />}
+          {/* Question header band */}
+          <div style={{
+            padding: "1.6rem 2rem 1.4rem",
+            background: "linear-gradient(135deg, rgba(88,28,135,0.35) 0%, rgba(30,12,65,0.2) 60%, transparent 100%)",
+            borderBottom: "1px solid rgba(168,85,247,0.18)",
+            position: "relative",
+          }}>
+            {/* Subtle inner top glow */}
+            <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.08) 0%, transparent 65%)" }} />
+            {/* Question counter */}
             <div style={{
-              width: 44, height: 44, flexShrink: 0, borderRadius: "50%",
-              background: "linear-gradient(135deg, #7c3aed, #ec4899)",
-              border: "2px solid rgba(196,181,253,0.35)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 15, fontWeight: 900, color: "#fff",
-              boxShadow: "0 0 18px rgba(124,58,237,0.65), 0 4px 14px rgba(0,0,0,0.45)",
-              position: "relative", zIndex: 1,
+              display: "inline-flex", alignItems: "center", gap: "0.5rem",
+              marginBottom: "0.9rem", position: "relative", zIndex: 1,
             }}>
-              {qi + 1}
+              <span style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: "linear-gradient(135deg, #7c3aed, #ec4899)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 12, fontWeight: 900, color: "#fff",
+                boxShadow: "0 0 12px rgba(124,58,237,0.7)",
+                flexShrink: 0,
+              }}>{qi + 1}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#a78bfa" }}>
+                Question {qi + 1} of {content.questions.length}
+              </span>
             </div>
-            <p style={{ color: "#f0e6ff", fontWeight: 700, marginBottom: 0, fontSize: 19, lineHeight: 1.5, position: "relative", zIndex: 1 }}>
+            {/* Question text — large and centered */}
+            <p style={{
+              color: "#f0e6ff", fontWeight: 800,
+              fontSize: "clamp(1.15rem, 2.2vw, 1.55rem)",
+              lineHeight: 1.45, textAlign: "center",
+              margin: 0, position: "relative", zIndex: 1,
+              textShadow: "0 0 32px rgba(196,181,253,0.2)",
+            }}>
               {q.questionText}
             </p>
+            {/* Optional image */}
+            {q.imageUrl && (
+              <img src={q.imageUrl} alt="" style={{
+                maxWidth: "min(480px, 88%)", maxHeight: 260, borderRadius: 16,
+                marginTop: "1.1rem", display: "block", margin: "1.1rem auto 0",
+                boxShadow: "0 6px 28px rgba(0,0,0,0.6)",
+                border: "1px solid rgba(168,85,247,0.3)",
+              }} />
+            )}
           </div>
 
-          {/* Optional image */}
-          {q.imageUrl && (
-            <img src={q.imageUrl} alt="" style={{
-              maxWidth: "100%", maxHeight: 240, borderRadius: 14,
-              marginBottom: "1.25rem", display: "block", margin: "0 auto 1.25rem",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.55)",
-              border: "1px solid rgba(168,85,247,0.3)",
-            }} />
-          )}
-
           {/* Answer grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "1.1rem", columnGap: "1.1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0", padding: 0 }}>
             {q.options.map((opt, oi) => {
               const col = QUIZ_COLORS[oi % QUIZ_COLORS.length];
               const isSelected = answers[qi] === oi;
               const isCorrect = opt === q.correctAnswer;
 
-              let bgColor = isSelected ? col.bg : "rgba(255,255,255,0.04)";
-              let borderColor = isSelected ? col.border : "rgba(255,255,255,0.14)";
+              let bg = isSelected
+                ? `linear-gradient(135deg, ${col.bg.replace(")", ", 0.85)")}, rgba(0,0,0,0.3))`
+                : "rgba(255,255,255,0.025)";
+              let borderCol = isSelected ? col.border : "rgba(255,255,255,0.08)";
               if (revealed) {
-                if (isCorrect)       { bgColor = col.bg; borderColor = col.border; }
-                else if (isSelected) { bgColor = "rgba(239,68,68,0.18)"; borderColor = "rgba(239,68,68,0.6)"; }
-                else                 { bgColor = "rgba(255,255,255,0.02)"; borderColor = "rgba(255,255,255,0.07)"; }
+                if (isCorrect)       { bg = `linear-gradient(135deg, ${col.bg}, rgba(0,0,0,0.2))`; borderCol = col.border; }
+                else if (isSelected) { bg = "rgba(239,68,68,0.14)"; borderCol = "rgba(239,68,68,0.5)"; }
+                else                 { bg = "rgba(0,0,0,0.15)"; borderCol = "rgba(255,255,255,0.05)"; }
               }
 
               const boxShadow = isSelected && !revealed
-                ? `0 0 0 3px ${col.glow}, 0 10px 22px ${col.glow}`
-                : revealed && isCorrect ? `0 0 22px ${col.glow}` : "none";
+                ? `inset 0 0 0 2.5px ${col.border}, 0 0 28px ${col.glow}`
+                : revealed && isCorrect ? `inset 0 0 0 2.5px ${col.border}, 0 0 24px ${col.glow}` : `inset 0 0 0 1px ${borderCol}`;
+
+              // Edge borders for 2×2 grid
+              const isLeft = oi % 2 === 0;
+              const isTop  = oi < 2;
+              const borderRight  = isLeft  ? `1px solid rgba(255,255,255,0.07)` : "none";
+              const borderBottom = isTop   ? `1px solid rgba(255,255,255,0.07)` : "none";
 
               return (
                 <button key={oi} type="button"
-                  onClick={() => { if (revealed) return; playPop(); setAnswers((a) => a.map((x, i) => i === qi ? oi : x)); }}
-                  style={{
-                    background: bgColor, border: `2.5px solid ${borderColor}`,
-                    borderRadius: 18, padding: "1.1rem 1.3rem",
-                    textAlign: "left", cursor: revealed ? "default" : "pointer",
-                    transition: "all .18s", display: "flex", alignItems: "center",
-                    gap: "0.9rem", boxShadow, minHeight: 88,
-                    position: "relative", overflow: "hidden", boxSizing: "border-box", width: "100%",
+                  onClick={() => {
+                    if (revealed) return;
+                    const isAlreadySelected = answers[qi] === oi;
+                    playPop();
+                    setAnswers((a) => a.map((x, i) => i === qi ? oi : x));
+                    if (isPreview && isCorrect && !isAlreadySelected) {
+                      setCelebratingQi(qi);
+                      setCelebrationKey((k) => k + 1);
+                      playApplause();
+                      playChime();
+                      setTimeout(() => setCelebratingQi((cur) => cur === qi ? null : cur), 3000);
+                    }
                   }}
+                  style={{
+                    background: bg,
+                    border: "none",
+                    borderRight, borderBottom,
+                    padding: "1.25rem 1.5rem",
+                    textAlign: "left", cursor: revealed ? "default" : "pointer",
+                    transition: "background 0.16s, box-shadow 0.16s",
+                    display: "flex", alignItems: "center",
+                    gap: "1rem", boxShadow, minHeight: 84,
+                    position: "relative", boxSizing: "border-box", width: "100%",
+                    outline: "none",
+                  }}
+                  onMouseEnter={(e) => { if (!revealed && answers[qi] !== oi) e.currentTarget.style.background = `rgba(255,255,255,0.055)`; }}
+                  onMouseLeave={(e) => { if (!revealed && answers[qi] !== oi) e.currentTarget.style.background = "rgba(255,255,255,0.025)"; }}
                 >
-                  {(isSelected || (revealed && isCorrect)) && (
-                    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: `radial-gradient(circle at 20% 50%, ${col.glow} 0%, transparent 70%)`, opacity: 0.25 }} />
-                  )}
-                  {/* Planet / star decoration on right */}
-                  {(() => {
-                    const deco = OPTION_DECOS[oi % OPTION_DECOS.length];
-                    return deco.type === "img" ? (
-                      <img src={deco.src} alt="" style={{
-                        position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-                        width: deco.size, opacity: 0.85, pointerEvents: "none",
-                        filter: `drop-shadow(0 0 10px ${col.glow}) drop-shadow(0 0 4px rgba(255,255,255,0.3)) brightness(1.2) saturate(1.4)`,
-                      }} />
-                    ) : (
-                      <span style={{
-                        position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
-                        fontSize: 28, opacity: 0.9, pointerEvents: "none", lineHeight: 1,
-                        filter: `drop-shadow(0 0 8px ${col.glow})`,
-                      }}>⭐</span>
-                    );
-                  })()}
-                  {/* Sparkle corner */}
-                  <span style={{ position: "absolute", right: 52, top: 10, fontSize: 10, opacity: 0.35, color: col.text, pointerEvents: "none" }}>✦</span>
+                  {/* Icon badge */}
                   <span style={{
-                    width: 44, height: 44, borderRadius: 13,
-                    background: col.bg, border: `2px solid ${col.border}`,
+                    width: 40, height: 40, borderRadius: 11,
+                    background: isSelected || (revealed && isCorrect) ? col.bg : "rgba(255,255,255,0.06)",
+                    border: `2px solid ${isSelected || (revealed && isCorrect) ? col.border : "rgba(255,255,255,0.12)"}`,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 20, flexShrink: 0, color: col.text, fontWeight: 900,
-                    boxShadow: `0 0 12px ${col.glow}`, position: "relative", zIndex: 1,
+                    fontSize: 18, flexShrink: 0, color: col.text, fontWeight: 900,
+                    boxShadow: isSelected || (revealed && isCorrect) ? `0 0 10px ${col.glow}` : "none",
+                    transition: "all 0.16s",
                   }}>
                     {col.icon}
                   </span>
                   <span style={{
-                    color: revealed ? (isCorrect ? col.text : isSelected ? "#f87171" : "#475569") : (isSelected ? col.text : "#e2e8f0"),
+                    color: revealed
+                      ? (isCorrect ? col.text : isSelected ? "#f87171" : "#334155")
+                      : (isSelected ? col.text : "#c4b5fd"),
                     fontWeight: isSelected || (revealed && isCorrect) ? 700 : 500,
-                    fontSize: 15, lineHeight: 1.4, flex: 1, position: "relative", zIndex: 1,
+                    fontSize: "clamp(0.85rem, 1.5vw, 1rem)",
+                    lineHeight: 1.4, flex: 1,
                   }}>
-                    {revealed && isCorrect ? "✓ " : ""}{opt}
+                    {opt}
                   </span>
                   {revealed && isCorrect && (
-                    <span style={{ fontSize: "1.2rem", flexShrink: 0, position: "relative", zIndex: 1 }}>✨</span>
+                    <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>✨</span>
                   )}
                 </button>
               );
