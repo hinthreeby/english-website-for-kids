@@ -64,6 +64,12 @@ const env = {
   // Groq (draw-guess game vision)
   GROQ_DRAW_API_KEY: process.env.GROQ_DRAW_API_KEY,
 
+  // Pixabay (free image search for teacher content)
+  PIXABAY_API_KEY: process.env.PIXABAY_API_KEY,
+
+  // Freesound (free audio search for teacher content)
+  FREESOUND_API_KEY: process.env.FREESOUND_API_KEY,
+
   // Derived flags
   isDevelopment: NODE_ENV === "development",
   isProduction: NODE_ENV === "production",
