@@ -14,8 +14,9 @@ const ForumLike     = require("../models/ForumLike");
 const ForumSave     = require("../models/ForumSave");
 const ForumComment  = require("../models/ForumComment");
 const TeacherFollow = require("../models/TeacherFollow");
-const TeacherContent = require("../models/TeacherContent");
-const User          = require("../models/User");
+const TeacherContent     = require("../models/TeacherContent");
+const ForumNotification  = require("../models/ForumNotification");
+const User               = require("../models/User");
 
 // ── Optional auth: attaches req.user if a valid JWT cookie is present ─────────
 const optionalAuth = async (req, res, next) => {
@@ -227,6 +228,24 @@ router.post("/posts", protect, isTeacher, (req, res) => {
         mediaUrl,
         visibility:  ["public", "private"].includes(visibility) ? visibility : "public",
       });
+
+      // Fire-and-forget: notify all followers of new post
+      if (post.visibility === "public") {
+        TeacherFollow.find({ followingId: req.user._id }).select("followerId").lean()
+          .then((followers) => {
+            if (!followers.length) return;
+            return ForumNotification.insertMany(
+              followers.map((f) => ({
+                recipientId: f.followerId,
+                actorId:     req.user._id,
+                type:        "new_post",
+                postId:      post._id,
+              })),
+              { ordered: false }
+            );
+          })
+          .catch(() => {});
+      }
 
       const populated = await ForumPost.findById(post._id)
         .populate("authorId", "displayName username avatar")
@@ -655,6 +674,105 @@ router.get("/suggested-teachers", optionalAuth, async (req, res) => {
     }));
 
     return res.json({ teachers });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// FOLLOWING LIST  (teachers the current user follows)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// GET /api/forum/following
+router.get("/following", protect, async (req, res) => {
+  try {
+    const follows = await TeacherFollow.find({ followerId: req.user._id }).select("followingId").lean();
+    const ids = follows.map((f) => f.followingId);
+    if (!ids.length) return res.json({ teachers: [] });
+
+    const [postCounts, followerCounts, users] = await Promise.all([
+      ForumPost.aggregate([
+        { $match: { authorId: { $in: ids }, visibility: "public" } },
+        { $group: { _id: "$authorId", posts: { $sum: 1 } } },
+      ]),
+      TeacherFollow.aggregate([
+        { $match: { followingId: { $in: ids } } },
+        { $group: { _id: "$followingId", count: { $sum: 1 } } },
+      ]),
+      User.find({ _id: { $in: ids }, isActive: true }).select("displayName username avatar").lean(),
+    ]);
+
+    const postMap     = new Map(postCounts.map((p) => [p._id.toString(), p.posts]));
+    const followerMap = new Map(followerCounts.map((f) => [f._id.toString(), f.count]));
+
+    const teachers = users.map((u) => ({
+      _id:            u._id,
+      displayName:    u.displayName || u.username,
+      username:       u.username,
+      avatar:         u.avatar || "",
+      posts:          postMap.get(u._id.toString()) || 0,
+      followersCount: followerMap.get(u._id.toString()) || 0,
+      initial:        (u.displayName || u.username || "?")[0].toUpperCase(),
+    }));
+
+    return res.json({ teachers });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═════════════════════════════════════════════════════════════════════════════
+
+// GET /api/forum/notifications
+router.get("/notifications", protect, async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const lim  = Math.min(parseInt(limit) || 20, 50);
+    const skip = (Math.max(parseInt(page) || 1, 1) - 1) * lim;
+
+    const [docs, total, unread] = await Promise.all([
+      ForumNotification.find({ recipientId: req.user._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(lim)
+        .populate("actorId", "displayName username avatar")
+        .populate("postId", "title type")
+        .lean(),
+      ForumNotification.countDocuments({ recipientId: req.user._id }),
+      ForumNotification.countDocuments({ recipientId: req.user._id, isRead: false }),
+    ]);
+
+    const notifications = docs.map((n) => ({
+      ...n,
+      actor:   n.actorId ? { _id: n.actorId._id, displayName: n.actorId.displayName || n.actorId.username, avatar: n.actorId.avatar || "" } : null,
+      post:    n.postId  ? { _id: n.postId._id,  title: n.postId.title, type: n.postId.type } : null,
+      actorId: undefined,
+      postId:  undefined,
+    }));
+
+    return res.json({ notifications, total, page: parseInt(page) || 1, pages: Math.ceil(total / lim), unread });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/forum/notifications/read-all
+router.patch("/notifications/read-all", protect, async (req, res) => {
+  try {
+    await ForumNotification.updateMany({ recipientId: req.user._id, isRead: false }, { isRead: true });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/forum/notifications/:id/read
+router.patch("/notifications/:id/read", protect, validateObjectId("id"), async (req, res) => {
+  try {
+    await ForumNotification.updateOne({ _id: req.params.id, recipientId: req.user._id }, { isRead: true });
+    return res.json({ ok: true });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

@@ -343,6 +343,106 @@ if (typeof document !== "undefined" && !document.getElementById("forum-styles"))
       background: #10b981; border: 1.5px solid #0f0528;
       box-shadow: 0 0 6px rgba(16,185,129,0.85);
     }
+
+    /* ── Notification panel ─────────────────────────── */
+    .forum-notif-panel {
+      background: rgba(15,5,40,0.88); backdrop-filter: blur(22px);
+      border: 1px solid rgba(123,47,247,0.32); border-radius: 18px;
+      padding: 1.1rem 1.25rem; animation: forumFadeUp 0.22s ease;
+      max-height: 400px; overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: rgba(124,58,237,0.4) transparent;
+    }
+    .forum-notif-item {
+      display: flex; gap: 0.6rem; padding: 0.65rem 0.75rem;
+      border-radius: 10px; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .forum-notif-item:hover { background: rgba(124,58,237,0.12) !important; }
+
+    /* ── Bell button ────────────────────────────────── */
+    .forum-bell-btn {
+      position: relative;
+      background: rgba(124,58,237,0.15); border: 1.5px solid rgba(124,58,237,0.4);
+      border-radius: 12px; padding: 0.55rem 0.72rem; cursor: pointer;
+      color: #c4b5fd; font-size: 18px; line-height: 1;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .forum-bell-btn:hover { background: rgba(124,58,237,0.28); border-color: rgba(124,58,237,0.7); }
+    .forum-bell-btn.active { background: rgba(124,58,237,0.32); border-color: rgba(124,58,237,0.8); }
+    .forum-bell-badge {
+      position: absolute; top: -5px; right: -5px;
+      min-width: 18px; height: 18px; border-radius: 9px;
+      background: #f43f5e; font-size: 10px; font-weight: 800;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      padding: 0 3px; border: 1.5px solid #0f0528;
+    }
+
+    /* ── Following card (sidebar) ───────────────────── */
+    .forum-following-card {
+      padding: 0.6rem 0.65rem; border-radius: 12px;
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .forum-following-card:hover {
+      background: rgba(124,58,237,0.07); border-color: rgba(124,58,237,0.22);
+    }
+
+    /* ── Media upload preview card ──────────────────── */
+    .forum-media-preview-card {
+      position: relative; border-radius: 14px; overflow: hidden;
+      border: 1.5px solid rgba(16,185,129,0.38);
+      background: rgba(0,0,0,0.28);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      animation: forumFadeUp 0.22s ease;
+    }
+    .forum-media-preview-card:hover {
+      border-color: rgba(16,185,129,0.6);
+      box-shadow: 0 0 22px rgba(16,185,129,0.12);
+    }
+    .forum-media-preview-card.audio {
+      border-color: rgba(245,158,11,0.38);
+    }
+    .forum-media-preview-card.audio:hover {
+      border-color: rgba(245,158,11,0.65);
+      box-shadow: 0 0 22px rgba(245,158,11,0.1);
+    }
+    .forum-media-preview-card.image {
+      border-color: rgba(6,182,212,0.38);
+    }
+    .forum-media-preview-card.image:hover {
+      border-color: rgba(6,182,212,0.65);
+      box-shadow: 0 0 22px rgba(6,182,212,0.1);
+    }
+
+    .forum-media-remove-btn {
+      position: absolute; top: 8px; right: 8px; z-index: 20;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(10,5,25,0.72); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #94a3b8; cursor: pointer; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+      line-height: 1;
+    }
+    .forum-media-remove-btn:hover {
+      background: rgba(239,68,68,0.75); color: #fff;
+      border-color: rgba(239,68,68,0.9); transform: scale(1.1);
+    }
+
+    .forum-media-info-bar {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.6rem 0.9rem;
+      background: rgba(15,5,40,0.65);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+    }
+    .forum-media-info-bar:hover { background: rgba(15,5,40,0.82); }
+
+    /* ── Dropzone error state ───────────────────────── */
+    .forum-upload-zone-lg.err {
+      border-color: rgba(239,68,68,0.55) !important;
+      background: rgba(239,68,68,0.04) !important;
+    }
   `;
   document.head.appendChild(s);
 }
@@ -363,6 +463,24 @@ const TC = {
   image: { bg: "rgba(6,182,212,0.16)",   border: "rgba(6,182,212,0.5)",    text: "#67e8f9", glow: "rgba(6,182,212,0.25)"  },
   video: { bg: "rgba(239,68,68,0.15)",   border: "rgba(239,68,68,0.45)",   text: "#fca5a5", glow: "rgba(239,68,68,0.25)"  },
   audio: { bg: "rgba(245,158,11,0.15)",  border: "rgba(245,158,11,0.5)",   text: "#fcd34d", glow: "rgba(245,158,11,0.25)" },
+};
+
+const ALLOWED_MIMES = {
+  image: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+  video: ["video/mp4", "video/webm", "video/quicktime", "video/ogg", "video/x-msvideo"],
+  audio: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/webm"],
+};
+
+const MEDIA_MAX_MB = { image: 5, video: 100, audio: 20 };
+const MEDIA_ACCEPT = {
+  image: "image/jpeg,image/png,image/webp,image/gif",
+  video: "video/mp4,video/webm,video/quicktime",
+  audio: "audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,audio/webm",
+};
+const MEDIA_HINT = {
+  image: "JPG · PNG · GIF · WebP · max 5 MB",
+  video: "MP4 · WebM · MOV · max 100 MB",
+  audio: "MP3 · WAV · OGG · M4A · max 20 MB",
 };
 
 const AVATAR_COLORS = ["#c4b5fd","#6ee7b7","#67e8f9","#fcd34d","#fca5a5","#f9a8d4","#a5f3fc","#bbf7d0"];
@@ -395,8 +513,23 @@ function authorInitial(post) {
 function resolveMediaUrl(url) {
   if (!url) return "";
   if (url.startsWith("http") || url.startsWith("blob:")) return url;
+  // In development the Vite plugin at serveUploads() serves /uploads directly
+  // from disk — use a relative URL so media loads even when the backend restarts.
+  if (import.meta.env.DEV) {
+    return url.startsWith("/") ? url : `/${url}`;
+  }
   const base = import.meta.env.VITE_API_URL || "https://english-website-for-kids.onrender.com";
-  return `${base}${url}`;
+  return `${base}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
+// Derive audio/video MIME type from file extension for <source type="...">
+function mimeFromUrl(url) {
+  if (!url) return "";
+  const ext = url.split(".").pop()?.toLowerCase() ?? "";
+  return (
+    { mp3: "audio/mpeg", wav: "audio/wav", ogg: "audio/ogg", m4a: "audio/mp4", aac: "audio/aac",
+      mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime", avi: "video/x-msvideo" }[ext] || ""
+  );
 }
 
 // ── Trending / Active helpers ─────────────────────────────────────────────────
@@ -629,6 +762,7 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
   const [commentOpen,  setCommentOpen]  = useState(false);
   const [busy,         setBusy]         = useState(false);
   const [shareMsg,     setShareMsg]     = useState("");
+  const [mediaError,   setMediaError]   = useState(false);
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -704,22 +838,58 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
       )}
 
       {/* Media */}
-      {post.type === "image" && post.mediaUrl && (
+      {post.type === "image" && post.mediaUrl && !mediaError && (
         <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${col.border}`, marginBottom: "0.85rem", boxShadow: `0 0 24px ${col.glow}` }}>
-          <img src={resolveMediaUrl(post.mediaUrl)} alt={post.title}
-            style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }} />
+          <img
+            src={resolveMediaUrl(post.mediaUrl)}
+            alt={post.title}
+            style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }}
+            onError={() => setMediaError(true)}
+          />
         </div>
       )}
-      {post.type === "video" && post.mediaUrl && (
+      {post.type === "image" && post.mediaUrl && mediaError && (
+        <div style={{ borderRadius: 12, border: `1px solid rgba(239,68,68,0.25)`, background: "rgba(239,68,68,0.06)", padding: "1.25rem", textAlign: "center", marginBottom: "0.85rem", color: "#f87171", fontSize: 12 }}>
+          🖼️ Image could not be loaded
+          {import.meta.env.DEV && <div style={{ marginTop: "0.3rem", fontSize: 10, color: "#475569", wordBreak: "break-all" }}>{resolveMediaUrl(post.mediaUrl)}</div>}
+        </div>
+      )}
+      {post.type === "video" && post.mediaUrl && !mediaError && (
         <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${col.border}`, marginBottom: "0.85rem" }}>
-          <video src={resolveMediaUrl(post.mediaUrl)} controls
-            style={{ width: "100%", maxHeight: 260, display: "block", background: "#000" }} />
+          <video
+            src={resolveMediaUrl(post.mediaUrl)}
+            controls
+            preload="metadata"
+            style={{ width: "100%", maxHeight: 260, display: "block", background: "#000" }}
+            onError={() => setMediaError(true)}
+          />
         </div>
       )}
-      {post.type === "audio" && post.mediaUrl && (
+      {post.type === "video" && post.mediaUrl && mediaError && (
+        <div style={{ borderRadius: 12, border: `1px solid rgba(239,68,68,0.25)`, background: "rgba(239,68,68,0.06)", padding: "1.25rem", textAlign: "center", marginBottom: "0.85rem", color: "#f87171", fontSize: 12 }}>
+          🎬 Video could not be loaded
+          {import.meta.env.DEV && <div style={{ marginTop: "0.3rem", fontSize: 10, color: "#475569", wordBreak: "break-all" }}>{resolveMediaUrl(post.mediaUrl)}</div>}
+        </div>
+      )}
+      {post.type === "audio" && post.mediaUrl && !mediaError && (
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.28)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "0.85rem" }}>
           <span style={{ fontSize: 24, flexShrink: 0 }}>🎵</span>
-          <audio src={resolveMediaUrl(post.mediaUrl)} controls style={{ flex: 1, height: 36, minWidth: 0 }} />
+          <audio
+            src={resolveMediaUrl(post.mediaUrl)}
+            controls
+            preload="metadata"
+            style={{ flex: 1, minWidth: 0 }}
+            onError={() => setMediaError(true)}
+          />
+        </div>
+      )}
+      {post.type === "audio" && post.mediaUrl && mediaError && (
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "0.85rem" }}>
+          <span style={{ fontSize: 22, flexShrink: 0 }}>🎵</span>
+          <div>
+            <p style={{ margin: "0 0 0.1rem", fontSize: 12, color: "#f87171" }}>Audio could not be loaded</p>
+            {import.meta.env.DEV && <p style={{ margin: 0, fontSize: 10, color: "#475569", wordBreak: "break-all" }}>{resolveMediaUrl(post.mediaUrl)}</p>}
+          </div>
         </div>
       )}
       {post.type === "game" && post.game && (
@@ -790,7 +960,7 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
 
 const RANK_COLORS = ["#fcd34d", "#94a3b8", "#c4b5fd", "#6ee7b7", "#67e8f9"];
 
-function ForumSidebar({ posts, filter, setFilter, suggestedTeachers, onFollowToggle, followBusy, onHighlight, currentUserId }) {
+function ForumSidebar({ posts, filter, setFilter, suggestedTeachers, onFollowToggle, followBusy, onHighlight, currentUserId, followingTeachers }) {
   const trending = getTrendingPosts(posts, 5);
 
   // Use API-provided teachers when available; fallback to deriving from posts
@@ -939,6 +1109,43 @@ function ForumSidebar({ posts, filter, setFilter, suggestedTeachers, onFollowTog
           </>
         )}
       </div>
+
+      {/* ── Following ── */}
+      {followingTeachers && followingTeachers.length > 0 && (
+        <div className="forum-sidebar-card">
+          <h3 className="forum-sidebar-h">👥 Following ({followingTeachers.length})</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            {followingTeachers.slice(0, 8).map((teacher) => {
+              const color  = avatarColor(teacher._id?.toString());
+              const isBusy = followBusy.has(teacher._id?.toString());
+              return (
+                <div key={teacher._id} className="forum-following-card">
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <div style={{ width: 30, height: 30, borderRadius: "50%", background: `${color}22`, border: `1.5px solid ${color}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color, flexShrink: 0 }}>
+                      {teacher.initial}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: "0 0 0.1rem", fontSize: 12.5, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {teacher.displayName}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 10.5, color: "#475569" }}>
+                        📝 {teacher.posts} · 👥 {teacher.followersCount}
+                      </p>
+                    </div>
+                    <button type="button"
+                      className="forum-follow-btn following"
+                      onClick={() => onFollowToggle(teacher._id)}
+                      disabled={isBusy}
+                      style={{ opacity: isBusy ? 0.65 : 1, flexShrink: 0, fontSize: 10 }}>
+                      {isBusy ? "…" : "Unfollow"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
@@ -967,9 +1174,14 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
   };
 
   const applyFile = (file) => {
-    const maxMB = { image: 5, video: 100, audio: 20 }[type] ?? 20;
+    const allowed = ALLOWED_MIMES[type] || [];
+    if (allowed.length > 0 && file.type && !allowed.includes(file.type)) {
+      setErrors((e) => ({ ...e, media: `Invalid file type. Please upload a valid ${type} file.` }));
+      return;
+    }
+    const maxMB = MEDIA_MAX_MB[type] ?? 20;
     if (file.size > maxMB * 1024 * 1024) {
-      setErrors((e) => ({ ...e, media: `File too large. Max ${maxMB} MB.` }));
+      setErrors((e) => ({ ...e, media: `File too large — max ${maxMB} MB for ${type}.` }));
       return;
     }
     setErrors((e) => ({ ...e, media: undefined }));
@@ -1009,9 +1221,7 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
       if (isGame)             fd.append("gameId", selectedGameId);
       if (isMedia && mediaFile) fd.append("media", mediaFile);
 
-      const res = await api.post("/api/forum/posts", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.post("/api/forum/posts", fd);
       await onSubmit(res.data.post);
     } catch (err) {
       setErrors({ submit: err?.response?.data?.error || "Failed to publish post." });
@@ -1076,79 +1286,178 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
 
           {/* Media upload */}
           {isMedia && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+
+              {/* Section label */}
               <p className="forum-section-label">
                 Upload {type.charAt(0).toUpperCase() + type.slice(1)}{" "}
                 <span style={{ color: "#f87171" }}>*</span>
                 <span style={{ color: "#475569", fontWeight: 400, textTransform: "none", fontSize: 11, letterSpacing: 0 }}>
-                  {" "}· max {({ image: 5, video: 100, audio: 20 })[type]} MB
+                  {" "}· max {MEDIA_MAX_MB[type]} MB
                 </span>
               </p>
 
+              {/* Hidden file input */}
               <input
                 ref={fileRef}
                 type="file"
-                accept={type === "image" ? "image/*" : type === "video" ? "video/*" : "audio/*"}
+                accept={MEDIA_ACCEPT[type]}
                 style={{ display: "none" }}
-                onChange={(e) => { const f = e.target.files[0]; if (f) applyFile(f); }}
+                onChange={(e) => { const f = e.target.files[0]; if (f) applyFile(f); e.target.value = ""; }}
               />
 
-              <div
-                className={`forum-upload-zone-lg${mediaFile ? " has-file" : ""}${dragOver ? " dragover" : ""}`}
-                onClick={() => fileRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-              >
-                {mediaFile ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.4rem" }}>
-                    <span style={{ fontSize: 28 }}>{type === "image" ? "🖼️" : type === "video" ? "🎬" : "🎵"}</span>
-                    <p style={{ margin: 0, color: "#6ee7b7", fontSize: 13, fontWeight: 700 }}>✓ {mediaFile.name}</p>
-                    <p style={{ margin: 0, color: "#475569", fontSize: 11 }}>
-                      {(mediaFile.size / 1024 / 1024).toFixed(1)} MB · Click to replace
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.45rem" }}>
-                    <span style={{ fontSize: 32 }}>{type === "image" ? "🖼️" : type === "video" ? "🎬" : "🎵"}</span>
-                    <p style={{ margin: 0, color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
-                      Drop your {type} here, or click to browse
-                    </p>
-                    <p style={{ margin: 0, color: "#334155", fontSize: 11 }}>
-                      {type === "image" ? "JPG, PNG, GIF, WebP" : type === "video" ? "MP4, WebM, MOV" : "MP3, WAV, OGG, M4A"}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {mediaFile && (
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setMediaFile(null); setMediaPreview(""); if (fileRef.current) fileRef.current.value = ""; }}
-                  style={{ alignSelf: "flex-start", fontSize: 12, padding: "0.2rem 0.65rem", borderRadius: 7, cursor: "pointer", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#f87171" }}
+              {/* ── STATE A: no file → dropzone ── */}
+              {!mediaFile && (
+                <div
+                  className={`forum-upload-zone-lg${dragOver ? " dragover" : ""}${errors.media ? " err" : ""}`}
+                  onClick={() => fileRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && fileRef.current?.click()}
                 >
-                  ✕ Remove file
-                </button>
-              )}
-
-              {/* Media preview */}
-              {mediaPreview && type === "image" && (
-                <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(6,182,212,0.4)", maxHeight: 180 }}>
-                  <img src={mediaPreview} alt="preview" style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }} />
-                </div>
-              )}
-              {mediaPreview && type === "video" && (
-                <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(239,68,68,0.4)" }}>
-                  <video src={mediaPreview} controls style={{ width: "100%", maxHeight: 180, display: "block" }} />
-                </div>
-              )}
-              {mediaPreview && type === "audio" && (
-                <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.35)", borderRadius: 12, padding: "0.65rem 0.85rem" }}>
-                  <span style={{ fontSize: 20 }}>🎵</span>
-                  <audio src={mediaPreview} controls style={{ flex: 1, height: 34, minWidth: 0 }} />
+                  <span style={{ fontSize: 34, lineHeight: 1, display: "block", marginBottom: "0.5rem" }}>
+                    {type === "image" ? "🖼️" : type === "video" ? "🎬" : "🎵"}
+                  </span>
+                  <p style={{ margin: "0 0 0.25rem", color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
+                    Drop your {type} here, or{" "}
+                    <span style={{ color: "#c4b5fd", textDecoration: "underline" }}>browse files</span>
+                  </p>
+                  <p style={{ margin: 0, color: "#475569", fontSize: 11 }}>{MEDIA_HINT[type]}</p>
                 </div>
               )}
 
+              {/* ── STATE B: file selected → preview card ── */}
+
+              {/* VIDEO preview */}
+              {mediaFile && type === "video" && (
+                <div className="forum-media-preview-card">
+                  {/* Remove button */}
+                  <button
+                    type="button"
+                    className="forum-media-remove-btn"
+                    onClick={() => { setMediaFile(null); setMediaPreview(""); }}
+                    title="Remove file"
+                  >✕</button>
+
+                  {/* 16:9 video player */}
+                  <div style={{ position: "relative", aspectRatio: "16 / 9", background: "#000", overflow: "hidden" }}>
+                    {mediaPreview ? (
+                      <video
+                        src={mediaPreview}
+                        controls
+                        preload="metadata"
+                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                      />
+                    ) : (
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontSize: 40 }}>🎬</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info bar — click to replace */}
+                  <div className="forum-media-info-bar" onClick={() => fileRef.current?.click()}>
+                    <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: "rgba(239,68,68,0.18)", border: "1.5px solid rgba(239,68,68,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+                      🎬
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: "0 0 0.1rem", fontSize: 12.5, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {mediaFile.name}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 11, color: "#475569" }}>
+                        {(mediaFile.size / 1024 / 1024).toFixed(1)} MB
+                        <span style={{ margin: "0 0.35rem", color: "#1e293b" }}>·</span>
+                        <span style={{ color: "#c4b5fd", fontWeight: 600 }}>↻ Click to replace</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* IMAGE preview */}
+              {mediaFile && type === "image" && (
+                <div className="forum-media-preview-card image">
+                  <button
+                    type="button"
+                    className="forum-media-remove-btn"
+                    onClick={() => { setMediaFile(null); setMediaPreview(""); }}
+                    title="Remove file"
+                  >✕</button>
+
+                  {mediaPreview && (
+                    <img
+                      src={mediaPreview}
+                      alt="preview"
+                      style={{ width: "100%", maxHeight: 220, objectFit: "cover", display: "block" }}
+                    />
+                  )}
+
+                  <div className="forum-media-info-bar" onClick={() => fileRef.current?.click()}>
+                    <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: "rgba(6,182,212,0.15)", border: "1.5px solid rgba(6,182,212,0.38)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+                      🖼️
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: "0 0 0.1rem", fontSize: 12.5, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {mediaFile.name}
+                      </p>
+                      <p style={{ margin: 0, fontSize: 11, color: "#475569" }}>
+                        {(mediaFile.size / 1024 / 1024).toFixed(1)} MB
+                        <span style={{ margin: "0 0.35rem", color: "#1e293b" }}>·</span>
+                        <span style={{ color: "#c4b5fd", fontWeight: 600 }}>↻ Click to replace</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AUDIO preview */}
+              {mediaFile && type === "audio" && (
+                <div className="forum-media-preview-card audio">
+                  <button
+                    type="button"
+                    className="forum-media-remove-btn"
+                    onClick={() => { setMediaFile(null); setMediaPreview(""); }}
+                    title="Remove file"
+                  >✕</button>
+
+                  <div style={{ padding: "1rem 1rem 0.85rem", background: "rgba(245,158,11,0.05)" }}>
+                    {/* File identity row */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 10, flexShrink: 0, background: "rgba(245,158,11,0.16)", border: "1.5px solid rgba(245,158,11,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+                        🎵
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: "0 0 0.1rem", fontSize: 13, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {mediaFile.name}
+                        </p>
+                        <p style={{ margin: 0, fontSize: 11, color: "#475569" }}>
+                          {(mediaFile.size / 1024 / 1024).toFixed(1)} MB
+                          <span style={{ margin: "0 0.35rem", color: "#1e293b" }}>·</span>
+                          <button
+                            type="button"
+                            onClick={() => fileRef.current?.click()}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "#c4b5fd", fontSize: 11, fontWeight: 600, padding: 0 }}
+                          >↻ Replace</button>
+                        </p>
+                      </div>
+                    </div>
+                    {/* Player */}
+                    {mediaPreview && (
+                      <audio
+                        src={mediaPreview}
+                        controls
+                        preload="metadata"
+                        style={{ width: "100%", display: "block" }}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Error message */}
               {errors.media && <p className="forum-field-error">⚠ {errors.media}</p>}
             </div>
           )}
@@ -1310,8 +1619,13 @@ const TeacherForum = () => {
   const [savedPosts,   setSavedPosts]   = useState([]);
   const [savedPage,    setSavedPage]    = useState(1);
   const [savedHasMore, setSavedHasMore] = useState(false);
-  const [savedLoading, setSavedLoading] = useState(false);
-  const [isWide,       setIsWide]       = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
+  const [savedLoading,      setSavedLoading]      = useState(false);
+  const [notifications,     setNotifications]     = useState([]);
+  const [unreadCount,       setUnreadCount]       = useState(0);
+  const [notifOpen,         setNotifOpen]         = useState(false);
+  const [notifLoading,      setNotifLoading]      = useState(false);
+  const [followingTeachers, setFollowingTeachers] = useState([]);
+  const [isWide,            setIsWide]            = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
 
   useEffect(() => {
     const fn = () => setIsWide(window.innerWidth >= 1024);
@@ -1351,7 +1665,7 @@ const TeacherForum = () => {
     try {
       const res = await api.get("/api/teacher/contents");
       const all = res.data.contents || [];
-      setGames(all.filter((c) => c.type === "game" && c.isPublished));
+      setGames(all.filter((c) => c.isPublished));
     } catch { /* non-critical */ }
   }, []);
 
@@ -1366,6 +1680,41 @@ const TeacherForum = () => {
       setSavedHasMore(p < (pages || 1));
     } catch { /* non-critical */ }
     finally { setSavedLoading(false); }
+  }, []);
+
+  // Load notifications
+  const loadNotifs = useCallback(async () => {
+    setNotifLoading(true);
+    try {
+      const res = await api.get("/api/forum/notifications?limit=20");
+      setNotifications(res.data.notifications || []);
+      setUnreadCount(res.data.unread || 0);
+    } catch { /* non-critical */ }
+    finally { setNotifLoading(false); }
+  }, []);
+
+  const markAllRead = useCallback(async () => {
+    try {
+      await api.patch("/api/forum/notifications/read-all");
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch { /* non-critical */ }
+  }, []);
+
+  const markOneRead = useCallback(async (id) => {
+    try {
+      await api.patch(`/api/forum/notifications/${id}/read`);
+      setNotifications((prev) => prev.map((n) => n._id === id ? { ...n, isRead: true } : n));
+      setUnreadCount((c) => Math.max(0, c - 1));
+    } catch { /* non-critical */ }
+  }, []);
+
+  // Load following teachers list
+  const loadFollowing = useCallback(async () => {
+    try {
+      const res = await api.get("/api/forum/following");
+      setFollowingTeachers(res.data.teachers || []);
+    } catch { /* non-critical */ }
   }, []);
 
   // Handle ?post=<id> deep-link
@@ -1397,7 +1746,9 @@ const TeacherForum = () => {
   useEffect(() => {
     loadSuggested();
     loadGames();
-  }, [loadSuggested, loadGames]);
+    loadFollowing();
+    if (user) loadNotifs();
+  }, [loadSuggested, loadGames, loadFollowing, loadNotifs, user]);
 
   const handleLoadMore = () => {
     const next = page + 1;
@@ -1425,16 +1776,18 @@ const TeacherForum = () => {
     setFollowBusy((prev) => new Set([...prev, idStr]));
     try {
       const res = await api.post(`/api/forum/teachers/${teacherId}/follow`);
+      const isNowFollowing = res.data.following;
       setSuggested((prev) =>
         prev.map((t) => t._id?.toString() === idStr
-          ? {
-              ...t,
-              isFollowing:    res.data.following,
-              followersCount: (t.followersCount || 0) + (res.data.following ? 1 : -1),
-            }
+          ? { ...t, isFollowing: isNowFollowing, followersCount: (t.followersCount || 0) + (isNowFollowing ? 1 : -1) }
           : t
         )
       );
+      if (!isNowFollowing) {
+        setFollowingTeachers((prev) => prev.filter((t) => t._id?.toString() !== idStr));
+      } else {
+        loadFollowing();
+      }
     } catch { /* non-critical */ }
     finally {
       setFollowBusy((prev) => { const s = new Set(prev); s.delete(idStr); return s; });
@@ -1502,11 +1855,106 @@ const TeacherForum = () => {
                 ))}
               </div>
             </div>
-            <button className="btn-register" onClick={() => setView("create")} style={{ flexShrink: 0, alignSelf: "center" }}>
-              + {t("teacher.forum.createPost")}
-            </button>
+            <div style={{ display: "flex", gap: "0.65rem", alignItems: "center", flexShrink: 0 }}>
+              {user && (
+                <button
+                  type="button"
+                  className={`forum-bell-btn${notifOpen ? " active" : ""}`}
+                  title="Notifications"
+                  onClick={() => {
+                    const opening = !notifOpen;
+                    setNotifOpen(opening);
+                    if (opening) loadNotifs();
+                  }}
+                >
+                  🔔
+                  {unreadCount > 0 && (
+                    <span className="forum-bell-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+                  )}
+                </button>
+              )}
+              <button className="btn-register" onClick={() => setView("create")} style={{ alignSelf: "center" }}>
+                + {t("teacher.forum.createPost")}
+              </button>
+            </div>
           </div>
         </section>
+
+        {/* Notification panel */}
+        {notifOpen && (
+          <div className="forum-notif-panel" style={{ marginBottom: "1rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#c4b5fd" }}>
+                🔔 Notifications
+                {unreadCount > 0 && (
+                  <span style={{ marginLeft: "0.4rem", background: "rgba(244,63,94,0.2)", color: "#f87171", fontSize: 10, fontWeight: 800, padding: "0.1rem 0.45rem", borderRadius: 20, border: "1px solid rgba(244,63,94,0.35)" }}>
+                    {unreadCount} new
+                  </span>
+                )}
+              </p>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                {unreadCount > 0 && (
+                  <button onClick={markAllRead} style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.45)", borderRadius: 8, padding: "0.28rem 0.65rem", color: "#c4b5fd", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                    Mark all read
+                  </button>
+                )}
+                <button onClick={() => setNotifOpen(false)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "0.28rem 0.6rem", color: "#64748b", fontSize: 12, cursor: "pointer" }}>
+                  ✕
+                </button>
+              </div>
+            </div>
+            {notifLoading ? (
+              <p style={{ color: "#475569", textAlign: "center", fontSize: 13, margin: "1rem 0" }}>Loading…</p>
+            ) : notifications.length === 0 ? (
+              <p style={{ color: "#475569", textAlign: "center", fontSize: 13, margin: "1rem 0" }}>No notifications yet. Follow teachers to get updates!</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                {notifications.map((n) => {
+                  const typeIcon = n.type === "new_post" ? "📝" : n.type === "like" ? "❤️" : n.type === "comment" ? "💬" : "👤";
+                  const msg = n.type === "new_post" ? `posted a new ${n.post?.type || "post"}`
+                            : n.type === "like"     ? "liked your post"
+                            : n.type === "comment"  ? "commented on your post"
+                            : "followed you";
+                  const elapsed = (() => {
+                    const s = Math.floor((Date.now() - new Date(n.createdAt)) / 1000);
+                    if (s < 60)   return `${s}s ago`;
+                    if (s < 3600) return `${Math.floor(s/60)}m ago`;
+                    if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+                    return `${Math.floor(s/86400)}d ago`;
+                  })();
+                  return (
+                    <div
+                      key={n._id}
+                      className="forum-notif-item"
+                      style={{
+                        background: n.isRead ? "rgba(255,255,255,0.025)" : "rgba(124,58,237,0.1)",
+                        border: `1px solid ${n.isRead ? "rgba(255,255,255,0.06)" : "rgba(124,58,237,0.28)"}`,
+                      }}
+                      onClick={() => {
+                        markOneRead(n._id);
+                        if (n.post?._id) setHighlighted(n.post._id);
+                        setNotifOpen(false);
+                      }}
+                    >
+                      {!n.isRead && <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#c4b5fd", flexShrink: 0, marginTop: 5 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: "0 0 0.1rem", fontSize: 13, color: "#e2e8f0" }}>
+                          <strong style={{ color: "#c4b5fd" }}>{n.actor?.displayName || "A teacher"}</strong>{" "}{msg}
+                        </p>
+                        {n.post && (
+                          <p style={{ margin: 0, fontSize: 11, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {typeIcon} {n.post.title}
+                          </p>
+                        )}
+                        <p style={{ margin: "0.1rem 0 0", fontSize: 10, color: "#334155" }}>{elapsed}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {error ? <p className="error-msg">{error}</p> : null}
 
@@ -1660,6 +2108,7 @@ const TeacherForum = () => {
             followBusy={followBusy}
             onHighlight={handleHighlight}
             currentUserId={user?._id}
+            followingTeachers={followingTeachers}
           />
         </div>
 
