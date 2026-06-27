@@ -200,6 +200,8 @@ const App = () => {
               </TeacherOnly>
             }
           />
+          {/* Public forum — accessible without login */}
+          <Route path="/forum" element={<TeacherForum />} />
           <Route
             path="/teacher/profile"
             element={

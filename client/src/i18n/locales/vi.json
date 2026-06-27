@@ -462,7 +462,9 @@
       "savedEmptyTitle": "Chưa có bài đăng đã lưu",
       "savedEmptySubtitle": "Lưu các bài đăng hay để xem lại sau.",
       "comments": "Bình luận",
-      "noComments": "Chưa có bình luận. Hãy là người đầu tiên!"
+      "noComments": "Chưa có bình luận. Hãy là người đầu tiên!",
+      "readMore": "Xem thêm",
+      "showLess": "Thu gọn"
     },
     "wordList": {
       "title": "Trình Soạn Danh Sách Từ",

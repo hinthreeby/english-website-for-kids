@@ -443,6 +443,35 @@ if (typeof document !== "undefined" && !document.getElementById("forum-styles"))
       border-color: rgba(239,68,68,0.55) !important;
       background: rgba(239,68,68,0.04) !important;
     }
+
+    /* ── Post content text ──────────────────────────── */
+    .forum-post-content {
+      white-space: pre-line;
+      margin: 0;
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+    .forum-read-more-btn {
+      background: none; border: none; cursor: pointer;
+      color: #a78bfa; font-size: 12.5px; font-weight: 600;
+      padding: 0.25rem 0; margin-top: 0.3rem; display: block;
+      font-family: var(--font-ui); transition: color 0.15s;
+    }
+    .forum-read-more-btn:hover { color: #c4b5fd; text-decoration: underline; }
+
+    /* ── Auth required toast ────────────────────────── */
+    .forum-auth-toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg,rgba(124,58,237,0.97),rgba(109,40,217,0.97));
+      color: #fff; padding: 0.75rem 1.6rem; border-radius: 14px;
+      font-size: 14px; font-weight: 600; z-index: 9999;
+      border: 1px solid rgba(196,181,253,0.3);
+      box-shadow: 0 4px 24px rgba(124,58,237,0.55), 0 8px 40px rgba(0,0,0,0.45);
+      white-space: nowrap; pointer-events: none;
+      animation: forumFadeUp 0.25s ease;
+    }
   `;
   document.head.appendChild(s);
 }
@@ -753,7 +782,8 @@ function CommentsSection({ postId, initialCount, open, onCountChange }) {
 
 // ── PostCard ──────────────────────────────────────────────────────────────────
 
-function PostCard({ post, onDelete, highlighted, onUnsave }) {
+function PostCard({ post, onDelete, highlighted, onUnsave, onRequireLogin }) {
+  const { user } = useAuth();
   const col = TC[post.type] || TC.text;
   const [liked,        setLiked]        = useState(post.isLiked || false);
   const [saved,        setSaved]        = useState(post.isSaved || false);
@@ -763,7 +793,14 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
   const [busy,         setBusy]         = useState(false);
   const [shareMsg,     setShareMsg]     = useState("");
   const [mediaError,   setMediaError]   = useState(false);
+  const [expanded,     setExpanded]     = useState(false);
   const cardRef = useRef(null);
+
+  const CONTENT_LIMIT = 300;
+  const needsTruncation = (post.description || "").length > CONTENT_LIMIT;
+  const displayText = needsTruncation && !expanded
+    ? post.description.slice(0, CONTENT_LIMIT) + "…"
+    : post.description;
 
   useEffect(() => {
     if (highlighted && cardRef.current) {
@@ -772,6 +809,7 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
   }, [highlighted]);
 
   const toggleLike = async () => {
+    if (!user) { onRequireLogin?.(); return; }
     if (busy) return;
     setBusy(true);
     try {
@@ -783,6 +821,7 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
   };
 
   const toggleSave = async () => {
+    if (!user) { onRequireLogin?.(); return; }
     if (busy) return;
     setBusy(true);
     try {
@@ -797,7 +836,7 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
     try {
       await api.post(`/api/forum/posts/${post._id}/share`);
     } catch { /* non-critical */ }
-    const link = `${window.location.origin}/teacher/forum?post=${post._id}`;
+    const link = `${window.location.origin}/forum?post=${post._id}`;
     navigator.clipboard?.writeText(link).catch(() => {});
     setShareMsg("Link copied!");
     setTimeout(() => setShareMsg(""), 2200);
@@ -828,13 +867,18 @@ function PostCard({ post, onDelete, highlighted, onUnsave }) {
       </div>
 
       {/* Title + description */}
-      <h3 style={{ margin: "0 0 0.4rem", fontSize: "1.02rem", fontWeight: 700, color: "#f1f5f9", lineHeight: 1.4, fontFamily: "var(--font-heading)" }}>
+      <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.08rem", fontWeight: 800, color: "#f1f5f9", lineHeight: 1.4, fontFamily: "var(--font-heading)" }}>
         {post.title}
       </h3>
       {post.description && (
-        <p style={{ margin: "0 0 0.85rem", fontSize: 13, color: "#94a3b8", lineHeight: 1.65 }}>
-          {post.description.length > 260 ? post.description.slice(0, 260) + "…" : post.description}
-        </p>
+        <div style={{ marginBottom: "0.85rem" }}>
+          <p className="forum-post-content">{displayText}</p>
+          {needsTruncation && (
+            <button type="button" className="forum-read-more-btn" onClick={() => setExpanded((e) => !e)}>
+              {expanded ? "Show less ▲" : "Read more ▼"}
+            </button>
+          )}
+        </div>
       )}
 
       {/* Media */}
@@ -1626,6 +1670,12 @@ const TeacherForum = () => {
   const [notifLoading,      setNotifLoading]      = useState(false);
   const [followingTeachers, setFollowingTeachers] = useState([]);
   const [isWide,            setIsWide]            = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
+  const [authPrompt,        setAuthPrompt]        = useState(false);
+
+  const requireLogin = useCallback(() => {
+    setAuthPrompt(true);
+    setTimeout(() => setAuthPrompt(false), 2800);
+  }, []);
 
   useEffect(() => {
     const fn = () => setIsWide(window.innerWidth >= 1024);
@@ -1745,9 +1795,11 @@ const TeacherForum = () => {
 
   useEffect(() => {
     loadSuggested();
-    loadGames();
-    loadFollowing();
-    if (user) loadNotifs();
+    if (user) {
+      loadGames();
+      loadFollowing();
+      loadNotifs();
+    }
   }, [loadSuggested, loadGames, loadFollowing, loadNotifs, user]);
 
   const handleLoadMore = () => {
@@ -1772,6 +1824,7 @@ const TeacherForum = () => {
   };
 
   const handleFollowToggle = async (teacherId) => {
+    if (!user) { requireLogin(); return; }
     const idStr = teacherId?.toString();
     setFollowBusy((prev) => new Set([...prev, idStr]));
     try {
@@ -1873,9 +1926,16 @@ const TeacherForum = () => {
                   )}
                 </button>
               )}
-              <button className="btn-register" onClick={() => setView("create")} style={{ alignSelf: "center" }}>
-                + {t("teacher.forum.createPost")}
-              </button>
+              {user ? (
+                <button className="btn-register" onClick={() => setView("create")} style={{ alignSelf: "center" }}>
+                  + {t("teacher.forum.createPost")}
+                </button>
+              ) : (
+                <a href="/login"
+                  style={{ padding: "0.6rem 1.1rem", borderRadius: 10, border: "1.5px solid rgba(124,58,237,0.55)", background: "rgba(124,58,237,0.15)", color: "#c4b5fd", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: "var(--font-ui)", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  🔑 Sign in to post
+                </a>
+              )}
             </div>
           </div>
         </section>
@@ -1998,20 +2058,22 @@ const TeacherForum = () => {
                   </button>
                 );
               })}
-              {/* Saved tab */}
-              <button type="button" className="forum-filter-btn"
-                onClick={() => setFilter("saved")}
-                style={{
-                  background:  filter === "saved" ? "rgba(252,211,77,0.14)" : "transparent",
-                  borderColor: filter === "saved" ? "rgba(252,211,77,0.65)" : "rgba(255,255,255,0.1)",
-                  color:       filter === "saved" ? "#fcd34d"               : "#94a3b8",
-                  marginLeft: "auto",
-                }}>
-                🔖 {t("teacher.forum.savedPosts")}
-                {filter === "saved" && savedPosts.length > 0 && (
-                  <span style={{ marginLeft: "0.3rem", fontSize: 11, opacity: 0.8 }}>({savedPosts.length})</span>
-                )}
-              </button>
+              {/* Saved tab — authenticated only */}
+              {user && (
+                <button type="button" className="forum-filter-btn"
+                  onClick={() => setFilter("saved")}
+                  style={{
+                    background:  filter === "saved" ? "rgba(252,211,77,0.14)" : "transparent",
+                    borderColor: filter === "saved" ? "rgba(252,211,77,0.65)" : "rgba(255,255,255,0.1)",
+                    color:       filter === "saved" ? "#fcd34d"               : "#94a3b8",
+                    marginLeft: "auto",
+                  }}>
+                  🔖 {t("teacher.forum.savedPosts")}
+                  {filter === "saved" && savedPosts.length > 0 && (
+                    <span style={{ marginLeft: "0.3rem", fontSize: 11, opacity: 0.8 }}>({savedPosts.length})</span>
+                  )}
+                </button>
+              )}
             </div>
 
             {/* ── Saved Posts feed ── */}
@@ -2042,6 +2104,7 @@ const TeacherForum = () => {
                       onDelete={handleDelete}
                       highlighted={highlighted === post._id}
                       onUnsave={handleUnsaveFromSaved}
+                      onRequireLogin={requireLogin}
                     />
                   ))}
                   {savedHasMore && (
@@ -2080,6 +2143,7 @@ const TeacherForum = () => {
                       post={post}
                       onDelete={handleDelete}
                       highlighted={highlighted === post._id}
+                      onRequireLogin={requireLogin}
                     />
                   ))}
                   {hasMore && (
@@ -2113,6 +2177,12 @@ const TeacherForum = () => {
         </div>
 
       </main>
+
+      {authPrompt && (
+        <div className="forum-auth-toast">
+          🔒 Please log in to interact with posts.
+        </div>
+      )}
     </div>
   );
 };

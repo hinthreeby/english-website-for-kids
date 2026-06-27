@@ -462,7 +462,9 @@
       "savedEmptyTitle": "No saved posts yet",
       "savedEmptySubtitle": "Save useful posts to view them later.",
       "comments": "Comments",
-      "noComments": "No comments yet. Be the first!"
+      "noComments": "No comments yet. Be the first!",
+      "readMore": "Read more",
+      "showLess": "Show less"
     },
     "wordList": {
       "title": "Word List Editor",
