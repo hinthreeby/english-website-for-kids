@@ -164,9 +164,14 @@ const TeacherDashboard = () => {
             <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: "1rem" }}>
               {t("teacher.dashboard.myContentSubtitle")}
             </p>
-            <Link to="/teacher/contents" className="btn-register">
-              {t("teacher.dashboard.goToContent")}
-            </Link>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              <Link to="/teacher/contents" className="btn-register">
+                {t("teacher.dashboard.goToContent")}
+              </Link>
+              <Link to="/teacher/word-lists" className="btn-secondary-glass">
+                ✨ AI Word List Generator
+              </Link>
+            </div>
           </div>
         </section>
       </main>

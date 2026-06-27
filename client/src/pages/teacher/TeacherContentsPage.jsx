@@ -646,6 +646,82 @@ function ContentForm({ initial, onSave, onCancel }) {
   const [showPreview, setShowPreview] = useState(false);
   const [isWide,      setIsWide]      = useState(() => typeof window !== "undefined" && window.innerWidth >= 900);
 
+  // ── AI generation state ───────────────────────────────────────────────────────
+  const [aiModal,   setAiModal]   = useState(false);
+  const [aiTopic,   setAiTopic]   = useState("");
+  const [aiCount,   setAiCount]   = useState(8);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError,   setAiError]   = useState("");
+  const [aiPreview, setAiPreview] = useState([]);
+  const [aiMode,    setAiMode]    = useState("replace"); // "replace" | "append"
+
+  const handleAIGenerate = async () => {
+    if (!aiTopic.trim()) return;
+    setAiLoading(true);
+    setAiError("");
+    setAiPreview([]);
+    try {
+      const res = await api.post("/api/ai/generate-wordlist", { topic: aiTopic.trim(), count: aiCount });
+      setAiPreview(res.data.words || []);
+    } catch (err) {
+      setAiError(err?.response?.data?.error || "Generation failed. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const applyAIItems = () => {
+    const newItems = aiPreview.map((w) => ({ word: w.word, imageUrl: w.imageUrl, audioUrl: "" }));
+    if (aiMode === "replace") {
+      setItems(newItems.length ? newItems : [{ ...BLANK_ITEM }]);
+    } else {
+      setItems((prev) => {
+        const existing = new Set(prev.map((it) => it.word.toLowerCase()));
+        return [...prev, ...newItems.filter((it) => !existing.has(it.word.toLowerCase()))];
+      });
+    }
+    setAiModal(false);
+    setAiTopic("");
+    setAiPreview([]);
+    setAiError("");
+  };
+
+  // ── Quiz AI generation state ──────────────────────────────────────────────────
+  const [quizAiModal,   setQuizAiModal]   = useState(false);
+  const [quizAiTopic,   setQuizAiTopic]   = useState("");
+  const [quizAiCount,   setQuizAiCount]   = useState(5);
+  const [quizAiLoading, setQuizAiLoading] = useState(false);
+  const [quizAiError,   setQuizAiError]   = useState("");
+  const [quizAiPreview, setQuizAiPreview] = useState([]);
+  const [quizAiMode,    setQuizAiMode]    = useState("replace");
+
+  const handleQuizAIGenerate = async () => {
+    if (!quizAiTopic.trim()) return;
+    setQuizAiLoading(true);
+    setQuizAiError("");
+    setQuizAiPreview([]);
+    try {
+      const res = await api.post("/api/ai/generate-quiz", { topic: quizAiTopic.trim(), count: quizAiCount });
+      setQuizAiPreview(res.data.questions || []);
+    } catch (err) {
+      setQuizAiError(err?.response?.data?.error || "Generation failed. Please try again.");
+    } finally {
+      setQuizAiLoading(false);
+    }
+  };
+
+  const applyQuizAIQuestions = () => {
+    if (quizAiMode === "replace") {
+      setQuestions(quizAiPreview.length ? quizAiPreview : [{ ...BLANK_QUESTION }]);
+    } else {
+      setQuestions((prev) => [...prev, ...quizAiPreview]);
+    }
+    setQuizAiModal(false);
+    setQuizAiTopic("");
+    setQuizAiPreview([]);
+    setQuizAiError("");
+  };
+
   useEffect(() => {
     const fn = () => setIsWide(window.innerWidth >= 900);
     window.addEventListener("resize", fn);
@@ -746,6 +822,166 @@ function ContentForm({ initial, onSave, onCancel }) {
   // ── Step 2: Content form ────────────────────────────────────────────────────
   return (
     <>
+      {/* ── AI Generate Modal ── */}
+      {aiModal && (
+        <div onClick={() => setAiModal(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ width: "min(560px, 96vw)", background: "linear-gradient(148deg, rgba(22,8,55,0.99), rgba(10,4,30,0.99))", border: "1.5px solid rgba(124,58,237,0.55)", borderRadius: 20, padding: "1.5rem", boxShadow: "0 0 60px rgba(124,58,237,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+              <div>
+                <p style={{ margin: 0, fontWeight: 800, fontSize: 17, color: "#e2d4ff" }}>✨ Generate Items with AI</p>
+                <p style={{ margin: "0.2rem 0 0", fontSize: 12, color: "#64748b" }}>Groq generates words · Pixabay fetches images automatically</p>
+              </div>
+              <button type="button" onClick={() => setAiModal(false)}
+                style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.07)", color: "#94a3b8", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                ✕
+              </button>
+            </div>
+
+            {/* Topic + count row */}
+            <div style={{ display: "flex", gap: "0.6rem", marginBottom: "0.85rem" }}>
+              <input
+                placeholder="Topic (e.g. Animals, Colors, Food...)"
+                value={aiTopic}
+                onChange={(e) => setAiTopic(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAIGenerate())}
+                style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.85rem", color: "#e2e8f0", fontSize: 14, outline: "none" }}
+              />
+              <select value={aiCount} onChange={(e) => setAiCount(Number(e.target.value))}
+                style={{ width: 110, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.6rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}>
+                {[4, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} items</option>)}
+              </select>
+              <button type="button" onClick={handleAIGenerate} disabled={aiLoading || !aiTopic.trim()}
+                style={{ padding: "0.55rem 1.1rem", borderRadius: 9, cursor: aiLoading || !aiTopic.trim() ? "default" : "pointer", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, opacity: aiLoading || !aiTopic.trim() ? 0.5 : 1, whiteSpace: "nowrap" }}>
+                {aiLoading ? "Wait…" : "Generate"}
+              </button>
+            </div>
+
+            {aiError && <p style={{ color: "#f87171", fontSize: 12, marginBottom: "0.75rem" }}>{aiError}</p>}
+
+            {/* Preview grid */}
+            {aiPreview.length > 0 && (
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(88px, 1fr))", gap: "0.6rem", marginBottom: "1rem", maxHeight: "280px", overflowY: "auto" }}>
+                  {aiPreview.map((item, idx) => (
+                    <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", padding: "8px 6px", borderRadius: 10, border: "1px solid rgba(124,58,237,0.35)", background: "rgba(124,58,237,0.1)" }}>
+                      {item.imageUrl
+                        ? <img src={item.imageUrl} alt={item.word} style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 7 }} />
+                        : <span style={{ fontSize: "2rem", lineHeight: 1 }}>{item.emoji || "🖼️"}</span>}
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#e2d4ff", textAlign: "center" }}>{item.word}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Replace / Append toggle */}
+                <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+                  {[["replace", "Replace all items"], ["append", "Append to existing"]].map(([val, label]) => (
+                    <button key={val} type="button" onClick={() => setAiMode(val)}
+                      style={{ flex: 1, padding: "0.4rem 0.6rem", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600, background: aiMode === val ? "rgba(124,58,237,0.35)" : "rgba(255,255,255,0.06)", border: `1.5px solid ${aiMode === val ? "rgba(124,58,237,0.8)" : "rgba(255,255,255,0.12)"}`, color: aiMode === val ? "#c4b5fd" : "#94a3b8" }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                <button type="button" onClick={applyAIItems}
+                  style={{ width: "100%", padding: "0.65rem", borderRadius: 10, cursor: "pointer", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontWeight: 700, fontSize: 14 }}>
+                  {aiMode === "replace" ? `Use these ${aiPreview.length} items` : `Add ${aiPreview.length} items to list`}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Quiz AI Generate Modal ── */}
+      {quizAiModal && (
+        <div onClick={() => setQuizAiModal(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(5px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ width: "min(600px, 96vw)", maxHeight: "90vh", overflowY: "auto", background: "linear-gradient(148deg, rgba(22,8,55,0.99), rgba(10,4,30,0.99))", border: "1.5px solid rgba(124,58,237,0.55)", borderRadius: 20, padding: "1.5rem", boxShadow: "0 0 60px rgba(124,58,237,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+              <div>
+                <p style={{ margin: 0, fontWeight: 800, fontSize: 17, color: "#e2d4ff" }}>✨ Generate Quiz Questions with AI</p>
+                <p style={{ margin: "0.2rem 0 0", fontSize: 12, color: "#64748b" }}>Groq tự tạo câu hỏi, lựa chọn và đáp án đúng</p>
+              </div>
+              <button type="button" onClick={() => setQuizAiModal(false)}
+                style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.07)", color: "#94a3b8", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                ✕
+              </button>
+            </div>
+
+            {/* Topic + count row */}
+            <div style={{ display: "flex", gap: "0.6rem", marginBottom: "0.85rem" }}>
+              <input
+                placeholder="Topic (e.g. Animals, Colors, Food...)"
+                value={quizAiTopic}
+                onChange={(e) => setQuizAiTopic(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleQuizAIGenerate())}
+                style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.85rem", color: "#e2e8f0", fontSize: 14, outline: "none" }}
+              />
+              <select value={quizAiCount} onChange={(e) => setQuizAiCount(Number(e.target.value))}
+                style={{ width: 110, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.6rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}>
+                {[3, 4, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n} questions</option>)}
+              </select>
+              <button type="button" onClick={handleQuizAIGenerate} disabled={quizAiLoading || !quizAiTopic.trim()}
+                style={{ padding: "0.55rem 1.1rem", borderRadius: 9, cursor: quizAiLoading || !quizAiTopic.trim() ? "default" : "pointer", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, opacity: quizAiLoading || !quizAiTopic.trim() ? 0.5 : 1, whiteSpace: "nowrap" }}>
+                {quizAiLoading ? "Wait…" : "Generate"}
+              </button>
+            </div>
+
+            {quizAiError && <p style={{ color: "#f87171", fontSize: 12, marginBottom: "0.75rem" }}>{quizAiError}</p>}
+
+            {/* Preview list */}
+            {quizAiPreview.length > 0 && (
+              <>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginBottom: "1rem" }}>
+                  {quizAiPreview.map((q, idx) => (
+                    <div key={idx} style={{ background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 10, padding: "0.75rem 1rem", display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
+                      {q.imageUrl && (
+                        <img src={q.imageUrl} alt={q.correctAnswer} style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, flexShrink: 0, border: "1px solid rgba(124,58,237,0.4)" }} />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: "0 0 0.45rem", fontWeight: 700, color: "#e2d4ff", fontSize: 13 }}>
+                          <span style={{ color: "#a78bfa", marginRight: "0.4rem" }}>Q{idx + 1}.</span>{q.questionText}
+                        </p>
+                        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                          {q.options.map((opt, oi) => (
+                            <span key={oi} style={{
+                              fontSize: 12, padding: "0.2rem 0.65rem", borderRadius: 6, fontWeight: opt === q.correctAnswer ? 700 : 400,
+                              background: opt === q.correctAnswer ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.06)",
+                              border: `1px solid ${opt === q.correctAnswer ? "rgba(16,185,129,0.6)" : "rgba(255,255,255,0.12)"}`,
+                              color: opt === q.correctAnswer ? "#10b981" : "#94a3b8",
+                            }}>
+                              {opt === q.correctAnswer ? "✓ " : ""}{opt}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Replace / Append toggle */}
+                <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+                  {[["replace", "Replace all questions"], ["append", "Append to existing"]].map(([val, label]) => (
+                    <button key={val} type="button" onClick={() => setQuizAiMode(val)}
+                      style={{ flex: 1, padding: "0.4rem 0.6rem", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600, background: quizAiMode === val ? "rgba(124,58,237,0.35)" : "rgba(255,255,255,0.06)", border: `1.5px solid ${quizAiMode === val ? "rgba(124,58,237,0.8)" : "rgba(255,255,255,0.12)"}`, color: quizAiMode === val ? "#c4b5fd" : "#94a3b8" }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                <button type="button" onClick={applyQuizAIQuestions}
+                  style={{ width: "100%", padding: "0.65rem", borderRadius: 10, cursor: "pointer", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontWeight: 700, fontSize: 14 }}>
+                  {quizAiMode === "replace" ? `Use these ${quizAiPreview.length} questions` : `Add ${quizAiPreview.length} questions`}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {showPreview && <ContentPlayer content={previewContent} mode="preview" onClose={() => setShowPreview(false)} />}
       <div style={{ maxWidth: isWide ? 1600 : 900, margin: "0 auto" }}>
         <section className="glass-card" style={{ animation: "tcSlideIn 0.3s ease" }}>
@@ -841,8 +1077,15 @@ function ContentForm({ initial, onSave, onCancel }) {
             {/* Game items */}
             {isGame && (
               <FieldBox>
-                <div style={{ marginBottom: "0.85rem" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.85rem" }}>
                   <SectionLabel>Items ({items.length})</SectionLabel>
+                  <button
+                    type="button"
+                    onClick={() => { setAiModal(true); setAiPreview([]); setAiError(""); }}
+                    style={{ fontSize: 12, padding: "0.3rem 0.8rem", borderRadius: 8, cursor: "pointer", fontWeight: 700, background: "rgba(124,58,237,0.25)", border: "1.5px solid rgba(124,58,237,0.7)", color: "#c4b5fd", whiteSpace: "nowrap" }}
+                  >
+                    ✨ Generate with AI
+                  </button>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "0.85rem" }}>
                   {items.map((item, i) => {
@@ -961,8 +1204,15 @@ function ContentForm({ initial, onSave, onCancel }) {
             {/* Quiz questions */}
             {!isGame && !isListen && (
               <div>
-                <div style={{ marginBottom: "0.75rem" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
                   <SectionLabel>Questions ({questions.length})</SectionLabel>
+                  <button
+                    type="button"
+                    onClick={() => { setQuizAiModal(true); setQuizAiPreview([]); setQuizAiError(""); }}
+                    style={{ fontSize: 12, padding: "0.3rem 0.8rem", borderRadius: 8, cursor: "pointer", fontWeight: 700, background: "rgba(124,58,237,0.25)", border: "1.5px solid rgba(124,58,237,0.7)", color: "#c4b5fd", whiteSpace: "nowrap" }}
+                  >
+                    ✨ Generate with AI
+                  </button>
                 </div>
 
                 {questions.map((q, qi) => (

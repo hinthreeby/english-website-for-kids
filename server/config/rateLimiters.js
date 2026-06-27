@@ -97,6 +97,14 @@ const chatLimiter = make(
   "chat_rate_limit"
 );
 
+// 10 AI word-list generations per minute per IP
+const aiGenerateLimiter = make(
+  60 * 1000,
+  10,
+  "Too many generation requests. Please slow down.",
+  "ai_generate_rate_limit"
+);
+
 module.exports = {
   loginLimiter,
   registerLimiter,
@@ -107,4 +115,5 @@ module.exports = {
   viewLimiter,
   drawLimiter,
   chatLimiter,
+  aiGenerateLimiter,
 };

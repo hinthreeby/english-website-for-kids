@@ -5,6 +5,7 @@ const validateObjectId = require("../middleware/validateObjectId");
 const Classroom = require("../models/Classroom");
 const User = require("../models/User");
 const GameResult = require("../models/GameResult");
+const WordList = require("../models/WordList");
 const { validatePassword } = require("../utils/passwordPolicy");
 const { validateDisplayName } = require("../utils/sanitize");
 
@@ -150,6 +151,48 @@ router.patch("/change-password", protect, isTeacher, async (req, res) => {
     user.password = newPassword;
     await user.save();
     return res.json({ success: true });
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
+// ── Word List routes ──────────────────────────────────────────────────────────
+
+router.get("/wordlists", protect, isTeacher, async (req, res) => {
+  try {
+    const lists = await WordList.find({ teacherId: req.user._id }).sort({ createdAt: -1 }).lean();
+    return res.json({ lists });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/wordlist", protect, isTeacher, async (req, res) => {
+  try {
+    const { title, gameType, words } = req.body;
+    if (!title?.trim()) return res.status(400).json({ error: "Title is required" });
+    if (!Array.isArray(words) || words.length === 0)
+      return res.status(400).json({ error: "At least one word is required" });
+
+    const sanitized = words
+      .filter((w) => w?.word?.trim())
+      .map((w) => ({
+        word: w.word.trim(),
+        emoji: w.emoji || "",
+        imageUrl: w.imageUrl || "",
+        category: w.category || "general",
+      }));
+
+    if (sanitized.length === 0) return res.status(400).json({ error: "No valid words provided" });
+
+    const list = await WordList.create({
+      title: title.trim(),
+      gameType: gameType || "all",
+      words: sanitized,
+      teacherId: req.user._id,
+    });
+
+    return res.status(201).json({ list });
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

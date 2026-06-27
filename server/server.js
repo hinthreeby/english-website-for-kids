@@ -49,6 +49,7 @@ const transcribeRoutes    = require("./routes/transcribe");
 const imageSearchRoutes   = require("./routes/imageSearch");
 const audioSearchRoutes   = require("./routes/audioSearch");
 const forumRoutes         = require("./routes/forum");
+const aiGenerateRoutes    = require("./routes/aiGenerate");
 
 // ── Initialize Express app ────────────────────────────────────────────────
 const app = express();
@@ -220,6 +221,7 @@ async function startServer() {
     app.use("/api/images", imageSearchRoutes);
     app.use("/api/audio",  audioSearchRoutes);
     app.use("/api/forum",  forumRoutes);
+    app.use("/api/ai",     aiGenerateRoutes);
 
     // ── 404 handler (logs probing attempts) ──────────────────────────────────
     app.use(notFoundLogger);

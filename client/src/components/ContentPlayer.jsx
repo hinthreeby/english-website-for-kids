@@ -587,7 +587,7 @@ function MemoryCardGame({ items, onComplete }) {
                     ? `linear-gradient(145deg, rgba(30,12,65,0.95), rgba(14,5,38,0.98))`
                     : "linear-gradient(145deg, rgba(88,28,135,0.55), rgba(6,182,212,0.2))",
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                gap: "0.3rem", padding: "0.5rem", transition: "all 0.25s", position: "relative", overflow: "hidden",
+                gap: "0.2rem", padding: "0.25rem", transition: "all 0.25s", position: "relative", overflow: "hidden",
                 boxShadow: isMat
                   ? "0 0 20px rgba(16,185,129,0.5)"
                   : isFlipped
@@ -617,22 +617,23 @@ function MemoryCardGame({ items, onComplete }) {
                   {/* Planet decoration top-right */}
                   {!isMat && (
                     <img src={planet} alt="" style={{
-                      position: "absolute", right: 6, top: 6,
-                      width: "28%", opacity: 0.75, pointerEvents: "none",
+                      position: "absolute", right: 5, top: 5,
+                      width: "18%", opacity: 0.6, pointerEvents: "none",
                       filter: `drop-shadow(0 0 5px ${col.glow}) brightness(1.2) saturate(1.3)`,
                     }} />
                   )}
                   <span style={{ position: "absolute", left: 7, bottom: 6, fontSize: 8, color: col.text, opacity: 0.4 }}>✦</span>
                   {card.side === "image" && card.imageUrl ? (
-                    <img src={card.imageUrl} alt="" style={{ width: "65%", height: "65%", objectFit: "cover", borderRadius: 10, border: `1.5px solid ${col.border}`, boxShadow: `0 0 10px ${col.glow}`, position: "relative", zIndex: 1 }} />
+                    <img src={card.imageUrl} alt="" style={{ width: "88%", height: "82%", objectFit: "cover", borderRadius: 10, border: `2px solid ${col.border}`, boxShadow: `0 0 14px ${col.glow}`, position: "relative", zIndex: 1 }} />
                   ) : (
                     <span style={{
-                      fontSize: card.side === "word" ? "clamp(0.7rem, 2.5vw, 1rem)" : "1.6rem",
+                      fontSize: card.side === "word" ? "clamp(1rem, 3.2vw, 1.5rem)" : "1.8rem",
                       fontWeight: 800,
                       color: isMat ? "#10b981" : col.text,
-                      textAlign: "center", wordBreak: "break-all", padding: "0 6px",
+                      textAlign: "center", wordBreak: "break-word", padding: "0 8px",
                       position: "relative", zIndex: 1,
                       textShadow: `0 0 16px ${col.glow}`,
+                      lineHeight: 1.2,
                     }}>{card.label}</span>
                   )}
                   {isMat && <span style={{ fontSize: "1rem", color: "#10b981", position: "relative", zIndex: 1 }}>✓</span>}
@@ -785,15 +786,36 @@ function QuizGame({ content, mode, alreadySubmitted }) {
               </span>
             </div>
             {/* Question text — large and centered */}
-            <p style={{
-              color: "#f0e6ff", fontWeight: 800,
-              fontSize: "clamp(1.15rem, 2.2vw, 1.55rem)",
-              lineHeight: 1.45, textAlign: "center",
-              margin: 0, position: "relative", zIndex: 1,
-              textShadow: "0 0 32px rgba(196,181,253,0.2)",
-            }}>
-              {q.questionText}
-            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem", position: "relative", zIndex: 1 }}>
+              <p style={{
+                color: "#f0e6ff", fontWeight: 800,
+                fontSize: "clamp(1.15rem, 2.2vw, 1.55rem)",
+                lineHeight: 1.45, textAlign: "center",
+                margin: 0,
+                textShadow: "0 0 32px rgba(196,181,253,0.2)",
+              }}>
+                {q.questionText}
+              </p>
+              <button
+                type="button"
+                title="Read question aloud"
+                onClick={() => {
+                  window.speechSynthesis?.cancel();
+                  if (q.audioUrl) {
+                    try { new Audio(q.audioUrl).play(); } catch (_) {}
+                    return;
+                  }
+                  const u = new SpeechSynthesisUtterance(q.questionText);
+                  u.lang = "en-US"; u.rate = 0.82;
+                  window.speechSynthesis?.speak(u);
+                }}
+                style={{ background: "rgba(168,85,247,0.2)", border: "1.5px solid rgba(168,85,247,0.5)", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 16, flexShrink: 0, transition: "background 0.15s" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(168,85,247,0.4)"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(168,85,247,0.2)"}
+              >
+                🔊
+              </button>
+            </div>
             {/* Optional image */}
             {q.imageUrl && (
               <img src={q.imageUrl} alt="" style={{

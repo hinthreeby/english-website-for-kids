@@ -4708,6 +4708,125 @@ body,
   color: #f87171;
 }
 
+/* ─── AI Generate Panel ──────────────────────────────────────── */
+.ai-gen-panel {
+  border: 1px solid rgba(123, 47, 247, 0.25);
+  border-radius: 14px;
+  background: rgba(123, 47, 247, 0.06);
+  overflow: hidden;
+}
+
+.ai-gen-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #c4a8ff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ai-gen-toggle:hover {
+  background: rgba(123, 47, 247, 0.1);
+}
+
+.ai-gen-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-gen-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ai-gen-topic {
+  flex: 1;
+}
+
+.ai-gen-count {
+  width: 100px;
+}
+
+.ai-gen-error {
+  color: #f87171;
+  font-size: 0.83rem;
+  margin: 0;
+}
+
+.ai-gen-hint {
+  color: #9b7bc0;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.ai-gen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.ai-gen-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border-radius: 12px;
+  border: 2px solid rgba(123, 47, 247, 0.2);
+  background: rgba(123, 47, 247, 0.08);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, opacity 0.15s;
+  opacity: 0.45;
+  position: relative;
+}
+
+.ai-gen-card.selected {
+  border-color: rgba(123, 47, 247, 0.7);
+  background: rgba(123, 47, 247, 0.18);
+  opacity: 1;
+}
+
+.ai-gen-img {
+  width: 58px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.ai-gen-emoji {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.ai-gen-word {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #e2d4ff;
+  text-align: center;
+}
+
+.ai-gen-speak {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.ai-gen-speak:hover {
+  opacity: 1;
+}
+
 /* ─── Generic Modal ─────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
