@@ -198,20 +198,20 @@ function AudioInput({ value, onChange }) {
           placeholder="https://example.com/sound.mp3"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          style={{ width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "0.45rem 0.85rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}
+          style={{ width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "0.45rem 0.85rem", color: "#e2e8f0", fontSize: 13, outline: "none", marginBottom: "0.25rem" }}
         />
       )}
 
       {/* Search bar */}
       {mode === "search" && (
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <input
             ref={searchRef}
             placeholder='e.g. "dog bark", "rain", "piano"'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); doSearch(searchQuery, 1, false); } }}
-            style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "0.45rem 0.85rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}
+            style={{ flex: "1 1 120px", minWidth: 0, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "0.45rem 0.85rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}
           />
           <button type="button" onClick={() => doSearch(searchQuery, 1, false)} disabled={searching || !searchQuery.trim()}
             style={{
@@ -227,7 +227,11 @@ function AudioInput({ value, onChange }) {
         </div>
       )}
 
-      {searchError && <p style={{ color: "#f87171", fontSize: 12, marginTop: "0.4rem" }}>{searchError}</p>}
+      {searchError && (
+        <p style={{ color: "#f87171", fontSize: 12, marginTop: "0.45rem", marginBottom: "0.25rem", padding: "0.3rem 0.6rem", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 6 }}>
+          {searchError}
+        </p>
+      )}
 
       {/* Current audio preview */}
       {value && (
@@ -406,7 +410,7 @@ function ImageInput({ value, onChange }) {
           placeholder="https://example.com/image.jpg"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          style={{ width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}
+          style={{ width: "100%", boxSizing: "border-box", background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "0.5rem 0.85rem", color: "#e2e8f0", fontSize: 13, outline: "none", marginBottom: "0.5rem" }}
         />
       )}
 
@@ -854,12 +858,22 @@ function ContentForm({ initial, onSave, onCancel }) {
                             </button>
                           )}
                         </div>
-                        <input
-                          placeholder="Word *" value={item.word} onChange={(e) => setItem(i, "word", e.target.value)} required
-                          style={{ width: "100%", boxSizing: "border-box", marginBottom: "0.6rem", background: "rgba(0,0,0,0.25)", border: `1px solid ${col.border}`, borderRadius: 7, padding: "0.45rem 0.7rem", color: "#e2e8f0", fontSize: 14, outline: "none" }}
-                        />
-                        <ImageInput value={item.imageUrl} onChange={(val) => setItem(i, "imageUrl", val)} />
-                        <AudioInput value={item.audioUrl} onChange={(val) => setItem(i, "audioUrl", val)} />
+                        {/* ── Word ── */}
+                        <div style={{ marginBottom: "0.85rem" }}>
+                          <label style={{ fontSize: 11, color: col.text, fontWeight: 700, display: "block", marginBottom: "0.3rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>Word</label>
+                          <input
+                            placeholder="Word *" value={item.word} onChange={(e) => setItem(i, "word", e.target.value)} required
+                            style={{ width: "100%", boxSizing: "border-box", background: "rgba(0,0,0,0.25)", border: `1px solid ${col.border}`, borderRadius: 7, padding: "0.45rem 0.7rem", color: "#e2e8f0", fontSize: 14, outline: "none" }}
+                          />
+                        </div>
+                        {/* ── Image ── */}
+                        <div style={{ marginBottom: "0.85rem", paddingBottom: "0.85rem", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                          <ImageInput value={item.imageUrl} onChange={(val) => setItem(i, "imageUrl", val)} />
+                        </div>
+                        {/* ── Audio ── */}
+                        <div>
+                          <AudioInput value={item.audioUrl} onChange={(val) => setItem(i, "audioUrl", val)} />
+                        </div>
                       </div>
                     );
                   })}
