@@ -23,7 +23,6 @@ import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import ClassroomPage from "./pages/teacher/ClassroomPage";
 import TeacherContentsPage from "./pages/teacher/TeacherContentsPage";
 import TeacherForum from "./pages/teacher/TeacherForum";
-import WordListEditor from "./pages/teacher/WordListEditor";
 import StudentContentsPage from "./pages/student/StudentContentsPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import ChildProfilePage from "./pages/child/ChildProfilePage";
@@ -198,14 +197,6 @@ const App = () => {
             element={
               <TeacherOnly>
                 <TeacherForum />
-              </TeacherOnly>
-            }
-          />
-          <Route
-            path="/teacher/word-lists"
-            element={
-              <TeacherOnly>
-                <WordListEditor />
               </TeacherOnly>
             }
           />
