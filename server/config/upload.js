@@ -138,7 +138,7 @@ const ALLOWED_FORUM_EXTS = new Set([
   ".mp3", ".wav", ".m4a", ".aac",
 ]);
 
-const FORUM_SIZE_LIMITS = { image: 5, video: 100, audio: 20 }; // MB
+const FORUM_SIZE_LIMITS = { image: 10, video: 100, audio: 50 }; // MB
 
 const forumStorage = multer.diskStorage({
   destination: (_req, file, cb) => {

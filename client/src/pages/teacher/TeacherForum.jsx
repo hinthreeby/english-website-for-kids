@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import api from "../../lib/api";
 import Navbar from "../../components/Navbar";
 import StarBackground from "../../components/StarBackground";
+import ContentPlayer from "../../components/ContentPlayer";
 
 // ── Inject CSS ────────────────────────────────────────────────────────────────
 if (typeof document !== "undefined" && !document.getElementById("forum-styles")) {
@@ -500,16 +501,17 @@ const ALLOWED_MIMES = {
   audio: ["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/webm"],
 };
 
-const MEDIA_MAX_MB = { image: 5, video: 100, audio: 20 };
+const MEDIA_MAX_MB = { image: 10, video: 100, audio: 50 };
+const MAX_MEDIA_FILES = 5;
 const MEDIA_ACCEPT = {
   image: "image/jpeg,image/png,image/webp,image/gif",
   video: "video/mp4,video/webm,video/quicktime",
   audio: "audio/mpeg,audio/wav,audio/ogg,audio/mp4,audio/aac,audio/webm",
 };
 const MEDIA_HINT = {
-  image: "JPG · PNG · GIF · WebP · max 5 MB",
-  video: "MP4 · WebM · MOV · max 100 MB",
-  audio: "MP3 · WAV · OGG · M4A · max 20 MB",
+  image: "JPG · PNG · GIF · WebP · max 10 MB/file · up to 5 files",
+  video: "MP4 · WebM · MOV · max 100 MB/file · up to 5 files",
+  audio: "MP3 · WAV · OGG · M4A · max 50 MB/file · up to 5 files",
 };
 
 const AVATAR_COLORS = ["#c4b5fd","#6ee7b7","#67e8f9","#fcd34d","#fca5a5","#f9a8d4","#a5f3fc","#bbf7d0"];
@@ -615,6 +617,121 @@ function lastActiveLabel(iso) {
   if (days === 1) return "Yesterday";
   if (days < 7)   return `${days} days ago`;
   return `${Math.floor(days / 7)}w ago`;
+}
+
+// ── Post media helpers ────────────────────────────────────────────────────────
+
+function getPostMedia(post) {
+  if (post.media?.length > 0) return post.media;
+  if (post.mediaUrl) return [{ url: post.mediaUrl, type: post.type, mimeType: "" }];
+  return [];
+}
+
+// ── GamePlayModal ─────────────────────────────────────────────────────────────
+
+function GamePlayModal({ gameRef, onClose }) {
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState("");
+
+  useEffect(() => {
+    if (!gameRef?._id) return;
+    setLoading(true);
+    setError("");
+    api.get(`/api/forum/games/${gameRef._id}`)
+      .then((res) => setContent(res.data.game))
+      .catch((e) => setError(e?.response?.data?.error || "Failed to load game."))
+      .finally(() => setLoading(false));
+  }, [gameRef?._id]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 9000,
+        background: "rgba(8,3,22,0.88)", backdropFilter: "blur(14px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "1rem",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{
+        width: "100%", maxWidth: 820, maxHeight: "90vh",
+        borderRadius: 20, overflow: "hidden",
+        border: "1.5px solid rgba(124,58,237,0.5)",
+        boxShadow: "0 0 60px rgba(124,58,237,0.35), 0 30px 80px rgba(0,0,0,0.7)",
+        display: "flex", flexDirection: "column",
+        background: "rgba(12,5,35,0.97)",
+        animation: "forumFadeUp 0.28s ease",
+      }}>
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0.85rem 1.25rem",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(124,58,237,0.12)",
+          flexShrink: 0,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+            <span style={{ fontSize: 22 }}>🎮</span>
+            <div>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#f1f5f9", fontFamily: "var(--font-heading)" }}>
+                {gameRef?.title || "Play Game"}
+              </p>
+              {gameRef?.template && (
+                <p style={{ margin: 0, fontSize: 11, color: "#7c3aed", textTransform: "capitalize" }}>
+                  {gameRef.template.replace(/-/g, " ")}
+                </p>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 10, padding: "0.4rem 0.85rem", color: "#94a3b8",
+              cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "var(--font-ui)",
+              transition: "all .15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; e.currentTarget.style.color = "#f87171"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "#94a3b8"; }}
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ flex: 1, overflow: "auto" }}>
+          {loading && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "3rem", color: "#64748b", fontSize: 14 }}>
+              Loading game…
+            </div>
+          )}
+          {!loading && error && (
+            <div style={{ padding: "2rem", textAlign: "center" }}>
+              <p style={{ color: "#f87171", fontSize: 14, marginBottom: "0.5rem" }}>🎮 {error}</p>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.5)", borderRadius: 10, padding: "0.5rem 1.25rem", color: "#c4b5fd", cursor: "pointer", fontSize: 13, fontWeight: 600 }}
+              >
+                Close
+              </button>
+            </div>
+          )}
+          {!loading && !error && content && (
+            <ContentPlayer content={content} mode="play" onClose={onClose} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── TypeBadge ─────────────────────────────────────────────────────────────────
@@ -780,9 +897,73 @@ function CommentsSection({ postId, initialCount, open, onCountChange }) {
   );
 }
 
+// ── Post media sub-components ─────────────────────────────────────────────────
+
+function PostMediaImage({ url, alt, single }) {
+  const [err, setErr] = useState(false);
+  if (err) return (
+    <div style={{ background: "rgba(239,68,68,0.06)", display: "flex", alignItems: "center", justifyContent: "center", minHeight: single ? 180 : 120, color: "#f87171", fontSize: 12 }}>
+      🖼️ Image unavailable
+    </div>
+  );
+  return (
+    <img
+      src={resolveMediaUrl(url)}
+      alt={alt}
+      style={{ width: "100%", height: single ? "auto" : 150, maxHeight: single ? 340 : 150, objectFit: "cover", display: "block" }}
+      onError={() => setErr(true)}
+    />
+  );
+}
+
+function PostMediaVideo({ url, label, col }) {
+  const [err, setErr] = useState(false);
+  if (err) return (
+    <div style={{ borderRadius: 10, border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)", padding: "0.85rem", textAlign: "center", color: "#f87171", fontSize: 12 }}>
+      🎬 {label ? `${label}: ` : ""}Video could not be loaded
+    </div>
+  );
+  return (
+    <div style={{ borderRadius: 10, overflow: "hidden", border: `1px solid ${col.border}` }}>
+      {label && <p style={{ margin: 0, padding: "0.3rem 0.75rem", fontSize: 11, color: "#64748b", background: "rgba(0,0,0,0.3)" }}>{label}</p>}
+      <video
+        src={resolveMediaUrl(url)}
+        controls
+        preload="metadata"
+        style={{ width: "100%", maxHeight: 260, display: "block", background: "#000" }}
+        onError={() => setErr(true)}
+      />
+    </div>
+  );
+}
+
+function PostMediaAudio({ url, label }) {
+  const [err, setErr] = useState(false);
+  if (err) return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 10, padding: "0.6rem 0.9rem", color: "#f87171", fontSize: 12 }}>
+      🎵 {label || "Audio"} could not be loaded
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: 10, padding: "0.55rem 0.9rem" }}>
+      <span style={{ fontSize: 20, flexShrink: 0 }}>🎵</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {label && <p style={{ margin: "0 0 0.25rem", fontSize: 11, color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</p>}
+        <audio
+          src={resolveMediaUrl(url)}
+          controls
+          preload="metadata"
+          style={{ width: "100%", display: "block" }}
+          onError={() => setErr(true)}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ── PostCard ──────────────────────────────────────────────────────────────────
 
-function PostCard({ post, onDelete, highlighted, onUnsave, onRequireLogin }) {
+function PostCard({ post, onDelete, highlighted, onUnsave, onRequireLogin, onPlayGame }) {
   const { user } = useAuth();
   const col = TC[post.type] || TC.text;
   const [liked,        setLiked]        = useState(post.isLiked || false);
@@ -881,62 +1062,48 @@ function PostCard({ post, onDelete, highlighted, onUnsave, onRequireLogin }) {
         </div>
       )}
 
-      {/* Media */}
-      {post.type === "image" && post.mediaUrl && !mediaError && (
-        <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${col.border}`, marginBottom: "0.85rem", boxShadow: `0 0 24px ${col.glow}` }}>
-          <img
-            src={resolveMediaUrl(post.mediaUrl)}
-            alt={post.title}
-            style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block" }}
-            onError={() => setMediaError(true)}
-          />
-        </div>
-      )}
-      {post.type === "image" && post.mediaUrl && mediaError && (
-        <div style={{ borderRadius: 12, border: `1px solid rgba(239,68,68,0.25)`, background: "rgba(239,68,68,0.06)", padding: "1.25rem", textAlign: "center", marginBottom: "0.85rem", color: "#f87171", fontSize: 12 }}>
-          🖼️ Image could not be loaded
-          {import.meta.env.DEV && <div style={{ marginTop: "0.3rem", fontSize: 10, color: "#475569", wordBreak: "break-all" }}>{resolveMediaUrl(post.mediaUrl)}</div>}
-        </div>
-      )}
-      {post.type === "video" && post.mediaUrl && !mediaError && (
-        <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${col.border}`, marginBottom: "0.85rem" }}>
-          <video
-            src={resolveMediaUrl(post.mediaUrl)}
-            controls
-            preload="metadata"
-            style={{ width: "100%", maxHeight: 260, display: "block", background: "#000" }}
-            onError={() => setMediaError(true)}
-          />
-        </div>
-      )}
-      {post.type === "video" && post.mediaUrl && mediaError && (
-        <div style={{ borderRadius: 12, border: `1px solid rgba(239,68,68,0.25)`, background: "rgba(239,68,68,0.06)", padding: "1.25rem", textAlign: "center", marginBottom: "0.85rem", color: "#f87171", fontSize: 12 }}>
-          🎬 Video could not be loaded
-          {import.meta.env.DEV && <div style={{ marginTop: "0.3rem", fontSize: 10, color: "#475569", wordBreak: "break-all" }}>{resolveMediaUrl(post.mediaUrl)}</div>}
-        </div>
-      )}
-      {post.type === "audio" && post.mediaUrl && !mediaError && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.28)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "0.85rem" }}>
-          <span style={{ fontSize: 24, flexShrink: 0 }}>🎵</span>
-          <audio
-            src={resolveMediaUrl(post.mediaUrl)}
-            controls
-            preload="metadata"
-            style={{ flex: 1, minWidth: 0 }}
-            onError={() => setMediaError(true)}
-          />
-        </div>
-      )}
-      {post.type === "audio" && post.mediaUrl && mediaError && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "0.85rem" }}>
-          <span style={{ fontSize: 22, flexShrink: 0 }}>🎵</span>
-          <div>
-            <p style={{ margin: "0 0 0.1rem", fontSize: 12, color: "#f87171" }}>Audio could not be loaded</p>
-            {import.meta.env.DEV && <p style={{ margin: 0, fontSize: 10, color: "#475569", wordBreak: "break-all" }}>{resolveMediaUrl(post.mediaUrl)}</p>}
+      {/* ── Media gallery (supports new media[] array + old single mediaUrl) ── */}
+      {post.type === "image" && (() => {
+        const items = getPostMedia(post);
+        if (items.length === 0) return null;
+        const cols = items.length === 1 ? "1fr" : items.length === 2 ? "1fr 1fr" : "1fr 1fr 1fr";
+        return (
+          <div style={{ borderRadius: 12, overflow: "hidden", border: `1px solid ${col.border}`, marginBottom: "0.85rem", boxShadow: `0 0 24px ${col.glow}` }}>
+            <div style={{ display: "grid", gridTemplateColumns: cols, gap: 2 }}>
+              {items.map((item, i) => (
+                <PostMediaImage key={i} url={item.url} alt={`${post.title} ${i + 1}`} single={items.length === 1} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-      {post.type === "game" && post.game && (
+        );
+      })()}
+
+      {post.type === "video" && (() => {
+        const items = getPostMedia(post);
+        if (items.length === 0) return null;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.85rem" }}>
+            {items.map((item, i) => (
+              <PostMediaVideo key={i} url={item.url} label={items.length > 1 ? `Video ${i + 1}` : ""} col={col} />
+            ))}
+          </div>
+        );
+      })()}
+
+      {post.type === "audio" && (() => {
+        const items = getPostMedia(post);
+        if (items.length === 0) return null;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem", marginBottom: "0.85rem" }}>
+            {items.map((item, i) => (
+              <PostMediaAudio key={i} url={item.url} label={item.originalName || (items.length > 1 ? `Audio ${i + 1}` : "")} />
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* ── Game card ── */}
+      {post.type === "game" && (post.game ? (
         <div style={{
           display: "flex", alignItems: "center", gap: "0.9rem", marginBottom: "0.85rem",
           background: "linear-gradient(135deg, rgba(124,58,237,0.18), rgba(167,139,250,0.1))",
@@ -948,11 +1115,21 @@ function PostCard({ post, onDelete, highlighted, onUnsave, onRequireLogin }) {
             <p style={{ margin: "0 0 0.12rem", fontWeight: 700, fontSize: 14, color: "#c4b5fd", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{post.game.title}</p>
             <p style={{ margin: 0, fontSize: 11, color: "#7c3aed", textTransform: "capitalize" }}>{post.game.template?.replace(/-/g, " ")}</p>
           </div>
-          <span style={{ fontSize: 12, padding: "0.28rem 0.75rem", borderRadius: 20, background: "rgba(124,58,237,0.3)", color: "#c4b5fd", border: "1px solid rgba(124,58,237,0.55)", fontWeight: 700, flexShrink: 0, fontFamily: "var(--font-ui)" }}>
+          <button
+            type="button"
+            onClick={() => onPlayGame?.(post.game)}
+            style={{ fontSize: 12, padding: "0.4rem 0.9rem", borderRadius: 20, background: "rgba(124,58,237,0.3)", color: "#c4b5fd", border: "1px solid rgba(124,58,237,0.55)", fontWeight: 700, flexShrink: 0, fontFamily: "var(--font-ui)", cursor: "pointer", transition: "all .15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.55)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(124,58,237,0.5)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.3)"; e.currentTarget.style.boxShadow = "none"; }}
+          >
             ▶ Play
-          </span>
+          </button>
         </div>
-      )}
+      ) : (
+        <div style={{ borderRadius: 12, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.06)", padding: "0.75rem 1rem", marginBottom: "0.85rem", color: "#f87171", fontSize: 12 }}>
+          🎮 Game unavailable
+        </div>
+      ))}
 
       {/* Tags */}
       {post.tags?.length > 0 && (
@@ -1202,8 +1379,8 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
   const [description,    setDescription]    = useState("");
   const [tags,           setTags]           = useState("");
   const [selectedGameId, setSelectedGameId] = useState("");
-  const [mediaFile,      setMediaFile]      = useState(null);
-  const [mediaPreview,   setMediaPreview]   = useState("");
+  const [mediaFiles,     setMediaFiles]     = useState([]);     // File[]
+  const [mediaPreviews,  setMediaPreviews]  = useState([]);     // { url, name, size }[]
   const [errors,         setErrors]         = useState({});
   const [submitting,     setSubmitting]     = useState(false);
   const [dragOver,       setDragOver]       = useState(false);
@@ -1213,38 +1390,60 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
   const isGame  = type === "game";
 
   const switchType = (t) => {
-    setType(t); setMediaFile(null); setMediaPreview(""); setSelectedGameId(""); setErrors({});
+    setType(t);
+    mediaPreviews.forEach((p) => URL.revokeObjectURL(p.url));
+    setMediaFiles([]); setMediaPreviews([]);
+    setSelectedGameId(""); setErrors({});
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const applyFile = (file) => {
-    const allowed = ALLOWED_MIMES[type] || [];
-    if (allowed.length > 0 && file.type && !allowed.includes(file.type)) {
-      setErrors((e) => ({ ...e, media: `Invalid file type. Please upload a valid ${type} file.` }));
+  const applyFiles = (incoming) => {
+    const allowed  = ALLOWED_MIMES[type] || [];
+    const maxMB    = MEDIA_MAX_MB[type] ?? 20;
+    const remaining = MAX_MEDIA_FILES - mediaFiles.length;
+
+    if (remaining <= 0) {
+      setErrors((e) => ({ ...e, media: `You can upload up to ${MAX_MEDIA_FILES} files only.` }));
       return;
     }
-    const maxMB = MEDIA_MAX_MB[type] ?? 20;
-    if (file.size > maxMB * 1024 * 1024) {
-      setErrors((e) => ({ ...e, media: `File too large — max ${maxMB} MB for ${type}.` }));
+
+    const toAdd = [...incoming].slice(0, remaining);
+    const badType = toAdd.find((f) => allowed.length > 0 && f.type && !allowed.includes(f.type));
+    if (badType) {
+      setErrors((e) => ({ ...e, media: `"${badType.name}" is not a valid ${type} file.` }));
       return;
     }
+    const overSize = toAdd.find((f) => f.size > maxMB * 1024 * 1024);
+    if (overSize) {
+      setErrors((e) => ({ ...e, media: `"${overSize.name}" exceeds ${maxMB} MB.` }));
+      return;
+    }
+
     setErrors((e) => ({ ...e, media: undefined }));
-    setMediaFile(file);
-    setMediaPreview(URL.createObjectURL(file));
+    setMediaFiles((prev) => [...prev, ...toAdd]);
+    setMediaPreviews((prev) => [
+      ...prev,
+      ...toAdd.map((f) => ({ url: URL.createObjectURL(f), name: f.name, size: f.size })),
+    ]);
+  };
+
+  const removeFile = (idx) => {
+    setMediaPreviews((prev) => { URL.revokeObjectURL(prev[idx]?.url); return prev.filter((_, i) => i !== idx); });
+    setMediaFiles((prev) => prev.filter((_, i) => i !== idx));
+    setErrors((e) => ({ ...e, media: undefined }));
   };
 
   const handleDrop = (e) => {
     e.preventDefault(); setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) applyFile(file);
+    if (e.dataTransfer.files.length > 0) applyFiles([...e.dataTransfer.files]);
   };
 
   const validate = () => {
     const e = {};
-    if (!title.trim())                         e.title = "Title is required.";
-    if (type === "text" && !description.trim()) e.desc = "Content is required for text posts.";
-    if (isGame && !selectedGameId)              e.game = "Please select a game.";
-    if (isMedia && !mediaFile)                  e.media = `Please upload a ${type} file.`;
+    if (!title.trim())                          e.title = "Title is required.";
+    if (type === "text" && !description.trim()) e.desc  = "Content is required for text posts.";
+    if (isGame && !selectedGameId)              e.game  = "Please select a game.";
+    if (isMedia && mediaFiles.length === 0)     e.media = `Please upload at least one ${type} file.`;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -1262,8 +1461,8 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
       fd.append("tags",        JSON.stringify(
         tags.split(",").map((t) => t.trim()).filter(Boolean)
       ));
-      if (isGame)             fd.append("gameId", selectedGameId);
-      if (isMedia && mediaFile) fd.append("media", mediaFile);
+      if (isGame) fd.append("gameId", selectedGameId);
+      if (isMedia) mediaFiles.forEach((f) => fd.append("media", f));
 
       const res = await api.post("/api/forum/posts", fd);
       await onSubmit(res.data.post);
@@ -1274,6 +1473,7 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
   };
 
   const typeMeta = POST_TYPES.find((pt) => pt.value === type);
+  const canAddMore = mediaFiles.length < MAX_MEDIA_FILES;
 
   return (
     <section className="glass-card forum-create-wrap">
@@ -1328,177 +1528,134 @@ function CreatePostForm({ games, onSubmit, onCancel }) {
             )}
           </div>
 
-          {/* Media upload */}
+          {/* ── Media upload (multi-file, max 5) ── */}
           {isMedia && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.55rem" }}>
 
-              {/* Section label */}
               <p className="forum-section-label">
                 Upload {type.charAt(0).toUpperCase() + type.slice(1)}{" "}
                 <span style={{ color: "#f87171" }}>*</span>
                 <span style={{ color: "#475569", fontWeight: 400, textTransform: "none", fontSize: 11, letterSpacing: 0 }}>
-                  {" "}· max {MEDIA_MAX_MB[type]} MB
+                  {" "}· {mediaFiles.length}/{MAX_MEDIA_FILES} files
                 </span>
               </p>
 
-              {/* Hidden file input */}
+              {/* Hidden file input — multiple */}
               <input
                 ref={fileRef}
                 type="file"
                 accept={MEDIA_ACCEPT[type]}
+                multiple
                 style={{ display: "none" }}
-                onChange={(e) => { const f = e.target.files[0]; if (f) applyFile(f); e.target.value = ""; }}
+                onChange={(e) => { if (e.target.files.length > 0) applyFiles([...e.target.files]); e.target.value = ""; }}
               />
 
-              {/* ── STATE A: no file → dropzone ── */}
-              {!mediaFile && (
+              {/* Dropzone — shown when no files or can add more */}
+              {mediaFiles.length === 0 && (
                 <div
                   className={`forum-upload-zone-lg${dragOver ? " dragover" : ""}${errors.media ? " err" : ""}`}
                   onClick={() => fileRef.current?.click()}
                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
-                  role="button"
-                  tabIndex={0}
+                  role="button" tabIndex={0}
                   onKeyDown={(e) => e.key === "Enter" && fileRef.current?.click()}
                 >
                   <span style={{ fontSize: 34, lineHeight: 1, display: "block", marginBottom: "0.5rem" }}>
                     {type === "image" ? "🖼️" : type === "video" ? "🎬" : "🎵"}
                   </span>
                   <p style={{ margin: "0 0 0.25rem", color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
-                    Drop your {type} here, or{" "}
+                    Drop {type}s here or{" "}
                     <span style={{ color: "#c4b5fd", textDecoration: "underline" }}>browse files</span>
                   </p>
                   <p style={{ margin: 0, color: "#475569", fontSize: 11 }}>{MEDIA_HINT[type]}</p>
                 </div>
               )}
 
-              {/* ── STATE B: file selected → preview card ── */}
-
-              {/* VIDEO preview */}
-              {mediaFile && type === "video" && (
-                <div className="forum-media-preview-card">
-                  {/* Remove button */}
-                  <button
-                    type="button"
-                    className="forum-media-remove-btn"
-                    onClick={() => { setMediaFile(null); setMediaPreview(""); }}
-                    title="Remove file"
-                  >✕</button>
-
-                  {/* 16:9 video player */}
-                  <div style={{ position: "relative", aspectRatio: "16 / 9", background: "#000", overflow: "hidden" }}>
-                    {mediaPreview ? (
-                      <video
-                        src={mediaPreview}
-                        controls
-                        preload="metadata"
-                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-                      />
-                    ) : (
-                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ fontSize: 40 }}>🎬</span>
+              {/* ── IMAGE previews ── */}
+              {mediaFiles.length > 0 && type === "image" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: mediaFiles.length === 1 ? "1fr" : mediaFiles.length === 2 ? "1fr 1fr" : "1fr 1fr 1fr",
+                    gap: "0.4rem",
+                  }}>
+                    {mediaPreviews.map((p, i) => (
+                      <div key={i} className="forum-media-preview-card image" style={{ position: "relative" }}>
+                        <button type="button" className="forum-media-remove-btn" onClick={() => removeFile(i)} title="Remove">✕</button>
+                        <img src={p.url} alt={p.name} style={{ width: "100%", height: mediaFiles.length === 1 ? 180 : 110, objectFit: "cover", display: "block" }} />
+                        <div style={{ padding: "0.28rem 0.5rem", fontSize: 10, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", background: "rgba(0,0,0,0.4)" }}>
+                          {p.name} · {(p.size / 1024 / 1024).toFixed(1)} MB
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </div>
-
-                  {/* Info bar — click to replace */}
-                  <div className="forum-media-info-bar" onClick={() => fileRef.current?.click()}>
-                    <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: "rgba(239,68,68,0.18)", border: "1.5px solid rgba(239,68,68,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
-                      🎬
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: "0 0 0.1rem", fontSize: 12.5, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {mediaFile.name}
-                      </p>
-                      <p style={{ margin: 0, fontSize: 11, color: "#475569" }}>
-                        {(mediaFile.size / 1024 / 1024).toFixed(1)} MB
-                        <span style={{ margin: "0 0.35rem", color: "#1e293b" }}>·</span>
-                        <span style={{ color: "#c4b5fd", fontWeight: 600 }}>↻ Click to replace</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* IMAGE preview */}
-              {mediaFile && type === "image" && (
-                <div className="forum-media-preview-card image">
-                  <button
-                    type="button"
-                    className="forum-media-remove-btn"
-                    onClick={() => { setMediaFile(null); setMediaPreview(""); }}
-                    title="Remove file"
-                  >✕</button>
-
-                  {mediaPreview && (
-                    <img
-                      src={mediaPreview}
-                      alt="preview"
-                      style={{ width: "100%", maxHeight: 220, objectFit: "cover", display: "block" }}
-                    />
+                  {canAddMore && (
+                    <button type="button" onClick={() => fileRef.current?.click()}
+                      style={{ background: "rgba(6,182,212,0.1)", border: "1.5px dashed rgba(6,182,212,0.4)", borderRadius: 10, padding: "0.5rem", color: "#67e8f9", fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "center" }}>
+                      + Add more images ({MAX_MEDIA_FILES - mediaFiles.length} remaining)
+                    </button>
                   )}
-
-                  <div className="forum-media-info-bar" onClick={() => fileRef.current?.click()}>
-                    <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: "rgba(6,182,212,0.15)", border: "1.5px solid rgba(6,182,212,0.38)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
-                      🖼️
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: "0 0 0.1rem", fontSize: 12.5, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {mediaFile.name}
-                      </p>
-                      <p style={{ margin: 0, fontSize: 11, color: "#475569" }}>
-                        {(mediaFile.size / 1024 / 1024).toFixed(1)} MB
-                        <span style={{ margin: "0 0.35rem", color: "#1e293b" }}>·</span>
-                        <span style={{ color: "#c4b5fd", fontWeight: 600 }}>↻ Click to replace</span>
-                      </p>
-                    </div>
-                  </div>
                 </div>
               )}
 
-              {/* AUDIO preview */}
-              {mediaFile && type === "audio" && (
-                <div className="forum-media-preview-card audio">
-                  <button
-                    type="button"
-                    className="forum-media-remove-btn"
-                    onClick={() => { setMediaFile(null); setMediaPreview(""); }}
-                    title="Remove file"
-                  >✕</button>
-
-                  <div style={{ padding: "1rem 1rem 0.85rem", background: "rgba(245,158,11,0.05)" }}>
-                    {/* File identity row */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                      <div style={{ width: 42, height: 42, borderRadius: 10, flexShrink: 0, background: "rgba(245,158,11,0.16)", border: "1.5px solid rgba(245,158,11,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
-                        🎵
+              {/* ── AUDIO previews ── */}
+              {mediaFiles.length > 0 && type === "audio" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  {mediaPreviews.map((p, i) => (
+                    <div key={i} className="forum-media-preview-card audio" style={{ padding: "0.6rem 0.85rem 0.75rem" }}>
+                      <button type="button" className="forum-media-remove-btn" onClick={() => removeFile(i)} title="Remove">✕</button>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.45rem" }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 8, flexShrink: 0, background: "rgba(245,158,11,0.18)", border: "1px solid rgba(245,158,11,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🎵</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</p>
+                          <p style={{ margin: 0, fontSize: 10, color: "#475569" }}>{(p.size / 1024 / 1024).toFixed(1)} MB</p>
+                        </div>
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: "0 0 0.1rem", fontSize: 13, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {mediaFile.name}
-                        </p>
-                        <p style={{ margin: 0, fontSize: 11, color: "#475569" }}>
-                          {(mediaFile.size / 1024 / 1024).toFixed(1)} MB
-                          <span style={{ margin: "0 0.35rem", color: "#1e293b" }}>·</span>
-                          <button
-                            type="button"
-                            onClick={() => fileRef.current?.click()}
-                            style={{ background: "none", border: "none", cursor: "pointer", color: "#c4b5fd", fontSize: 11, fontWeight: 600, padding: 0 }}
-                          >↻ Replace</button>
-                        </p>
+                      <audio src={p.url} controls preload="metadata" style={{ width: "100%", display: "block" }} />
+                    </div>
+                  ))}
+                  {canAddMore && (
+                    <button type="button" onClick={() => fileRef.current?.click()}
+                      style={{ background: "rgba(245,158,11,0.1)", border: "1.5px dashed rgba(245,158,11,0.4)", borderRadius: 10, padding: "0.5rem", color: "#fcd34d", fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "center" }}>
+                      + Add more audio ({MAX_MEDIA_FILES - mediaFiles.length} remaining)
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* ── VIDEO previews ── */}
+              {mediaFiles.length > 0 && type === "video" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                  {mediaPreviews.map((p, i) => (
+                    <div key={i} className="forum-media-preview-card" style={{ position: "relative" }}>
+                      <button type="button" className="forum-media-remove-btn" onClick={() => removeFile(i)} title="Remove">✕</button>
+                      <div style={{ position: "relative", aspectRatio: "16 / 9", background: "#000", overflow: "hidden" }}>
+                        <video src={p.url} controls preload="metadata" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+                      </div>
+                      <div className="forum-media-info-bar" style={{ cursor: "default" }}>
+                        <div style={{ width: 28, height: 28, borderRadius: 6, flexShrink: 0, background: "rgba(239,68,68,0.18)", border: "1px solid rgba(239,68,68,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎬</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: "0 0 0.05rem", fontSize: 12, fontWeight: 700, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</p>
+                          <p style={{ margin: 0, fontSize: 10, color: "#475569" }}>{(p.size / 1024 / 1024).toFixed(1)} MB</p>
+                        </div>
                       </div>
                     </div>
-                    {/* Player */}
-                    {mediaPreview && (
-                      <audio
-                        src={mediaPreview}
-                        controls
-                        preload="metadata"
-                        style={{ width: "100%", display: "block" }}
-                      />
-                    )}
-                  </div>
+                  ))}
+                  {canAddMore && (
+                    <button type="button" onClick={() => fileRef.current?.click()}
+                      style={{ background: "rgba(239,68,68,0.08)", border: "1.5px dashed rgba(239,68,68,0.35)", borderRadius: 10, padding: "0.5rem", color: "#fca5a5", fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "center" }}>
+                      + Add more videos ({MAX_MEDIA_FILES - mediaFiles.length} remaining)
+                    </button>
+                  )}
                 </div>
+              )}
+
+              {/* Hint when max reached */}
+              {mediaFiles.length >= MAX_MEDIA_FILES && (
+                <p style={{ fontSize: 11, color: "#fcd34d", margin: 0 }}>
+                  ✓ Maximum {MAX_MEDIA_FILES} files selected.
+                </p>
               )}
 
               {/* Error message */}
@@ -1671,6 +1828,7 @@ const TeacherForum = () => {
   const [followingTeachers, setFollowingTeachers] = useState([]);
   const [isWide,            setIsWide]            = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
   const [authPrompt,        setAuthPrompt]        = useState(false);
+  const [playingGame,       setPlayingGame]       = useState(null);
 
   const requireLogin = useCallback(() => {
     setAuthPrompt(true);
@@ -2105,6 +2263,7 @@ const TeacherForum = () => {
                       highlighted={highlighted === post._id}
                       onUnsave={handleUnsaveFromSaved}
                       onRequireLogin={requireLogin}
+                      onPlayGame={setPlayingGame}
                     />
                   ))}
                   {savedHasMore && (
@@ -2144,6 +2303,7 @@ const TeacherForum = () => {
                       onDelete={handleDelete}
                       highlighted={highlighted === post._id}
                       onRequireLogin={requireLogin}
+                      onPlayGame={setPlayingGame}
                     />
                   ))}
                   {hasMore && (
@@ -2182,6 +2342,11 @@ const TeacherForum = () => {
         <div className="forum-auth-toast">
           🔒 Please log in to interact with posts.
         </div>
+      )}
+
+      {/* ── Game Play Modal ── */}
+      {playingGame && (
+        <GamePlayModal gameRef={playingGame} onClose={() => setPlayingGame(null)} />
       )}
     </div>
   );

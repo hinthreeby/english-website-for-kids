@@ -1,5 +1,16 @@
 const mongoose = require("mongoose");
 
+const mediaItemSchema = new mongoose.Schema(
+  {
+    url:          { type: String, required: true },
+    type:         { type: String, enum: ["image", "video", "audio"], required: true },
+    mimeType:     { type: String, default: "" },
+    originalName: { type: String, default: "" },
+    size:         { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
 const forumPostSchema = new mongoose.Schema(
   {
     authorId:     { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -8,7 +19,8 @@ const forumPostSchema = new mongoose.Schema(
     description:  { type: String, default: "", maxlength: 1000 },
     tags:         { type: [String], default: [] },
     gameId:       { type: mongoose.Schema.Types.ObjectId, ref: "TeacherContent", default: null },
-    mediaUrl:     { type: String, default: "" },
+    mediaUrl:     { type: String, default: "" },   // backward-compat: kept for old posts
+    media:        { type: [mediaItemSchema], default: [] },
     visibility:   { type: String, enum: ["public", "private"], default: "public" },
     likesCount:    { type: Number, default: 0 },
     commentsCount: { type: Number, default: 0 },

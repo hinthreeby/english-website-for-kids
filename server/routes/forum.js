@@ -165,7 +165,7 @@ router.get("/posts/:id", optionalAuth, validateObjectId("id"), async (req, res) 
 
 // POST /api/forum/posts  (teacher only, multipart/form-data)
 router.post("/posts", protect, isTeacher, (req, res) => {
-  uploadForumMedia.single("media")(req, res, async (err) => {
+  uploadForumMedia.array("media", 5)(req, res, async (err) => {
     if (err) return handleMulterError(err, res);
 
     try {
@@ -176,14 +176,16 @@ router.post("/posts", protect, isTeacher, (req, res) => {
       if (!title?.trim())
         return res.status(400).json({ error: "Title is required." });
 
-      // Per-type size check
-      if (req.file) {
-        const mediaType = req.file.mimetype.startsWith("image/") ? "image"
-                        : req.file.mimetype.startsWith("video/") ? "video"
+      const files = req.files || [];
+
+      // Per-file size check
+      for (const file of files) {
+        const mediaType = file.mimetype.startsWith("image/") ? "image"
+                        : file.mimetype.startsWith("video/") ? "video"
                         : "audio";
         const maxBytes = (FORUM_SIZE_LIMITS[mediaType] || 20) * 1024 * 1024;
-        if (req.file.size > maxBytes) {
-          await deleteUploadedFile(req.file.path);
+        if (file.size > maxBytes) {
+          await Promise.all(files.map((f) => deleteUploadedFile(f.path)));
           return res.status(413).json({ error: `${mediaType} files must be under ${FORUM_SIZE_LIMITS[mediaType]} MB.` });
         }
       }
@@ -195,8 +197,8 @@ router.post("/posts", protect, isTeacher, (req, res) => {
         const game = await TeacherContent.findOne({ _id: gameId, teacherId: req.user._id, isPublished: true });
         if (!game) return res.status(400).json({ error: "Game not found or not published." });
       }
-      if (["image", "video", "audio"].includes(type) && !req.file)
-        return res.status(400).json({ error: `A ${type} file is required.` });
+      if (["image", "video", "audio"].includes(type) && files.length === 0)
+        return res.status(400).json({ error: `Please upload at least one ${type} file.` });
 
       // Parse tags
       let parsedTags = [];
@@ -209,14 +211,18 @@ router.post("/posts", protect, isTeacher, (req, res) => {
         parsedTags = parsedTags.slice(0, 10).map((t) => String(t).slice(0, 30).toLowerCase());
       }
 
-      // Build mediaUrl relative path for static serving
-      let mediaUrl = "";
-      if (req.file) {
-        const subfolder = req.file.mimetype.startsWith("image/") ? "images"
-                        : req.file.mimetype.startsWith("video/") ? "videos"
+      // Build media array (and backward-compat mediaUrl = first file)
+      const mediaItems = files.map((file) => {
+        const mediaType = file.mimetype.startsWith("image/") ? "image"
+                        : file.mimetype.startsWith("video/") ? "video"
+                        : "audio";
+        const subfolder = mediaType === "image" ? "images"
+                        : mediaType === "video" ? "videos"
                         : "audios";
-        mediaUrl = `/uploads/forum/${subfolder}/${req.file.filename}`;
-      }
+        const url = `/uploads/forum/${subfolder}/${file.filename}`;
+        return { url, type: mediaType, mimeType: file.mimetype, originalName: file.originalname, size: file.size };
+      });
+      const mediaUrl = mediaItems.length > 0 ? mediaItems[0].url : "";
 
       const post = await ForumPost.create({
         authorId:    req.user._id,
@@ -226,6 +232,7 @@ router.post("/posts", protect, isTeacher, (req, res) => {
         tags:        parsedTags,
         gameId:      type === "game" ? gameId : null,
         mediaUrl,
+        media:       mediaItems,
         visibility:  ["public", "private"].includes(visibility) ? visibility : "public",
       });
 
@@ -254,7 +261,8 @@ router.post("/posts", protect, isTeacher, (req, res) => {
       const result = await formatPost(populated, req.user._id);
       return res.status(201).json({ post: result });
     } catch (err) {
-      if (req.file) await deleteUploadedFile(req.file.path).catch(() => {});
+      const files = req.files || [];
+      await Promise.all(files.map((f) => deleteUploadedFile(f.path).catch(() => {})));
       return res.status(400).json({ error: err.message });
     }
   });
@@ -293,11 +301,15 @@ router.delete("/posts/:id", protect, isTeacher, validateObjectId("id"), async (r
     const post = await ForumPost.findOne({ _id: req.params.id, authorId: req.user._id });
     if (!post) return res.status(404).json({ error: "Post not found." });
 
-    // Clean up media file
-    if (post.mediaUrl) {
-      const abs = path.join(__dirname, "..", post.mediaUrl);
-      await deleteUploadedFile(abs).catch(() => {});
+    // Clean up all media files (new media[] array + legacy mediaUrl)
+    const urlsToDelete = new Set();
+    if (post.media?.length > 0) {
+      post.media.forEach((m) => m.url && urlsToDelete.add(m.url));
     }
+    if (post.mediaUrl) urlsToDelete.add(post.mediaUrl);
+    await Promise.all(
+      [...urlsToDelete].map((u) => deleteUploadedFile(path.join(__dirname, "..", u)).catch(() => {}))
+    );
 
     await Promise.all([
       post.deleteOne(),
@@ -773,6 +785,23 @@ router.patch("/notifications/:id/read", protect, validateObjectId("id"), async (
   try {
     await ForumNotification.updateOne({ _id: req.params.id, recipientId: req.user._id }, { isRead: true });
     return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// PUBLIC GAME DATA  (for Play button in Forum — returns published game content)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// GET /api/forum/games/:gameId
+router.get("/games/:gameId", optionalAuth, validateObjectId("gameId"), async (req, res) => {
+  try {
+    const game = await TeacherContent.findOne({ _id: req.params.gameId, isPublished: true })
+      .select("title description template type items questions listenItems")
+      .lean();
+    if (!game) return res.status(404).json({ error: "Game not found or not published." });
+    return res.json({ game });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
