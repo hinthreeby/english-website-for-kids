@@ -15,8 +15,173 @@ if (typeof document !== "undefined" && !document.getElementById("tc-slide-kf")) 
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* ── AI Generate custom count-dropdown ─────────────── */
+    .ai-dropdown-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.45rem;
+      width: 110px;
+      padding: 0.55rem 0.72rem;
+      background: rgba(124,58,237,0.16);
+      border: 1.5px solid rgba(124,58,237,0.48);
+      border-radius: 9px;
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .ai-dropdown-trigger:hover {
+      border-color: rgba(167,139,250,0.75);
+      background: rgba(124,58,237,0.28);
+      box-shadow: 0 0 12px rgba(124,58,237,0.28);
+    }
+    .ai-dropdown-trigger:focus-visible {
+      border-color: rgba(196,181,253,0.85);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.28);
+    }
+    .ai-dropdown-trigger.open {
+      border-color: rgba(167,139,250,0.8);
+      background: rgba(124,58,237,0.28);
+      box-shadow: 0 0 14px rgba(124,58,237,0.3);
+    }
+
+    .ai-dropdown-arrow {
+      font-size: 9px;
+      color: #a78bfa;
+      transition: transform 0.18s ease;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .ai-dropdown-arrow.open { transform: rotate(180deg); }
+
+    .ai-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      min-width: 100%;
+      background: linear-gradient(160deg, rgba(22,8,55,0.99), rgba(13,5,35,0.99));
+      border: 1.5px solid rgba(124,58,237,0.6);
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.65), 0 0 24px rgba(124,58,237,0.22);
+      z-index: 9100;
+      overflow: hidden;
+      animation: aiDropFadeIn 0.14s ease;
+    }
+    @keyframes aiDropFadeIn {
+      from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+
+    .ai-dropdown-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0.5rem 0.88rem;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(124,58,237,0.1);
+      color: #c4b5fd;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: background 0.12s, color 0.12s;
+    }
+    .ai-dropdown-option:last-child { border-bottom: none; }
+    .ai-dropdown-option:hover {
+      background: rgba(124,58,237,0.28);
+      color: #f1f5f9;
+    }
+    .ai-dropdown-option.active {
+      background: linear-gradient(90deg, rgba(124,58,237,0.38), rgba(168,85,247,0.28));
+      color: #ffffff;
+    }
+    .ai-dropdown-option.active:hover {
+      background: linear-gradient(90deg, rgba(124,58,237,0.52), rgba(168,85,247,0.4));
+    }
+
+    .ai-dropdown-check {
+      font-size: 11px;
+      color: #a78bfa;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-left: 0.4rem;
+    }
   `;
   document.head.appendChild(s);
+}
+
+// ── AiCountDropdown ───────────────────────────────────────────────────────────
+
+function AiCountDropdown({ value, onChange, options, suffix = "" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  const handleKey = (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen((o) => !o); }
+    if (e.key === "Escape") setOpen(false);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const idx = options.indexOf(value);
+      if (idx < options.length - 1) onChange(options[idx + 1]);
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const idx = options.indexOf(value);
+      if (idx > 0) onChange(options[idx - 1]);
+    }
+  };
+
+  return (
+    <div ref={ref} style={{ position: "relative", flexShrink: 0 }}>
+      <button
+        type="button"
+        className={`ai-dropdown-trigger${open ? " open" : ""}`}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={handleKey}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span>{value}{suffix ? ` ${suffix}` : ""}</span>
+        <span className={`ai-dropdown-arrow${open ? " open" : ""}`}>▼</span>
+      </button>
+
+      {open && (
+        <div className="ai-dropdown-menu" role="listbox">
+          {options.map((n) => (
+            <button
+              key={n}
+              type="button"
+              className={`ai-dropdown-option${n === value ? " active" : ""}`}
+              role="option"
+              aria-selected={n === value}
+              onClick={() => { onChange(n); setOpen(false); }}
+            >
+              <span>{n}{suffix ? ` ${suffix}` : ""}</span>
+              {n === value && <span className="ai-dropdown-check">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -848,10 +1013,12 @@ function ContentForm({ initial, onSave, onCancel }) {
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAIGenerate())}
                 style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.85rem", color: "#e2e8f0", fontSize: 14, outline: "none" }}
               />
-              <select value={aiCount} onChange={(e) => setAiCount(Number(e.target.value))}
-                style={{ width: 110, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.6rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}>
-                {[4, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} items</option>)}
-              </select>
+              <AiCountDropdown
+                value={aiCount}
+                onChange={setAiCount}
+                options={[4, 6, 8, 10, 12]}
+                suffix="items"
+              />
               <button type="button" onClick={handleAIGenerate} disabled={aiLoading || !aiTopic.trim()}
                 style={{ padding: "0.55rem 1.1rem", borderRadius: 9, cursor: aiLoading || !aiTopic.trim() ? "default" : "pointer", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, opacity: aiLoading || !aiTopic.trim() ? 0.5 : 1, whiteSpace: "nowrap" }}>
                 {aiLoading ? "Wait…" : "Generate"}
@@ -920,10 +1087,12 @@ function ContentForm({ initial, onSave, onCancel }) {
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleQuizAIGenerate())}
                 style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.85rem", color: "#e2e8f0", fontSize: 14, outline: "none" }}
               />
-              <select value={quizAiCount} onChange={(e) => setQuizAiCount(Number(e.target.value))}
-                style={{ width: 110, background: "rgba(255,255,255,0.07)", border: "1.5px solid rgba(124,58,237,0.4)", borderRadius: 9, padding: "0.55rem 0.6rem", color: "#e2e8f0", fontSize: 13, outline: "none" }}>
-                {[3, 4, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n} questions</option>)}
-              </select>
+              <AiCountDropdown
+                value={quizAiCount}
+                onChange={setQuizAiCount}
+                options={[3, 4, 5, 6, 8, 10]}
+                suffix="questions"
+              />
               <button type="button" onClick={handleQuizAIGenerate} disabled={quizAiLoading || !quizAiTopic.trim()}
                 style={{ padding: "0.55rem 1.1rem", borderRadius: 9, cursor: quizAiLoading || !quizAiTopic.trim() ? "default" : "pointer", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", color: "#fff", fontWeight: 700, fontSize: 13, opacity: quizAiLoading || !quizAiTopic.trim() ? 0.5 : 1, whiteSpace: "nowrap" }}>
                 {quizAiLoading ? "Wait…" : "Generate"}
