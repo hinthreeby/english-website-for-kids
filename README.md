@@ -169,5 +169,9 @@ Các game nằm tại `client/src/games/`.
 - **Bảo mật nâng cao**: CSRF protection, giới hạn tốc độ API, chính sách mật khẩu mạnh, ghi log bảo mật và quản trị
 
 ---
+## Tỷ lệ đóng góp của các thành viên nhóm
+- **Phan Thị Như Huỳnh** - 24520717: 50%
+- **Nguyễn Vũ Phúc** - 24521393: 50%
+---
 
 Chúng em đã biết làm web và hiểu hệ thống web hoạt động như thế nào.
